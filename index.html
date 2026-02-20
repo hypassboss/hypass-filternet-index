@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HYPASS Air+ 智能座艙</title>
+  
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    button { background: #00B900; color: white; border: none; padding: 15px 20px; border-radius: 5px; font-size: 16px; cursor: pointer; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>HYPASS Air+ 智能座艙</h2>
+    <p id="user-info">系統連線中...</p>
+    <h1 id="health-score" style="color: #00B900;">濾網健康度：100%</h1>
+  </div>
+
+  <div class="card">
+    <button onclick="scanUID()">📷 掃描濾網 UID 條碼</button>
+  </div>
+
+  <script>
+    // 1. 準備連線 Supabase (你之後要把這裡換成你的網址和鑰匙)
+    const supabaseUrl = 'https://你的.supabase.co';
+    const supabaseKey = '你的_KEY';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // 2. 啟動 LINE 登入系統
+    async function initApp() {
+      try {
+        // 請把下面換成你剛剛申請到的 LIFF ID
+        await liff.init({ liffId: "你的_LIFF_ID" }); 
+        
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          document.getElementById('user-info').innerText = '歡迎車主：' + profile.displayName;
+        } else {
+          // 如果沒登入，自動跳轉去登入
+          liff.login();
+        }
+      } catch (err) {
+        document.getElementById('user-info').innerText = 'LINE 連線失敗，請在 LINE 裡面開啟';
+      }
+    }
+
+    // 3. 啟動掃描功能
+    async function scanUID() {
+      if (liff.scanCodeV2) {
+        const result = await liff.scanCodeV2();
+        alert("掃描成功！抓到的 UID 是：" + result.value);
+        // 未來這裡會寫一段程式，把這個 UID 傳給 Supabase 驗證
+      } else {
+        alert("請用手機的 LINE 打開這個網頁才能掃描喔！");
+      }
+    }
+
+    // 網頁一打開就執行
+    initApp();
+  </script>
+
+</body>
+</html>
