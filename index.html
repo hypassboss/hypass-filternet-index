@@ -3,36 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS Air+</title>
+  <title>HYPASS Air+ 智能座艙</title>
+  
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
-    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    #health-score { font-size: 2em; font-weight: bold; margin: 20px 0; }
+    body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; color: #333; }
+    .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+    .btn { background: #00B900; color: white; border: none; padding: 15px 20px; border-radius: 8px; font-size: 18px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; }
+    #health-score { font-size: 48px; font-weight: bold; color: #00B900; margin: 20px 0; }
+    #user-info { color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>HYPASS Air+ 智能座艙</h2>
-    <p id="user-info">正在連線至 LINE...</p>
-    <div id="health-score" style="color: #00B900;">濾網健康度：100%</div>
-    <button onclick="scanUID()" style="background:#00B900; color:white; border:none; padding:15px 30px; border-radius:5px; font-size:16px;">
-      📷 掃描濾網 UID
-    </button>
+    <img src="https://www.hypass.com.tw/favicon.ico" width="50" style="margin-bottom: 10px;">
+    <h2>HYPASS Air+</h2>
+    <p id="user-info">連線中...</p>
+    
+    <div id="health-score">100%</div>
+    <p>座艙空氣防護力</p>
+
+    <button class="btn" onclick="scanUID()">📷 掃描濾網 UID 條碼</button>
   </div>
 
   <script>
-    // 1. 準備連線 Supabase
+    // 1. 初始化 Supabase
     const supabaseUrl = 'https://qznvabjtxcbffjryfgqi.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // 2. 啟動 LINE 登入系統
+    // 2. 初始化 LINE LIFF
     async function initApp() {
       try {
-        await liff.init({ liffId: "2009187567-58hBrZRj" });
+        await liff.init({ liffId: "2009187567-58hBrZRj" }); 
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
           document.getElementById('user-info').innerText = '歡迎車主：' + profile.displayName;
@@ -40,18 +46,23 @@
           liff.login();
         }
       } catch (err) {
-        document.getElementById('user-info').innerText = '系統連線失敗，請在 LINE 內開啟。';
+        document.getElementById('user-info').innerText = '請在 LINE App 內開啟此頁面';
       }
     }
 
-    // 3. 掃描功能
+    // 3. 掃描與驗證 UID
     async function scanUID() {
+      if (!liff.scanCodeV2) {
+        alert("請確保在手機 LINE 內操作掃描功能。");
+        return;
+      }
+
       try {
         const result = await liff.scanCodeV2();
         const scannedUID = result.value;
         if (!scannedUID) return;
 
-        // 檢查 Supabase 資料庫
+        // 向 Supabase 驗證 UID
         const { data, error } = await supabaseClient
           .from('filters_uid')
           .select('*')
@@ -59,22 +70,29 @@
           .single();
 
         if (error || !data) {
-          alert("❌ 驗證失敗：無效的 UID");
+          alert("❌ 無效的 UID 條碼！");
           return;
         }
 
         if (data.status === 'activated') {
-          alert("⚠️ 此濾網已啟用過");
-        } else {
-          // 更新狀態
-          await supabaseClient
-            .from('filters_uid')
-            .update({ status: 'activated', activated_at: new Date().toISOString() })
-            .eq('uid', scannedUID);
-          alert("🎉 濾網啟動成功！");
+          alert("⚠️ 此濾網已在 " + new Date(data.activated_at).toLocaleDateString() + " 啟用過。");
+          return;
         }
+
+        // 成功更新狀態為已啟用
+        await supabaseClient
+          .from('filters_uid')
+          .update({ 
+            status: 'activated', 
+            activated_at: new Date().toISOString() 
+          })
+          .eq('uid', scannedUID);
+
+        alert("🎉 驗證成功！濾網已啟用，防護力重置。");
+        document.getElementById('health-score').innerText = '100%';
+
       } catch (err) {
-        alert("掃描出錯");
+        alert("掃描出錯，請稍後再試。");
       }
     }
 
