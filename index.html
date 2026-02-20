@@ -1,28 +1,84 @@
-// 1. 準備連線 Supabase
-    const supabaseUrl = 'https://qznvabjtxcbffjryfgqi.supabase.co'; 
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'; // 👈 請手動貼上你的金鑰
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HYPASS Air+</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    #health-score { font-size: 2em; font-weight: bold; margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>HYPASS Air+ 智能座艙</h2>
+    <p id="user-info">正在連線至 LINE...</p>
+    <div id="health-score" style="color: #00B900;">濾網健康度：100%</div>
+    <button onclick="scanUID()" style="background:#00B900; color:white; border:none; padding:15px 30px; border-radius:5px; font-size:16px;">
+      📷 掃描濾網 UID
+    </button>
+  </div>
+
+  <script>
+    // 1. 準備連線 Supabase
+    const supabaseUrl = 'https://qznvabjtxcbffjryfgqi.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // 2. 啟動 LINE 登入系統 (HYPASS Air+)
+    // 2. 啟動 LINE 登入系統
     async function initApp() {
       try {
-        // 使用你提供的專屬 LIFF ID
-        await liff.init({ liffId: "2009187567-58hBrZRj" }); 
-        
+        await liff.init({ liffId: "2009187567-58hBrZRj" });
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
-          // 將登入成功後的資訊更新到畫面上
           document.getElementById('user-info').innerText = '歡迎車主：' + profile.displayName;
-          console.log('LINE 登入成功，UID:', profile.userId);
         } else {
-          // 若未登入則導向 LINE 授權頁面
           liff.login();
         }
       } catch (err) {
-        console.error('LIFF 初始化失敗', err);
         document.getElementById('user-info').innerText = '系統連線失敗，請在 LINE 內開啟。';
       }
     }
 
-    // 啟動 App
+    // 3. 掃描功能
+    async function scanUID() {
+      try {
+        const result = await liff.scanCodeV2();
+        const scannedUID = result.value;
+        if (!scannedUID) return;
+
+        // 檢查 Supabase 資料庫
+        const { data, error } = await supabaseClient
+          .from('filters_uid')
+          .select('*')
+          .eq('uid', scannedUID)
+          .single();
+
+        if (error || !data) {
+          alert("❌ 驗證失敗：無效的 UID");
+          return;
+        }
+
+        if (data.status === 'activated') {
+          alert("⚠️ 此濾網已啟用過");
+        } else {
+          // 更新狀態
+          await supabaseClient
+            .from('filters_uid')
+            .update({ status: 'activated', activated_at: new Date().toISOString() })
+            .eq('uid', scannedUID);
+          alert("🎉 濾網啟動成功！");
+        }
+      } catch (err) {
+        alert("掃描出錯");
+      }
+    }
+
     initApp();
+  </script>
+</body>
+</html>
