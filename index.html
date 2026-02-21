@@ -2,95 +2,163 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS Air+ 智能座艙</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HYPASS Air+</title>
   
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; color: #333; }
-    .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
-    .btn { background: #00B900; color: white; border: none; padding: 15px 20px; border-radius: 8px; font-size: 18px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; }
-    #health-score { font-size: 48px; font-weight: bold; color: #00B900; margin: 20px 0; }
-    #user-info { color: #666; font-size: 14px; }
+    /* 特斯拉風格暗黑主題設定 */
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      margin: 0; padding: 0; 
+      background-color: #121212; /* 深空灰背景 */
+      color: #ffffff; 
+      padding-bottom: 80px; /* 預留底部導覽列空間 */
+    }
+    
+    /* 頁面容器隱藏與顯示邏輯 */
+    .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* 頂部資訊列 */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px 0; }
+    #user-info { color: #888; font-size: 14px; margin: 0; }
+    .car-badge { background: #1e1e1e; padding: 5px 15px; border-radius: 20px; font-size: 12px; color: #00D100; border: 1px solid #333; }
+
+    /* 核心儀表板卡片 */
+    .dashboard-ring {
+      background: #1e1e1e; border-radius: 20px; padding: 40px 20px; text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; border: 1px solid #2a2a2a;
+    }
+    .ring-circle {
+      width: 180px; height: 180px; border-radius: 50%; border: 4px dashed #00D100;
+      margin: 0 auto 20px auto; display: flex; flex-direction: column; justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 209, 0, 0.2);
+    }
+    #health-score { font-size: 56px; font-weight: bold; color: #00D100; margin: 0; line-height: 1; }
+    .score-label { color: #888; font-size: 14px; margin-top: 5px; }
+
+    /* 掃描按鈕 (帶螢光光暈) */
+    .btn-scan {
+      background: #00D100; color: #000; border: none; padding: 18px 20px; border-radius: 12px;
+      font-size: 18px; font-weight: bold; cursor: pointer; width: 100%;
+      box-shadow: 0 0 15px rgba(0, 209, 0, 0.4); transition: 0.2s;
+    }
+    .btn-scan:active { transform: scale(0.98); box-shadow: 0 0 5px rgba(0, 209, 0, 0.4); }
+
+    /* 底部懸浮導覽列 */
+    .bottom-nav {
+      position: fixed; bottom: 15px; left: 15px; right: 15px;
+      background: rgba(30, 30, 30, 0.9); backdrop-filter: blur(10px);
+      border-radius: 20px; display: flex; justify-content: space-around; padding: 15px 0;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5); border: 1px solid #333; z-index: 1000;
+    }
+    .nav-item {
+      color: #666; font-size: 24px; text-decoration: none; display: flex; flex-direction: column; align-items: center; cursor: pointer;
+    }
+    .nav-item.active { color: #00D100; text-shadow: 0 0 10px rgba(0,209,0,0.5); }
+    .nav-label { font-size: 10px; margin-top: 4px; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <img src="https://www.hypass.com.tw/favicon.ico" width="50" style="margin-bottom: 10px;">
-    <h2>HYPASS Air+</h2>
-    <p id="user-info">連線中...</p>
-    
-    <div id="health-score">100%</div>
-    <p>座艙空氣防護力</p>
+  <div id="page-home" class="page active">
+    <div class="header">
+      <p id="user-info">連線中...</p>
+      <div class="car-badge">● 已連線</div>
+    </div>
 
-    <button class="btn" onclick="scanUID()">📷 掃描濾網 UID 條碼</button>
+    <div class="dashboard-ring">
+      <div class="ring-circle">
+        <div id="health-score">100%</div>
+        <div class="score-label">座艙防護力</div>
+      </div>
+      <p style="color:#00D100; font-weight:bold; margin-bottom: 0;">極淨・防禦中</p>
+    </div>
+
+    <button class="btn-scan" onclick="scanUID()">📷 掃描啟用新濾網</button>
+  </div>
+
+  <div id="page-shop" class="page">
+    <h2 style="color:#00D100;">官方商城</h2>
+    <p style="color:#888;">即將串接 Shopline 系統，敬請期待...</p>
+  </div>
+
+  <div id="page-book" class="page">
+    <h2 style="color:#00D100;">預約安裝</h2>
+    <p style="color:#888;">即將載入全台 50 家濾聯網據點地圖...</p>
+  </div>
+
+  <div id="page-settings" class="page">
+    <h2 style="color:#00D100;">我的車庫</h2>
+    <p style="color:#888;">歷史保養紀錄與 B2B 夥伴入口...</p>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchPage('home', this)">
+      <span>◓</span><span class="nav-label">座艙</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('shop', this)">
+      <span>🛒</span><span class="nav-label">商城</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('book', this)">
+      <span>📍</span><span class="nav-label">預約</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('settings', this)">
+      <span>⚙️</span><span class="nav-label">設定</span>
+    </div>
   </div>
 
   <script>
-    // 1. 初始化 Supabase
+    // 你的鑰匙 (保持不變)
     const supabaseUrl = 'https://qznvabjtxcbffjryfgqi.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // 2. 初始化 LINE LIFF
+    // 切換頁面邏輯
+    function switchPage(pageId, element) {
+      // 隱藏所有頁面
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      // 取消所有按鈕高亮
+      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      // 顯示目標頁面與高亮按鈕
+      document.getElementById('page-' + pageId).classList.add('active');
+      element.classList.add('active');
+    }
+
+    // LINE LIFF 初始化
     async function initApp() {
       try {
         await liff.init({ liffId: "2009187567-58hBrZRj" }); 
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
-          document.getElementById('user-info').innerText = '歡迎車主：' + profile.displayName;
+          document.getElementById('user-info').innerText = profile.displayName + ' 的座艙';
         } else {
           liff.login();
         }
       } catch (err) {
-        document.getElementById('user-info').innerText = '請在 LINE App 內開啟此頁面';
+        document.getElementById('user-info').innerText = '請在 LINE 內開啟';
       }
     }
 
-    // 3. 掃描與驗證 UID
+    // UID 掃描邏輯 (保持不變)
     async function scanUID() {
-      if (!liff.scanCodeV2) {
-        alert("請確保在手機 LINE 內操作掃描功能。");
-        return;
-      }
-
+      if (!liff.scanCodeV2) { alert("請在手機 LINE 內操作"); return; }
       try {
         const result = await liff.scanCodeV2();
-        const scannedUID = result.value;
-        if (!scannedUID) return;
+        if (!result.value) return;
 
-        // 向 Supabase 驗證 UID
-        const { data, error } = await supabaseClient
-          .from('filters_uid')
-          .select('*')
-          .eq('uid', scannedUID)
-          .single();
+        const { data, error } = await supabaseClient.from('filters_uid').select('*').eq('uid', result.value).single();
+        if (error || !data) { alert("❌ 無效的 UID！"); return; }
+        if (data.status === 'activated') { alert("⚠️ 此濾網已啟用過。"); return; }
 
-        if (error || !data) {
-          alert("❌ 無效的 UID 條碼！");
-          return;
-        }
-
-        if (data.status === 'activated') {
-          alert("⚠️ 此濾網已在 " + new Date(data.activated_at).toLocaleDateString() + " 啟用過。");
-          return;
-        }
-
-        // 成功更新狀態為已啟用
-        await supabaseClient
-          .from('filters_uid')
-          .update({ 
-            status: 'activated', 
-            activated_at: new Date().toISOString() 
-          })
-          .eq('uid', scannedUID);
-
-        alert("🎉 驗證成功！濾網已啟用，防護力重置。");
+        await supabaseClient.from('filters_uid').update({ status: 'activated', activated_at: new Date().toISOString() }).eq('uid', result.value);
+        
+        alert("🎉 驗證成功！濾網已啟用。");
         document.getElementById('health-score').innerText = '100%';
-
       } catch (err) {
         alert("掃描出錯，請稍後再試。");
       }
