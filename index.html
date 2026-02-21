@@ -15,23 +15,28 @@
     .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* 首頁儀表板 */
+    /* 首頁與按鈕樣式 */
     .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px 0; }
     #user-info { color: #888; font-size: 14px; margin: 0; }
     .car-badge { background: #1e1e1e; padding: 5px 15px; border-radius: 20px; font-size: 12px; color: #00D100; border: 1px solid #333; }
     .dashboard-ring { background: #1e1e1e; border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; border: 1px solid #2a2a2a; }
     .ring-circle { width: 180px; height: 180px; border-radius: 50%; border: 4px dashed #00D100; margin: 0 auto 20px auto; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 0 20px rgba(0, 209, 0, 0.2); }
     #health-score { font-size: 56px; font-weight: bold; color: #00D100; margin: 0; line-height: 1; }
-
-    /* 按鈕共用樣式 */
-    .btn-main { background: #00D100; color: #000; border: none; padding: 15px 20px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 0 10px rgba(0, 209, 0, 0.3); }
+    .btn-main { background: #00D100; color: #000; border: none; padding: 15px 20px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; }
     
-    /* 保修廠卡片樣式 */
-    .garage-card { background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; text-align: left; }
-    .garage-name { margin: 0 0 5px 0; font-size: 18px; color: #fff; }
-    .garage-address { margin: 0 0 10px 0; font-size: 13px; color: #888; }
-    .garage-fee { margin: 0 0 15px 0; font-size: 14px; color: #00D100; }
+    /* 卡片樣式 (車主預約用 & 廠長看單用) */
+    .data-card { background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; text-align: left; }
+    .card-title { margin: 0 0 5px 0; font-size: 18px; color: #fff; }
+    .card-text { margin: 0 0 10px 0; font-size: 14px; color: #888; }
     .datetime-picker { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px; background: #000; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 16px; }
+
+    /* B2B 專屬樣式 */
+    .status-badge { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+    .status-pending { background: #FF9800; color: #fff; }
+    .status-confirmed { background: #03A9F4; color: #fff; }
+    .status-completed { background: #00D100; color: #000; }
+    .btn-action { background: #333; color: #fff; border: 1px solid #555; padding: 10px; border-radius: 5px; width: 48%; font-size: 14px; cursor: pointer; }
+    .btn-action.primary { background: #00D100; color: #000; border: none; }
 
     /* 底部導覽列 */
     .bottom-nav { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(10px); border-radius: 20px; display: flex; justify-content: space-around; padding: 15px 0; border: 1px solid #333; z-index: 1000; }
@@ -65,15 +70,25 @@
   <div id="page-book" class="page">
     <h2 style="color:#00D100;">📍 預約安裝</h2>
     <p style="color:#888; font-size: 14px;">請選擇您附近的濾聯網加盟店：</p>
-    
-    <div id="garage-list">
-      <p style="color:#888;">資料載入中...</p>
-    </div>
+    <div id="garage-list"><p style="color:#888;">資料載入中...</p></div>
   </div>
 
   <div id="page-settings" class="page">
-    <h2 style="color:#00D100;">⚙️ 我的車庫</h2>
-    <p style="color:#888;">B2B 後台建置中...</p>
+    <h2 style="color:#00D100;">⚙️ 我的帳號</h2>
+    
+    <div id="b2c-settings">
+      <p style="color:#888;">車輛設定與歷史紀錄建置中...</p>
+      <button class="btn-main" style="background:#333; color:#fff;" onclick="toggleAdminMode()">切換至「廠長接單後台」測試</button>
+    </div>
+
+    <div id="b2b-admin-panel" style="display: none;">
+      <h3 style="color:#FF9800;">👨‍🔧 廠長接單看板</h3>
+      <p style="color:#888; font-size: 12px;">此畫面僅限保修廠老闆可見</p>
+      <div id="admin-order-list">
+        <p style="color:#888;">讀取訂單中...</p>
+      </div>
+      <button class="btn-main" style="background:#333; color:#fff; margin-top:20px;" onclick="toggleAdminMode()">退出廠長模式</button>
+    </div>
   </div>
 
   <div class="bottom-nav">
@@ -88,19 +103,26 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let currentUserId = null; // 儲存車主的 LINE UID
+    let currentUserId = null;
+    let currentUserName = null;
 
-    // 初始化 LINE
+    // 1. 初始化 LINE
     async function initApp() {
       try {
         await liff.init({ liffId: "2009187567-58hBrZRj" }); 
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
           currentUserId = profile.userId;
-          document.getElementById('user-info').innerText = profile.displayName + ' 的座艙';
+          currentUserName = profile.displayName;
+          document.getElementById('user-info').innerText = currentUserName + ' 的座艙';
           
-          // 登入成功後，偷偷在背景把保修廠名單抓下來備用
-          loadGarages();
+          // 自動將登入的車主註冊進 users 表 (方便後續廠長聯絡)
+          await supabaseClient.from('users').upsert({
+            line_uid: currentUserId,
+            name: currentUserName
+          });
+
+          loadGarages(); // 載入保修廠清單 (預約頁面用)
         } else {
           liff.login();
         }
@@ -109,89 +131,131 @@
       }
     }
 
-    // 切換頁面
+    // 2. 切換頁面
     function switchPage(pageId, element) {
-      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       document.getElementById('page-' + pageId).classList.add('active');
       element.classList.add('active');
     }
 
-    // 從資料庫抓取保修廠名單
+    // ==========================================
+    // B2C 車主端功能
+    // ==========================================
+
+    // 載入保修廠清單 (預約用)
     async function loadGarages() {
       const { data, error } = await supabaseClient.from('garages').select('*');
-      const listDiv = document.getElementById('garage-list');
-      
-      if (error || !data || data.length === 0) {
-        listDiv.innerHTML = '<p style="color:#888;">目前尚無可用的保修廠資料。</p>';
-        return;
-      }
+      if (error || !data || data.length === 0) return;
 
       let html = '';
       data.forEach(g => {
         html += `
-          <div class="garage-card">
-            <h3 class="garage-name">${g.name}</h3>
-            <p class="garage-address">📍 ${g.address}</p>
-            <p class="garage-fee">⚙️ 專業代工費：NT$ ${g.labor_fee}</p>
-            
+          <div class="data-card">
+            <h3 class="card-title">${g.name}</h3>
+            <p class="card-text">📍 ${g.address}</p>
+            <p class="card-text" style="color:#00D100;">⚙️ 代工費：NT$ ${g.labor_fee}</p>
             <input type="datetime-local" id="date-${g.id}" class="datetime-picker" />
-            
             <button class="btn-main" onclick="submitBooking(${g.id}, '${g.name}')">送出預約單</button>
+          </div>
+        `;
+      });
+      document.getElementById('garage-list').innerHTML = html;
+    }
+
+    // 送出預約
+    async function submitBooking(garageId, garageName) {
+      const dateInput = document.getElementById('date-' + garageId).value;
+      if (!dateInput) return alert('請先選擇時間！');
+      
+      const { error } = await supabaseClient.from('appointments').insert([
+        { user_id: currentUserId, garage_id: garageId, appointment_time: new Date(dateInput).toISOString(), status: 'pending' }
+      ]);
+
+      if (error) alert('預約失敗');
+      else {
+        alert('🎉 預約成功！廠長將會處理。');
+        document.getElementById('date-' + garageId).value = '';
+        if(document.getElementById('b2b-admin-panel').style.display === 'block') loadAdminOrders(); // 如果廠長開著後台，即時更新
+      }
+    }
+
+    // ==========================================
+    // B2B 廠長接單端功能
+    // ==========================================
+
+    let isAdminMode = false;
+
+    // 開關廠長模式
+    function toggleAdminMode() {
+      isAdminMode = !isAdminMode;
+      if(isAdminMode) {
+        document.getElementById('b2c-settings').style.display = 'none';
+        document.getElementById('b2b-admin-panel').style.display = 'block';
+        loadAdminOrders(); // 抓取訂單
+      } else {
+        document.getElementById('b2c-settings').style.display = 'block';
+        document.getElementById('b2b-admin-panel').style.display = 'none';
+      }
+    }
+
+    // 廠長讀取預約單
+    async function loadAdminOrders() {
+      // 抓取所有預約單
+      const { data, error } = await supabaseClient
+        .from('appointments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const listDiv = document.getElementById('admin-order-list');
+
+      if (error || !data || data.length === 0) {
+        listDiv.innerHTML = '<p style="color:#888;">目前沒有任何預約單。</p>';
+        return;
+      }
+
+      let html = '';
+      data.forEach(order => {
+        // 格式化時間
+        const aptTime = new Date(order.appointment_time).toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        
+        // 狀態標籤判斷
+        let statusHtml = '';
+        if(order.status === 'pending') statusHtml = '<span class="status-badge status-pending">等待確認中</span>';
+        if(order.status === 'confirmed') statusHtml = '<span class="status-badge status-confirmed">已排程接單</span>';
+        if(order.status === 'completed') statusHtml = '<span class="status-badge status-completed">✔ 已完工核銷</span>';
+
+        html += `
+          <div class="data-card">
+            ${statusHtml}
+            <p class="card-text">🕒 預約時間：<strong style="color:#fff;">${aptTime}</strong></p>
+            <p class="card-text">👤 車主識別碼：${order.user_id.substring(0,8)}...</p>
+            
+            <div style="display:flex; justify-content:space-between; margin-top:15px;">
+              ${order.status === 'pending' ? `<button class="btn-action primary" onclick="updateOrderStatus(${order.id}, 'confirmed')">確認接單</button>` : ''}
+              ${order.status === 'confirmed' ? `<button class="btn-action primary" onclick="updateOrderStatus(${order.id}, 'completed')">完工並核銷</button>` : ''}
+              ${order.status !== 'completed' ? `<button class="btn-action" onclick="updateOrderStatus(${order.id}, 'cancelled')">取消訂單</button>` : ''}
+            </div>
           </div>
         `;
       });
       listDiv.innerHTML = html;
     }
 
-    // 發送預約單到資料庫
-    async function submitBooking(garageId, garageName) {
-      const dateInput = document.getElementById('date-' + garageId).value;
-      
-      if (!dateInput) {
-        alert('請先選擇您要預約的日期與時間！');
-        return;
-      }
+    // 廠長更新訂單狀態 (接單/完工)
+    async function updateOrderStatus(orderId, newStatus) {
+      if(!confirm('確定要更新這筆訂單狀態嗎？')) return;
 
-      // 為了避免使用者誤按，加個確認視窗
-      if (!confirm(`確定要向「${garageName}」發送預約嗎？\n預約時間：${dateInput.replace('T', ' ')}`)) {
-        return;
-      }
-
-      // 將資料寫入 appointments 表格
-      const { error } = await supabaseClient.from('appointments').insert([
-        {
-          user_id: currentUserId,
-          garage_id: garageId,
-          appointment_time: new Date(dateInput).toISOString(),
-          status: 'pending' // 狀態設為「等待保修廠確認」
-        }
-      ]);
+      const { error } = await supabaseClient
+        .from('appointments')
+        .update({ status: newStatus })
+        .eq('id', orderId);
 
       if (error) {
-        alert('❌ 預約失敗，請確認資料庫權限是否開啟。');
-        console.error(error);
+        alert('❌ 更新失敗');
       } else {
-        alert('🎉 預約單已送出！廠長將會盡快為您安排。');
-        // 送出成功後，把時間欄位清空
-        document.getElementById('date-' + garageId).value = '';
-      }
-    }
-
-    // 掃描 UID (維持原樣)
-    async function scanUID() {
-      if (!liff.scanCodeV2) { alert("請在手機 LINE 內操作"); return; }
-      try {
-        const result = await liff.scanCodeV2();
-        if (!result.value) return;
-        const { data, error } = await supabaseClient.from('filters_uid').select('*').eq('uid', result.value).single();
-        if (error || !data) { alert("❌ 無效的 UID！"); return; }
-        if (data.status === 'activated') { alert("⚠️ 此濾網已啟用過。"); return; }
-        await supabaseClient.from('filters_uid').update({ status: 'activated', activated_at: new Date().toISOString() }).eq('uid', result.value);
-        alert("🎉 驗證成功！濾網已啟用。");
-        document.getElementById('health-score').innerText = '100%';
-      } catch (err) {
-        alert("掃描出錯，請稍後再試。");
+        alert('✅ 狀態已更新！');
+        loadAdminOrders(); // 重新讀取畫面
       }
     }
 
