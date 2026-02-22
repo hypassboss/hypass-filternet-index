@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>HYPASS V2 總部戰情室</title>
+  <title>HYPASS V2.2 總部戰情室</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
@@ -20,12 +20,9 @@
     th { background: #f8f9fa; color: #555; }
     .btn { background: #00D100; color: #000; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight:bold; }
     .btn-danger { background: #ff4444; color: #fff; }
-    .btn-warn { background: #ff9800; color: #fff; }
     .stat-card { background: #1a1e1a; color: #00D100; padding: 20px; border-radius: 8px; text-align: center; flex: 1; margin-right: 15px; border: 1px solid #333; }
     .stat-card h1 { font-size: 36px; margin: 10px 0; }
     .stat-card p { color: #888; margin: 0; font-size: 14px; }
-    
-    /* 營運分佈專用卡片 */
     .op-card { background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 8px; text-align: center; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .op-card h3 { margin: 0 0 10px 0; color: #555; }
   </style>
@@ -33,7 +30,7 @@
 <body>
 
   <div class="sidebar">
-    <h2 style="color:#00D100; padding: 0 20px; border:none;">HYPASS ADMIN</h2>
+    <h2 style="color:#00D100; padding: 0 20px; border:none; font-size:18px;">HYPASS ADMIN V2.2</h2>
     <button class="nav-btn active" onclick="switchTab('esg', this)">🌍 ESG 戰情室</button>
     <button class="nav-btn" onclick="switchTab('stats', this)">📊 營運分佈總覽</button>
     <button class="nav-btn" onclick="switchTab('crm', this)">👥 CRM 客戶管理</button>
@@ -49,7 +46,7 @@
       <div style="display: flex; margin-bottom: 20px;">
         <div class="stat-card"><h1><span id="esg-pm25">0</span> µg</h1><p>全網累計攔截 PM2.5</p></div>
         <div class="stat-card"><h1><span id="esg-co2">0</span> kg</h1><p>全網減少碳排放</p></div>
-        <div class="stat-card" style="margin-right:0;"><h1><span id="esg-active">0</span> 片</h1><p>目前防護中濾網總數</p></div>
+        <div class="stat-card" style="margin-right:0;"><h1><span id="esg-active">0</span> 片</h1><p>防護中濾網總數</p></div>
       </div>
       <button class="btn" onclick="loadESG()">重新計算最新數據</button>
     </div>
@@ -58,38 +55,21 @@
       <h2>📊 全台營運分佈總覽</h2>
       <div style="display: flex; gap: 20px; margin-bottom: 20px;">
         <div class="op-card" style="border-top: 4px solid #00D100;">
-          <h3>濾網會員總數</h3>
-          <h1 id="stat-total-users" style="font-size: 48px; margin: 10px 0; color: #00D100;">0</h1>
-          <p style="color:#888; margin:0; font-size:12px;">已完成註冊之車主</p>
+          <h3>濾網會員總數</h3><h1 id="stat-total-users" style="font-size: 48px; margin: 10px 0; color: #00D100;">0</h1><p style="color:#888; margin:0; font-size:12px;">已完成註冊之車主</p>
         </div>
         <div class="op-card" style="border-top: 4px solid #FF9800;">
-          <h3>開通保修廠總數</h3>
-          <h1 id="stat-total-garages" style="font-size: 48px; margin: 10px 0; color: #FF9800;">0</h1>
-          <p style="color:#888; margin:0; font-size:12px;">目前上架營業中</p>
+          <h3>開通保修廠總數</h3><h1 id="stat-total-garages" style="font-size: 48px; margin: 10px 0; color: #FF9800;">0</h1><p style="color:#888; margin:0; font-size:12px;">目前上架營業中</p>
         </div>
       </div>
-      
       <div style="display: flex; gap: 20px;">
-        <div style="flex: 1;">
-          <h3 style="color:#333;">👥 會員縣市熱區分佈</h3>
-          <table id="stat-users-city">
-            <thead><tr><th>居住縣市</th><th>會員人數</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div style="flex: 1;">
-          <h3 style="color:#333;">👨‍🔧 保修廠佈點分佈</h3>
-          <table id="stat-garages-city">
-            <thead><tr><th>所在縣市</th><th>合作家數</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <div style="flex: 1;"><h3 style="color:#333;">👥 會員縣市熱區分佈</h3><table id="stat-users-city"><thead><tr><th>居住縣市</th><th>會員人數</th></tr></thead><tbody></tbody></table></div>
+        <div style="flex: 1;"><h3 style="color:#333;">👨‍🔧 保修廠佈點分佈</h3><table id="stat-garages-city"><thead><tr><th>所在縣市</th><th>合作家數</th></tr></thead><tbody></tbody></table></div>
       </div>
     </div>
 
     <div id="panel-crm" class="panel">
-      <h2>👥 濾網客人 CRM (含黑名單管理)</h2>
-      <table id="crm-table"><thead><tr><th>姓名</th><th>電話</th><th>車款/車牌</th><th>狀態</th><th>操作</th></tr></thead><tbody></tbody></table>
+      <h2>👥 濾網客人 CRM</h2>
+      <table id="crm-table"><thead><tr><th>姓名/Email</th><th>電話</th><th>車款/車牌</th><th>狀態</th><th>操作</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="panel-garage" class="panel">
@@ -98,24 +78,20 @@
     </div>
 
     <div id="panel-uid" class="panel">
-      <h2>🏷️ 防偽 UID 生命週期管理</h2>
-      <button class="btn" onclick="generateUIDs(5)">+ 批次生產 5 組新 UID</button>
-      <table id="uid-table" style="margin-top:15px;"><thead><tr><th>UID 碼</th><th>狀態</th><th>啟用類型</th><th>綁定車型/地點</th><th>操作時間</th></tr></thead><tbody></tbody></table>
+      <h2>🏷️ 防偽 UID 生命週期</h2>
+      <button class="btn" onclick="generateUIDs(5)">+ 生產 5 組新 UID</button>
+      <table id="uid-table" style="margin-top:15px;"><thead><tr><th>UID 碼</th><th>狀態</th><th>啟用類型</th><th>綁定車型/地點</th><th>時間</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="panel-rewards" class="panel">
       <h2>🎁 LINE Points 人工兌換審核</h2>
-      <p style="color:#666; font-size:14px;">請於 LINE 官方帳號發送序號給車主後，在此點擊「完成發放結案」。</p>
       <table id="reward-table"><thead><tr><th>申請車主</th><th>申請項目</th><th>時間</th><th>操作</th></tr></thead><tbody></tbody></table>
     </div>
 
   </div>
 
   <script>
-    const supabaseClient = supabase.createClient(
-      'https://qznvabjtxcbffjryfgqi.supabase.co', 
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
-    );
+    const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
     function switchTab(id, btn) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -124,14 +100,13 @@
       btn.classList.add('active');
       
       if(id==='esg') loadESG();
-      if(id==='stats') loadStats(); // 載入營運數據
+      if(id==='stats') loadStats();
       if(id==='crm') loadCRM();
       if(id==='garage') loadGarages();
       if(id==='uid') loadUIDs();
       if(id==='rewards') loadRewards();
     }
 
-    // --- 1. ESG 計算 ---
     async function loadESG() {
       const { data } = await supabaseClient.from('filters_uid').select('activated_at').eq('status', 'activated');
       if(data) {
@@ -143,112 +118,79 @@
       }
     }
 
-    // --- 2. 營運分佈總覽 (全新功能) ---
     async function loadStats() {
-      // 抓取車主數據
       const { data: users } = await supabaseClient.from('users').select('city').eq('role', 'customer');
       if (users) {
         document.getElementById('stat-total-users').innerText = users.length;
-        const cityCounts = {};
-        users.forEach(u => {
-          const c = u.city || '未填寫/解析中';
-          cityCounts[c] = (cityCounts[c] || 0) + 1;
-        });
-        let userHtml = '';
-        Object.entries(cityCounts).sort((a,b) => b[1] - a[1]).forEach(([city, count]) => {
-          userHtml += `<tr><td>${city}</td><td style="font-weight:bold; color:#00D100;">${count} 人</td></tr>`;
-        });
-        document.getElementById('stat-users-city').querySelector('tbody').innerHTML = userHtml || '<tr><td colspan="2" style="text-align:center;">無資料</td></tr>';
+        const counts = {}; users.forEach(u => { const c = u.city || '未填寫'; counts[c] = (counts[c] || 0) + 1; });
+        let userHtml = ''; Object.entries(counts).sort((a,b) => b[1] - a[1]).forEach(([city, count]) => userHtml += `<tr><td>${city}</td><td style="font-weight:bold; color:#00D100;">${count} 人</td></tr>`);
+        document.getElementById('stat-users-city').querySelector('tbody').innerHTML = userHtml || '<tr><td colspan="2">無資料</td></tr>';
       }
-
-      // 抓取保修廠數據
       const { data: garages } = await supabaseClient.from('garages').select('city').eq('status', 'active');
       if (garages) {
         document.getElementById('stat-total-garages').innerText = garages.length;
-        const gCityCounts = {};
-        garages.forEach(g => {
-          const c = g.city || '未填寫';
-          gCityCounts[c] = (gCityCounts[c] || 0) + 1;
-        });
-        let garageHtml = '';
-        Object.entries(gCityCounts).sort((a,b) => b[1] - a[1]).forEach(([city, count]) => {
-          garageHtml += `<tr><td>${city}</td><td style="font-weight:bold; color:#FF9800;">${count} 家</td></tr>`;
-        });
-        document.getElementById('stat-garages-city').querySelector('tbody').innerHTML = garageHtml || '<tr><td colspan="2" style="text-align:center;">無資料</td></tr>';
+        const counts = {}; garages.forEach(g => { const c = g.city || '未填寫'; counts[c] = (counts[c] || 0) + 1; });
+        let garageHtml = ''; Object.entries(counts).sort((a,b) => b[1] - a[1]).forEach(([city, count]) => garageHtml += `<tr><td>${city}</td><td style="font-weight:bold; color:#FF9800;">${count} 家</td></tr>`);
+        document.getElementById('stat-garages-city').querySelector('tbody').innerHTML = garageHtml || '<tr><td colspan="2">無資料</td></tr>';
       }
     }
 
-    // --- 3. CRM 客戶管理 ---
     async function loadCRM() {
       const { data } = await supabaseClient.from('users').select('*').eq('role', 'customer').order('created_at', { ascending: false });
       let html = '';
       if(data) data.forEach(u => {
         let status = u.is_blacklisted ? '<span style="color:red; font-weight:bold;">黑名單</span>' : '<span style="color:green;">正常</span>';
         let action = u.is_blacklisted ? `<button class="btn" onclick="toggleBlacklist('${u.line_uid}', false, 'users')">解除黑名單</button>` : `<button class="btn btn-danger" onclick="toggleBlacklist('${u.line_uid}', true, 'users')">設為黑名單</button>`;
-        html += `<tr><td>${u.name}</td><td>${u.phone}</td><td>${u.car_brand} ${u.car_model} (${u.license_plate})</td><td>${status}</td><td>${action}</td></tr>`;
+        html += `<tr><td>${u.name}<br><span style="font-size:11px; color:#888;">${u.email||''}</span></td><td>${u.phone}</td><td>${u.car_brand} ${u.car_model} (${u.license_plate})</td><td>${status}</td><td>${action}</td></tr>`;
       });
       document.getElementById('crm-table').querySelector('tbody').innerHTML = html;
     }
 
-    // --- 4. 保修廠審核 ---
     async function loadGarages() {
       const { data } = await supabaseClient.from('garages').select('*, appointments(garage_rating)').order('created_at', { ascending: false });
       let html = '';
       if(data) data.forEach(g => {
         let ratings = g.appointments.map(a => a.garage_rating).filter(r => r);
-        let avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '尚無評分';
-        let status = g.status === 'pending' ? '待審核' : (g.is_blacklisted ? '<span style="color:red;">停權/黑名單</span>' : '<span style="color:green;">營業中</span>');
-        let action = g.status === 'pending' ? `<button class="btn" onclick="approveGarage(${g.id})">核准開通</button>` : 
-                     (g.is_blacklisted ? `<button class="btn" onclick="toggleBlacklist(${g.id}, false, 'garages')">解除停權</button>` : `<button class="btn btn-danger" onclick="toggleBlacklist(${g.id}, true, 'garages')">強制停權</button>`);
+        let avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '無評分';
+        let status = g.status === 'pending' ? '待審核' : (g.is_blacklisted ? '<span style="color:red;">停權</span>' : '<span style="color:green;">營業中</span>');
+        let action = g.status === 'pending' ? `<button class="btn" onclick="approveGarage(${g.id})">核准</button>` : 
+                     (g.is_blacklisted ? `<button class="btn" onclick="toggleBlacklist(${g.id}, false, 'garages')">解除停權</button>` : `<button class="btn btn-danger" onclick="toggleBlacklist(${g.id}, true, 'garages')">停權</button>`);
         html += `<tr><td>${g.name}</td><td>${g.city}${g.address}</td><td>${avg} ⭐</td><td>${status}</td><td>${action}</td></tr>`;
       });
       document.getElementById('garage-table').querySelector('tbody').innerHTML = html;
     }
 
     async function approveGarage(id) { await supabaseClient.from('garages').update({ status: 'active' }).eq('id', id); loadGarages(); }
-    
     async function toggleBlacklist(id, isBlack, table) { 
       if(table === 'users') await supabaseClient.from('users').update({ is_blacklisted: isBlack }).eq('line_uid', id);
       else await supabaseClient.from('garages').update({ is_blacklisted: isBlack }).eq('id', id);
       table === 'users' ? loadCRM() : loadGarages(); 
     }
 
-    // --- 5. UID 管理 ---
     function makeId(length) { let r = ''; const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; for(let i=0; i<length; i++) r += c.charAt(Math.floor(Math.random() * c.length)); return r; }
-    
     async function generateUIDs(count) {
       let ins = []; for(let i=0; i<count; i++) ins.push({ uid: 'HP-' + makeId(8) });
       await supabaseClient.from('filters_uid').insert(ins); alert('生產完成'); loadUIDs();
     }
-
     async function loadUIDs() {
       const { data } = await supabaseClient.from('filters_uid').select('*').order('created_at', { ascending: false }).limit(50);
       let html = '';
       if(data) data.forEach(d => {
         let status = d.status === 'produced' ? '🏷️ 未使用' : d.status === 'activated' ? '🟢 服役中' : '🗑️ 已淘汰';
-        let type = d.activation_type ? d.activation_type : '-';
-        let info = d.installed_car_model ? `${d.installed_car_model} (${d.installed_location})` : '-';
-        let time = d.activated_at ? new Date(d.activated_at).toLocaleString() : new Date(d.created_at).toLocaleString();
-        html += `<tr><td><b>${d.uid}</b></td><td>${status}</td><td>${type}</td><td>${info}</td><td>${time}</td></tr>`;
+        html += `<tr><td><b>${d.uid}</b></td><td>${status}</td><td>${d.activation_type||'-'}</td><td>${d.installed_car_model ? d.installed_car_model+' ('+d.installed_location+')' : '-'}</td><td>${d.activated_at ? new Date(d.activated_at).toLocaleString() : '-'}</td></tr>`;
       });
       document.getElementById('uid-table').querySelector('tbody').innerHTML = html;
     }
 
-    // --- 6. 獎勵金 ---
     async function loadRewards() {
       const { data } = await supabaseClient.from('rewards').select('*, users(name, phone)').eq('type', 'redeem').eq('status', 'pending').order('created_at', { ascending: true });
       let html = '';
-      if(data) data.forEach(r => {
-        html += `<tr><td>${r.users.name} (${r.users.phone})</td><td>兌換 LINE Point 100點</td><td>${new Date(r.created_at).toLocaleString()}</td><td><button class="btn" onclick="completeReward(${r.id})">✅ 完成發放結案</button></td></tr>`;
-      });
-      document.getElementById('reward-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4" style="text-align:center;">目前無待處理申請</td></tr>';
+      if(data) data.forEach(r => html += `<tr><td>${r.users.name} (${r.users.phone})</td><td>兌換 100 點</td><td>${new Date(r.created_at).toLocaleString()}</td><td><button class="btn" onclick="completeReward(${r.id})">✅ 結案</button></td></tr>`);
+      document.getElementById('reward-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4">無待處理申請</td></tr>';
     }
 
-    async function completeReward(id) {
-      await supabaseClient.from('rewards').update({ status: 'completed' }).eq('id', id); alert('已結案！'); loadRewards();
-    }
+    async function completeReward(id) { await supabaseClient.from('rewards').update({ status: 'completed' }).eq('id', id); alert('已結案！'); loadRewards(); }
 
-    // 初始化預設畫面
     loadESG();
   </script>
 </body>
