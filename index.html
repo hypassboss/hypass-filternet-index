@@ -82,12 +82,17 @@
   </div>
 
   <script>
-    const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
+    // 這裡已經為您專屬替換為真實的 Supabase 金鑰！
+    const supabaseClient = supabase.createClient(
+      'https://qznvabjtxcbffjryfgqi.supabase.co', 
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
+    );
     let currentUser = null;
     let referrerId = new URLSearchParams(window.location.search).get('ref');
 
     async function initApp() {
-      await liff.init({ liffId: "009187567-58hBrZRj" });
+      // 這裡已經為您專屬替換為真實的 LIFF ID！
+      await liff.init({ liffId: "2009187567-58hBrZRj" });
       if (!liff.isLoggedIn()) { liff.login(); return; }
       
       const profile = await liff.getProfile();
@@ -100,6 +105,7 @@
         switchPage('home', document.querySelector('.nav-item'));
         loadGarages();
         loadRewards();
+        // 如果這個登入者是廠長，自動顯示接單後台
         if(data.role === 'garage') loadAdminOrders();
       } else {
         switchPage('register', null);
@@ -117,7 +123,7 @@
         name: document.getElementById('reg-name').value, phone: document.getElementById('reg-phone').value,
         license_plate: document.getElementById('reg-car').value, yearly_mileage: document.getElementById('reg-mileage').value
       }]);
-      if(!error) location.reload(); else alert("註冊失敗");
+      if(!error) location.reload(); else alert("註冊失敗，請確認資料填寫完整。");
     }
 
     async function scanFilter() {
@@ -140,17 +146,25 @@
     async function loadGarages() {
       const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
       let html = '';
-      data.forEach(g => {
-        html += `<div class="card"><h4 style="margin-top:0;">${g.name}</h4><p style="font-size:14px; color:#888;">📍 ${g.address}</p><p style="color:#00D100; font-weight:bold;">⚙️ 代工費: NT$ ${g.labor_fee}</p><input type="datetime-local" id="date-${g.id}"><button class="btn-main" onclick="book(${g.id})">送出預約</button></div>`;
-      });
-      document.getElementById('garage-list').innerHTML = html;
+      if(data) {
+        data.forEach(g => {
+          html += `<div class="card"><h4 style="margin-top:0;">${g.name}</h4><p style="font-size:14px; color:#888;">📍 ${g.address}</p><p style="color:#00D100; font-weight:bold;">⚙️ 代工費: NT$ ${g.labor_fee}</p><input type="datetime-local" id="date-${g.id}"><button class="btn-main" onclick="book(${g.id})">送出預約</button></div>`;
+        });
+      }
+      document.getElementById('garage-list').innerHTML = html || '<p>目前尚無可用的加盟店。</p>';
     }
 
     async function book(garageId) {
       const time = document.getElementById('date-'+garageId).value;
-      if(!time) return alert("請選擇時間");
-      await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: garageId, appointment_time: new Date(time) }]);
-      alert("預約成功！廠長將會確認您的訂單。");
+      if(!time) return alert("請選擇預約時間");
+      
+      const { error } = await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: garageId, appointment_time: new Date(time) }]);
+      
+      if (error) {
+        alert("預約失敗，請確認資料庫權限是否開啟。\n錯誤代碼：" + error.message);
+      } else {
+        alert("🎉 預約成功！廠長將會確認您的訂單。");
+      }
     }
 
     async function loadAdminOrders() {
@@ -159,7 +173,11 @@
       if(!garage.data) return;
       const { data } = await supabaseClient.from('appointments').select('*, users(name, license_plate)').eq('garage_id', garage.data.id).order('appointment_time', { ascending: true });
       let html = '';
-      data.forEach(o => { html += `<div style="border-bottom:1px solid #444; padding:15px 0;"><p style="margin:0 0 5px 0; color:#fff;">🕒 ${new Date(o.appointment_time).toLocaleString('zh-TW')}</p><p style="margin:0 0 10px 0; color:#888;">👤 ${o.users.name} (${o.users.license_plate})</p><button class="btn-main" style="padding:10px; font-size:14px;" onclick="updateOrder(${o.id}, 'completed')">完工並核銷</button></div>`; });
+      if(data) {
+        data.forEach(o => { 
+          html += `<div style="border-bottom:1px solid #444; padding:15px 0;"><p style="margin:0 0 5px 0; color:#fff;">🕒 ${new Date(o.appointment_time).toLocaleString('zh-TW')}</p><p style="margin:0 0 10px 0; color:#888;">👤 ${o.users.name} (${o.users.license_plate})</p><button class="btn-main" style="padding:10px; font-size:14px;" onclick="updateOrder(${o.id}, 'completed')">完工並核銷</button></div>`; 
+        });
+      }
       if(html === '') html = '<p style="color:#888;">目前無待處理訂單。</p>';
       document.getElementById('admin-orders').innerHTML = html;
     }
@@ -170,7 +188,7 @@
     }
 
     function generateMGM() {
-      const link = `https://liff.line.me/你的_LIFF_ID?ref=${currentUser.line_uid}`;
+      const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
       alert(`請複製傳給好友：\n${link}\n\n(好友結帳可輸入 HYPASS2026 享首購優惠)`);
     }
 
