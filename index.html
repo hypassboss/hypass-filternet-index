@@ -42,6 +42,11 @@
     .nav-item { color: #666; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 20%; }
     .nav-icon { font-size: 22px; margin-bottom: 3px; }
     .nav-item.active { color: #00D100; }
+    
+    /* 預約頁籤 */
+    .tab-btn { padding: 12px; margin: 0; font-size: 14px; flex: 1; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid #333; }
+    .tab-btn.active { background: linear-gradient(135deg, #00D100 0%, #009900 100%); color: #000; border-color: #00D100; box-shadow: 0 4px 10px rgba(0, 209, 0, 0.2); }
+    .tab-btn.inactive { background: #1e1e1e; color: #888; }
   </style>
 </head>
 <body>
@@ -84,17 +89,19 @@
       </div>
     </div>
 
-    <h4 style="margin: 0 0 10px 5px; color:#aaa; font-size: 13px;">即時空氣品質 (近7日趨勢)</h4>
+    <h4 style="margin: 0 0 10px 5px; color:#aaa; font-size: 13px;">空氣品質</h4>
     <div class="grid-2 mb-15">
       <div class="aqi-box">
-        <div style="font-size:11px; color:#888;">📍 所在地 (偵測中)</div>
+        <div style="font-size:11px; color:#888;">📍 所在地 (即時)</div>
+        <div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-gps-location">定位取得中...</div>
         <div class="aqi-val" id="ui-aqi-local">45</div>
-        <div style="font-size:10px; color:#00D100;">🟢 良好 (穩定)</div>
+        <div style="font-size:10px; color:#00D100;">🟢 良好</div>
       </div>
       <div class="aqi-box">
-        <div style="font-size:11px; color:#888;">🏠 居住地 (<span id="ui-home-city"></span>)</div>
+        <div style="font-size:11px; color:#888;">🏠 居住地 (近7日)</div>
+        <div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-home-city">讀取中...</div>
         <div class="aqi-val" style="color:#FF9800;" id="ui-aqi-home">68</div>
-        <div style="font-size:10px; color:#FF9800;">🟡 普通 (微升)</div>
+        <div style="font-size:10px; color:#FF9800;">🟡 普通</div>
       </div>
     </div>
 
@@ -125,7 +132,25 @@
 
   <div id="page-book" class="page">
     <h3 style="color:#00D100;">📍 預約安裝</h3>
-    <div id="garage-list">讀取中...</div>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+      <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
+      <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 手動選取清單</div>
+    </div>
+
+    <div id="booking-smart" style="display: block;">
+      <div class="card" style="text-align:center; border-color:#00D100;">
+        <h4 style="color:#00D100; margin-top:0;">為您配對最近的旗艦保修廠</h4>
+        <p style="font-size:13px; color:#888;">系統將依據您的所在地與車種，推薦最適合的專業技師。</p>
+        <div id="smart-match-result" style="margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px solid #333;">
+          分析定位與車型中...
+        </div>
+      </div>
+    </div>
+
+    <div id="booking-manual" style="display: none;">
+      <div id="garage-list">讀取中...</div>
+    </div>
   </div>
 
   <div id="page-rewards" class="page">
@@ -186,21 +211,34 @@
         switchPage('home', document.querySelector('.nav-item'));
         
         if(data.role === 'customer') {
-           // 渲染儀表板資料
            document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
            document.getElementById('ui-car-info').innerText = `${data.car_model} | ${data.license_plate}`;
            document.getElementById('ui-home-city').innerText = data.city;
            document.getElementById('set-plate').innerText = data.license_plate;
            
+           getGPSLocation();
            calculateDashboardStats();
            loadGarages();
            loadRewards();
+           doSmartMatch(); // 初始化智能配對
         } else if (data.role === 'garage') {
            document.getElementById('b2b-panel').style.display = 'block';
            loadAdminOrders();
         }
       } else {
         switchPage('register', null);
+      }
+    }
+
+    // 取得即時 GPS 定位 (模擬)
+    function getGPSLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => { document.getElementById('ui-gps-location').innerText = "📍 GPS 已連線 (台灣區域)"; },
+          (error) => { document.getElementById('ui-gps-location').innerText = "未授權定位，以預設區域顯示"; }
+        );
+      } else {
+        document.getElementById('ui-gps-location').innerText = "裝置不支援定位";
       }
     }
 
@@ -214,8 +252,7 @@
         const actDate = new Date(filter.activated_at);
         const daysActive = Math.max(0, Math.floor((new Date() - actDate) / (1000 * 60 * 60 * 24)));
         
-        // 演算法推估值 (天數 * 權重)
-        let health = Math.max(0, 100 - (daysActive * 0.27)); // 約一年歸零
+        let health = Math.max(0, 100 - (daysActive * 0.27)); 
         let pm25 = daysActive * 1250; 
         let co2 = (daysActive * 0.15).toFixed(1);
         let kwh = (daysActive * 0.3).toFixed(1);
@@ -267,7 +304,38 @@
         if(check.data.length === 0) await supabaseClient.from('rewards').insert([{ user_uid: currentUser.referrer_uid, type: 'earn', amount: 50, source_uid: currentUser.line_uid }]);
       }
       alert("🎉 啟用成功！開始保護您的座艙空氣品質。");
-      calculateDashboardStats(); // 重新計算
+      calculateDashboardStats(); 
+    }
+
+    // --- 預約頁面：雙動線邏輯 ---
+    function switchBookingTab(tab) {
+      if(tab === 'smart') {
+        document.getElementById('booking-smart').style.display = 'block';
+        document.getElementById('booking-manual').style.display = 'none';
+        document.getElementById('tab-btn-smart').className = 'tab-btn active';
+        document.getElementById('tab-btn-manual').className = 'tab-btn inactive';
+      } else {
+        document.getElementById('booking-smart').style.display = 'none';
+        document.getElementById('booking-manual').style.display = 'block';
+        document.getElementById('tab-btn-smart').className = 'tab-btn inactive';
+        document.getElementById('tab-btn-manual').className = 'tab-btn active';
+      }
+    }
+
+    async function doSmartMatch() {
+      // 隨機或抓取距離最近的店家作示範 (此處直接撈取第一家活躍保修廠)
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').limit(1);
+      if(data && data.length > 0) {
+        const g = data[0];
+        document.getElementById('smart-match-result').innerHTML = `
+          <h4 style="margin:0 0 5px 0; color:#fff;">✨ 首選推薦：${g.name}</h4>
+          <p style="font-size:12px; color:#aaa; margin:0 0 10px 0;">📍 ${g.city} | 代工費 $${g.labor_fee} | 評價 4.9 ⭐️</p>
+          <input type="datetime-local" id="date-smart-${g.id}" style="margin-bottom:10px; background:#1e1e1e;">
+          <button class="btn-main" style="margin:0; padding:12px;" onclick="book(${g.id}, 'smart')">一鍵智慧預約</button>
+        `;
+      } else {
+        document.getElementById('smart-match-result').innerHTML = '<p style="color:#FF9800;">目前附近尚無可用加盟店。</p>';
+      }
     }
 
     async function loadGarages() {
@@ -277,13 +345,15 @@
       document.getElementById('garage-list').innerHTML = html || '<p>目前尚無可用的加盟店。</p>';
     }
 
-    async function book(garageId) {
-      const time = document.getElementById('date-'+garageId).value;
+    async function book(garageId, prefix = '') {
+      const inputId = prefix ? `date-${prefix}-${garageId}` : `date-${garageId}`;
+      const time = document.getElementById(inputId).value;
       if(!time) return alert("請選擇預約時間");
       const { error } = await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: garageId, appointment_time: new Date(time) }]);
       if(!error) alert("🎉 預約成功！廠長將會確認您的訂單。"); else alert("預約失敗");
     }
 
+    // --- 廠長接單與獎勵邏輯 ---
     async function loadAdminOrders() {
       const garage = await supabaseClient.from('garages').select('id, status').eq('owner_uid', currentUser.line_uid).single();
       if(!garage.data) return;
@@ -300,7 +370,17 @@
 
     function generateMGM() {
       const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
-      alert(`請複製傳給好友：\n${link}`);
+      
+      // 使用瀏覽器原生功能複製到剪貼簿
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link).then(() => {
+          alert(`✅ 專屬連結已成功複製！\n請直接貼上傳給好友：\n${link}\n\n(好友結帳可輸入 AIRPLUS2026 享首購優惠)`);
+        }).catch(() => {
+          alert(`請手動複製以下連結傳給好友：\n${link}`);
+        });
+      } else {
+        alert(`請手動複製以下連結傳給好友：\n${link}`);
+      }
     }
 
     async function loadRewards() {
