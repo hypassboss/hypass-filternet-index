@@ -216,11 +216,11 @@
            document.getElementById('ui-home-city').innerText = data.city;
            document.getElementById('set-plate').innerText = data.license_plate;
            
-           getGPSLocation();
+           getGPSLocation(); // 執行最新精準定位解析
            calculateDashboardStats();
            loadGarages();
            loadRewards();
-           doSmartMatch(); // 初始化智能配對
+           doSmartMatch();
         } else if (data.role === 'garage') {
            document.getElementById('b2b-panel').style.display = 'block';
            loadAdminOrders();
@@ -230,25 +230,47 @@
       }
     }
 
-    // 取得即時 GPS 定位 (模擬)
+    // --- 全新解析演算法：透過免費 API 將經緯度轉換為「縣市、區域」 ---
     function getGPSLocation() {
+      const locElement = document.getElementById('ui-gps-location');
       if (navigator.geolocation) {
+        locElement.innerText = "📍 取得定位中...";
         navigator.geolocation.getCurrentPosition(
-          (position) => { document.getElementById('ui-gps-location').innerText = "📍 GPS 已連線 (台灣區域)"; },
-          (error) => { document.getElementById('ui-gps-location').innerText = "未授權定位，以預設區域顯示"; }
+          async (position) => {
+            try {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+              // 呼叫開源逆地理編碼 API (OSM Nominatim)
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=zh-TW`);
+              const data = await res.json();
+              if (data && data.address) {
+                // 優先抓取縣市與鄉鎮市區資料
+                const city = data.address.city || data.address.county || "台灣";
+                const district = data.address.suburb || data.address.town || data.address.village || data.address.borough || "";
+                
+                let locationString = `📍 ${city}`;
+                if (district) locationString += `、${district}`;
+                locElement.innerText = locationString;
+                locElement.style.color = "#00D100";
+              } else {
+                locElement.innerText = "📍 GPS 已連線 (解析中)";
+              }
+            } catch (e) {
+              locElement.innerText = "📍 台灣定位區 (GPS已連線)";
+            }
+          },
+          (error) => { locElement.innerText = "⚠️ 未授權定位，以預設區域顯示"; locElement.style.color = "#FF9800"; }
         );
       } else {
-        document.getElementById('ui-gps-location').innerText = "裝置不支援定位";
+        locElement.innerText = "⚠️ 裝置不支援定位";
       }
     }
 
-    // 核心演算法：計算 PM2.5 與 ESG
     async function calculateDashboardStats() {
       const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
       
       if(filter && filter.activated_at) {
         document.getElementById('set-date').innerText = new Date(filter.activated_at).toLocaleDateString('zh-TW');
-        
         const actDate = new Date(filter.activated_at);
         const daysActive = Math.max(0, Math.floor((new Date() - actDate) / (1000 * 60 * 60 * 24)));
         
@@ -307,7 +329,6 @@
       calculateDashboardStats(); 
     }
 
-    // --- 預約頁面：雙動線邏輯 ---
     function switchBookingTab(tab) {
       if(tab === 'smart') {
         document.getElementById('booking-smart').style.display = 'block';
@@ -323,7 +344,6 @@
     }
 
     async function doSmartMatch() {
-      // 隨機或抓取距離最近的店家作示範 (此處直接撈取第一家活躍保修廠)
       const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').limit(1);
       if(data && data.length > 0) {
         const g = data[0];
@@ -353,7 +373,6 @@
       if(!error) alert("🎉 預約成功！廠長將會確認您的訂單。"); else alert("預約失敗");
     }
 
-    // --- 廠長接單與獎勵邏輯 ---
     async function loadAdminOrders() {
       const garage = await supabaseClient.from('garages').select('id, status').eq('owner_uid', currentUser.line_uid).single();
       if(!garage.data) return;
@@ -370,17 +389,11 @@
 
     function generateMGM() {
       const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
-      
-      // 使用瀏覽器原生功能複製到剪貼簿
       if (navigator.clipboard) {
         navigator.clipboard.writeText(link).then(() => {
-          alert(`✅ 專屬連結已成功複製！\n請直接貼上傳給好友：\n${link}\n\n(好友結帳可輸入 AIRPLUS2026 享首購優惠)`);
-        }).catch(() => {
-          alert(`請手動複製以下連結傳給好友：\n${link}`);
-        });
-      } else {
-        alert(`請手動複製以下連結傳給好友：\n${link}`);
-      }
+          alert(`✅ 專屬連結已成功複製到剪貼簿！\n請直接貼上傳給好友即可。\n\n(好友結帳可輸入 AIRPLUS2026 享首購優惠)`);
+        }).catch(() => { alert(`請手動複製以下連結傳給好友：\n${link}`); });
+      } else { alert(`請手動複製以下連結傳給好友：\n${link}`); }
     }
 
     async function loadRewards() {
