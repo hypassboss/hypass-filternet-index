@@ -13,19 +13,14 @@
     .main-content { flex: 1; padding: 30px; overflow-y: auto; }
     .panel { display: none; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .panel.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
     th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     th { background: #f8f9fa; color: #555; }
-    .btn { background: #00D100; color: #000; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight:bold; }
-    .btn-danger { background: #ff4444; color: #fff; }
-    
-    /* 出貨站專屬樣式 */
-    .scan-box { background: #1e1e1e; color: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #00D100; }
-    .scan-input { width: 100%; padding: 15px; font-size: 18px; border-radius: 5px; border: 2px solid #555; background: #000; color: #00D100; font-weight: bold; margin-bottom: 10px; }
-    .scan-input:focus { border-color: #00D100; outline: none; }
-    .success-msg { color: #00D100; font-weight: bold; padding: 10px 0; border-bottom: 1px dashed #333; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background:#e0e0e0; color:#333; }
+    .badge.aqi { background: #ffebee; color: #d32f2f; }
+    .badge.weather { background: #e3f2fd; color: #1976d2; }
+    .badge.health { background: #e8f5e9; color: #388e3c; }
   </style>
 </head>
 <body>
@@ -33,125 +28,57 @@
   <div class="sidebar">
     <h2 style="color:#00D100; padding: 0 20px; border:none;">HYPASS ADMIN</h2>
     <button class="nav-btn active" onclick="switchTab('esg', this)">🌍 ESG 戰情室</button>
+    <button class="nav-btn" onclick="switchTab('push', this)">💬 智慧推播引擎</button>
     <button class="nav-btn" onclick="switchTab('dispatch', this)">📦 掃描出貨站</button>
-    <button class="nav-btn" onclick="switchTab('uid', this)">🏷️ UID 防偽庫存</button>
     <button class="nav-btn" onclick="switchTab('crm', this)">👥 CRM 客戶管理</button>
-    <button class="nav-btn" onclick="switchTab('garage', this)">👨‍🔧 保修廠審核</button>
   </div>
 
   <div class="main-content">
     
-    <div id="panel-esg" class="panel active">
-      <h2>🌍 HYPASS 綠能貢獻總覽</h2>
-      <p>戰情室數據載入中...</p>
+    <div id="panel-esg" class="panel active"><h2>🌍 HYPASS 綠能貢獻總覽</h2><p>載入中...</p></div>
+
+    <div id="panel-push" class="panel">
+      <h2>💬 AI 智慧推播引擎 (動態情境庫)</h2>
+      <p style="color:#666;">系統將於每日背景自動掃描全台車主狀態與氣象連線，若符合以下條件將自動發送 LINE 通知。</p>
+      <table id="push-table">
+        <thead><tr><th>類別</th><th>情境規則名稱</th><th>觸發邏輯條件</th><th>自動推播文案內容</th><th>狀態</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <div id="panel-dispatch" class="panel">
-      <h2>📦 B2C 掃描出貨工作站</h2>
-      <p style="color:#666;">支援掃描槍。請先掃描/輸入客人手機號碼鎖定訂單，接著連續掃描濾網 UID 進行綁定。</p>
-      
-      <div class="scan-box">
-        <label style="color:#aaa; font-size:14px;">第 1 步：定位訂單 (請輸入車主手機號碼並按 Enter)</label>
-        <input type="text" id="scan-phone" class="scan-input" placeholder="例如：0912345678" onkeypress="handlePhoneScan(event)">
-        <div id="dispatch-user-info" style="color:#FF9800; font-size:18px; margin-bottom: 10px; min-height: 25px;"></div>
-
-        <label style="color:#aaa; font-size:14px;">第 2 步：綁定商品 (請用掃描槍連續掃描濾網 QR Code)</label>
-        <input type="text" id="scan-uid" class="scan-input" placeholder="等待掃描 UID..." onkeypress="handleUidScan(event)" disabled>
-      </div>
-
-      <div style="background:#f9f9f9; padding:15px; border-radius:8px;">
-        <h4 style="margin-top:0;">本次出貨綁定紀錄：</h4>
-        <div id="dispatch-log" style="max-height: 200px; overflow-y:auto;"></div>
-      </div>
-    </div>
-
-    <div id="panel-uid" class="panel">
-      <h2>🏷️ 防偽 UID 生命週期管理</h2>
-      <button class="btn" onclick="generateUIDs(5)">+ 批次生產 5 組新 UID</button>
-      <table id="uid-table"><thead><tr><th>UID 碼</th><th>狀態</th><th>擁有者/啟用類型</th><th>操作時間</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div id="panel-crm" class="panel"><h2>👥 CRM 客戶管理</h2><table id="crm-table"><thead><tr><th>姓名</th><th>電話</th><th>車牌</th></tr></thead><tbody></tbody></table></div>
-    <div id="panel-garage" class="panel"><h2>👨‍🔧 保修廠審核</h2><table id="garage-table"><thead><tr><th>店名</th><th>狀態</th></tr></thead><tbody></tbody></table></div>
+    <div id="panel-dispatch" class="panel"><h2>📦 B2C 掃描出貨工作站</h2></div>
+    <div id="panel-crm" class="panel"><h2>👥 CRM 客戶管理</h2></div>
 
   </div>
 
   <script>
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
-    
-    // 出貨站全域變數
-    let currentDispatchUser = null;
 
     function switchTab(id, btn) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('panel-'+id).classList.add('active');
       btn.classList.add('active');
-      if(id === 'uid') loadUIDs();
+      if(id === 'push') loadPushRules();
     }
 
-    // --- 📦 出貨站掃描邏輯 ---
-    async function handlePhoneScan(e) {
-      if (e.key === 'Enter') {
-        const phone = document.getElementById('scan-phone').value.trim();
-        if(!phone) return;
-        
-        document.getElementById('dispatch-user-info').innerText = "搜尋車主中...";
-        const { data, error } = await supabaseClient.from('users').select('*').eq('phone', phone).single();
-        
-        if(data) {
-          currentDispatchUser = data;
-          document.getElementById('dispatch-user-info').innerText = `✅ 目前出貨對象：${data.name} (${data.car_brand} ${data.car_model})`;
-          document.getElementById('scan-uid').disabled = false;
-          document.getElementById('scan-uid').focus(); // 自動跳到 UID 框準備逼逼
-        } else {
-          currentDispatchUser = null;
-          document.getElementById('dispatch-user-info').innerText = "❌ 找不到該手機號碼的車主，請確認是否已註冊 App。";
-          document.getElementById('scan-uid').disabled = true;
-        }
-      }
-    }
-
-    async function handleUidScan(e) {
-      if (e.key === 'Enter') {
-        const uid = document.getElementById('scan-uid').value.trim();
-        document.getElementById('scan-uid').value = ''; // 清空準備掃下一個
-        
-        if(!uid || !currentDispatchUser) return;
-
-        // 綁定 UID 到該車主，狀態改為 Sold
-        const { error } = await supabaseClient.from('filters_uid')
-          .update({ status: 'sold', activated_by_uid: currentDispatchUser.line_uid })
-          .eq('uid', uid);
-
-        const logDiv = document.getElementById('dispatch-log');
-        if(!error) {
-          logDiv.innerHTML = `<div class="success-msg">✔️ ${uid} 已成功綁定給 ${currentDispatchUser.name}</div>` + logDiv.innerHTML;
-          // 順便寫入一筆歷史紀錄給客人看
-          await supabaseClient.from('user_logs').insert([{ user_uid: currentDispatchUser.line_uid, action: '🛒 商城出貨', details: `總部已出貨濾網：${uid}` }]);
-        } else {
-          logDiv.innerHTML = `<div style="color:red; padding:5px 0;">❌ ${uid} 綁定失敗：${error.message}</div>` + logDiv.innerHTML;
-        }
-      }
-    }
-
-    // --- UID 庫存 ---
-    function makeId(length) { let r = ''; const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; for(let i=0; i<length; i++) r += c.charAt(Math.floor(Math.random() * c.length)); return r; }
-    async function generateUIDs(count) {
-      let ins = []; for(let i=0; i<count; i++) ins.push({ uid: 'HP-' + makeId(8) });
-      await supabaseClient.from('filters_uid').insert(ins); alert('生產完成'); loadUIDs();
-    }
-    async function loadUIDs() {
-      const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('created_at', { ascending: false }).limit(50);
+    async function loadPushRules() {
+      const { data } = await supabaseClient.from('notification_rules').select('*').order('id', { ascending: true });
       let html = '';
-      if(data) data.forEach(d => {
-        let status = d.status === 'produced' ? '🏷️ 庫存中' : d.status === 'sold' ? '🚚 已出貨未安裝' : d.status === 'activated' ? '🟢 服役中' : '🗑️ 已淘汰';
-        let owner = d.users ? d.users.name : '-';
-        html += `<tr><td><b>${d.uid}</b></td><td>${status}</td><td>${owner}</td><td>${new Date(d.created_at).toLocaleString()}</td></tr>`;
-      });
-      document.getElementById('uid-table').querySelector('tbody').innerHTML = html;
+      if(data) {
+        data.forEach(r => {
+          let badgeCls = r.category.toLowerCase();
+          html += `<tr>
+            <td><span class="badge ${badgeCls}">${r.category}</span></td>
+            <td style="font-weight:bold;">${r.rule_name}</td>
+            <td style="font-family:monospace; color:#888;">${r.trigger_condition}</td>
+            <td>${r.message_template}</td>
+            <td><span style="color:green;">● 啟用中</span></td>
+          </tr>`;
+        });
+      }
+      document.getElementById('push-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="5">讀取中...</td></tr>';
     }
-
   </script>
 </body>
 </html>
