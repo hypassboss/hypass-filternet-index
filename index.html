@@ -7,170 +7,197 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background-color: #121212; color: #ffffff; padding-bottom: 80px; }
-    .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
-    .page.active { display: block; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #121212; color: #fff; padding-bottom: 80px; }
+    .page { display: none; padding: 20px; }
+    .page.active { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px 0; }
-    #user-info { color: #888; font-size: 14px; margin: 0; }
-    .car-badge { background: #1e1e1e; padding: 5px 15px; border-radius: 20px; font-size: 12px; color: #00D100; border: 1px solid #333; }
-    .dashboard-ring { background: #1e1e1e; border-radius: 20px; padding: 40px 20px; text-align: center; border: 1px solid #2a2a2a; }
-    .ring-circle { width: 180px; height: 180px; border-radius: 50%; border: 4px dashed #00D100; margin: 0 auto 20px auto; display: flex; flex-direction: column; justify-content: center; }
-    #health-score { font-size: 56px; font-weight: bold; color: #00D100; margin: 0; line-height: 1; }
-    .btn-main { background: #00D100; color: #000; border: none; padding: 15px 20px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; }
-    .data-card { background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
-    .datetime-picker { width: 100%; box-sizing: border-box; padding: 12px; margin-bottom: 15px; background: #000; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 16px; }
-    .status-badge { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
-    .status-pending { background: #FF9800; color: #fff; }
-    .status-confirmed { background: #03A9F4; color: #fff; }
-    .status-completed { background: #00D100; color: #000; }
-    .btn-action { background: #333; color: #fff; border: 1px solid #555; padding: 10px; border-radius: 5px; width: 48%; cursor: pointer; }
-    .btn-action.primary { background: #00D100; color: #000; border: none; }
-    .bottom-nav { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(30, 30, 30, 0.95); border-radius: 20px; display: flex; justify-content: space-around; padding: 15px 0; border: 1px solid #333; z-index: 1000; }
-    .nav-item { color: #666; font-size: 24px; text-decoration: none; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-    .nav-item.active { color: #00D100; }
-    .nav-label { font-size: 10px; margin-top: 4px; font-weight: bold; }
+    .btn-main { background: #00D100; color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-bottom: 10px; }
+    input, select { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; color: #fff; border: 1px solid #444; border-radius: 8px; box-sizing: border-box; }
+    .card { background: #1e1e1e; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
+    .tech-tag { display: inline-block; background: #2a2a2a; color: #aaa; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin: 2px; }
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #1e1e1e; display: flex; justify-content: space-around; padding: 15px 0; }
+    .nav-item { color: #666; font-size: 14px; cursor: pointer; }
+    .nav-item.active { color: #00D100; font-weight: bold; }
   </style>
 </head>
 <body>
-  <div id="page-home" class="page active">
-    <div class="header"><p id="user-info">連線中...</p><div class="car-badge">● 已連線</div></div>
-    <div class="dashboard-ring">
-      <div class="ring-circle"><div id="health-score">100%</div><div style="color: #888; font-size: 14px; margin-top: 5px;">座艙防護力</div></div>
-      <p style="color:#00D100; font-weight:bold; margin-bottom: 0;">極淨・防禦中</p>
+
+  <div id="page-register" class="page">
+    <h2 style="color:#00D100;">首次登入授權</h2>
+    <p style="font-size:12px; color:#888;">* 系統收集之資料僅供保固使用。濾網壽命為演算法估算，本公司不負絕對數值保證。</p>
+    <button class="btn-main" onclick="showForm('customer')">我是濾網客人 (車主)</button>
+    <button class="btn-main" style="background:#333; color:#fff;" onclick="showForm('garage')">我是保修廠 (加盟夥伴)</button>
+
+    <div id="form-customer" style="display:none; margin-top:20px;">
+      <input type="text" id="reg-name" placeholder="姓名">
+      <input type="tel" id="reg-phone" placeholder="手機號碼">
+      <input type="text" id="reg-car" placeholder="車牌號碼 (例: ABC-1234)">
+      <select id="reg-mileage">
+        <option value="10000">年里程: 10,000 公里</option>
+        <option value="20000">年里程: 20,000 公里</option>
+      </select>
+      <button class="btn-main" onclick="registerUser('customer')">同意條款並註冊</button>
     </div>
-    <button class="btn-main" onclick="scanUID()">📷 掃描啟用新濾網</button>
   </div>
 
-  <div id="page-shop" class="page"><h2 style="color:#00D100;">官方商城</h2><p style="color:#888;">Shopline 串接準備中...</p></div>
+  <div id="page-home" class="page active">
+    <h3>HYPASS 智能座艙</h3>
+    <div class="card" style="text-align:center; border-color:#00D100;">
+      <h1 id="health-score" style="color:#00D100; font-size:48px; margin:0 0 10px 0;">100%</h1>
+      <p style="color:#00D100; font-weight:bold; margin: 0 0 10px 0; font-size: 16px;">Hypass 台灣製汽車冷氣濾網 防護中</p>
+      <div>
+        <span class="tech-tag">最新靜電纖維技術</span>
+        <span class="tech-tag">熔噴超細纖維濾材</span>
+        <span class="tech-tag">椰殼除臭活性碳</span>
+      </div>
+    </div>
+    <button class="btn-main" onclick="scanFilter()">📷 掃描啟用新濾網</button>
+    <button class="btn-main" style="background:#333; color:#fff;" onclick="generateMGM()">🔗 產生推薦連結賺點數</button>
+  </div>
 
   <div id="page-book" class="page">
-    <h2 style="color:#00D100;">📍 預約安裝</h2>
-    <div id="garage-list"><p style="color:#888;">資料載入中...</p></div>
+    <h3>📍 預約安裝</h3>
+    <div id="garage-list">讀取中...</div>
   </div>
 
   <div id="page-settings" class="page">
-    <h2 style="color:#00D100;">⚙️ 我的帳號</h2>
-    <div id="b2c-settings">
-      <button class="btn-main" style="background:#333; color:#fff;" onclick="toggleAdminMode()">切換至「廠長接單後台」測試</button>
+    <h3>⚙️ 我的帳號</h3>
+    <p>LINE UID: <span id="uid-display" style="font-size:12px;color:#888;"></span></p>
+    
+    <div id="b2c-rewards" class="card">
+      <h4 style="margin:0;">我的獎勵金：<span id="reward-balance" style="color:#00D100;">$0</span></h4>
+      <button class="btn-main" style="margin-top:10px;" onclick="redeemPoints()">申請兌換 LINE Points</button>
     </div>
-    <div id="b2b-admin-panel" style="display: none;">
-      <h3 style="color:#FF9800;">👨‍🔧 廠長接單看板</h3>
-      <div id="admin-order-list"><p style="color:#888;">讀取訂單中...</p></div>
-      <button class="btn-main" style="background:#333; color:#fff; margin-top:20px;" onclick="toggleAdminMode()">退出廠長模式</button>
+
+    <div id="b2b-panel" class="card" style="display:none; border-color:#FF9800;">
+      <h4 style="color:#FF9800;">👨‍🔧 廠長接單看板</h4>
+      <div id="admin-orders"></div>
     </div>
   </div>
 
-  <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchPage('home', this)"><span>◓</span><span class="nav-label">座艙</span></div>
-    <div class="nav-item" onclick="switchPage('shop', this)"><span>🛒</span><span class="nav-label">商城</span></div>
-    <div class="nav-item" onclick="switchPage('book', this)"><span>📍</span><span class="nav-label">預約</span></div>
-    <div class="nav-item" onclick="switchPage('settings', this)"><span>⚙️</span><span class="nav-label">設定</span></div>
+  <div class="bottom-nav" id="nav-bar" style="display:none;">
+    <div class="nav-item active" onclick="switchPage('home', this)">首頁</div>
+    <div class="nav-item" onclick="switchPage('book', this)">預約</div>
+    <div class="nav-item" onclick="switchPage('settings', this)">設定</div>
   </div>
 
   <script>
-    const supabaseUrl = 'https://qznvabjtxcbffjryfgqi.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-    let currentUserId = null;
+    const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
+    let currentUser = null;
+    let referrerId = new URLSearchParams(window.location.search).get('ref');
 
     async function initApp() {
-      try {
-        await liff.init({ liffId: "2009187567-58hBrZRj" }); 
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          currentUserId = profile.userId;
-          document.getElementById('user-info').innerText = profile.displayName + ' 的座艙';
-          
-          // 嘗試更新 user 資料 (就算失敗也不影響預約)
-          await supabaseClient.from('users').upsert({ line_uid: currentUserId, name: profile.displayName });
-          loadGarages();
-        } else {
-          liff.login();
-        }
-      } catch (err) {
-        document.getElementById('user-info').innerText = '請在 LINE 內開啟';
+      await liff.init({ liffId: "009187567-58hBrZRj" });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      
+      const profile = await liff.getProfile();
+      document.getElementById('uid-display').innerText = profile.userId;
+      
+      const { data } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).single();
+      if (data) {
+        currentUser = data;
+        document.getElementById('nav-bar').style.display = 'flex';
+        switchPage('home', document.querySelector('.nav-item'));
+        loadGarages();
+        loadRewards();
+        if(data.role === 'garage') loadAdminOrders();
+      } else {
+        switchPage('register', null);
       }
     }
 
-    function switchPage(pageId, element) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.getElementById('page-' + pageId).classList.add('active');
-      element.classList.add('active');
+    function showForm(role) {
+      document.getElementById('form-customer').style.display = 'block';
+    }
+
+    async function registerUser(role) {
+      const uid = (await liff.getProfile()).userId;
+      const { error } = await supabaseClient.from('users').insert([{
+        line_uid: uid, role: role, referrer_uid: referrerId,
+        name: document.getElementById('reg-name').value, phone: document.getElementById('reg-phone').value,
+        license_plate: document.getElementById('reg-car').value, yearly_mileage: document.getElementById('reg-mileage').value
+      }]);
+      if(!error) location.reload(); else alert("註冊失敗");
+    }
+
+    async function scanFilter() {
+      const res = await liff.scanCodeV2();
+      if (!res.value) return;
+      const { data } = await supabaseClient.from('filters_uid').select('*').eq('uid', res.value).single();
+      if (!data || data.status === 'activated') return alert("無效或已啟用的濾網！");
+      
+      await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date() }).eq('uid', res.value);
+      
+      if (currentUser.referrer_uid) {
+        const check = await supabaseClient.from('rewards').select('*').eq('source_uid', currentUser.line_uid);
+        if(check.data.length === 0) {
+          await supabaseClient.from('rewards').insert([{ user_uid: currentUser.referrer_uid, type: 'earn', amount: 50, source_uid: currentUser.line_uid }]);
+        }
+      }
+      alert("🎉 啟用成功！開始保護您的座艙空氣品質。");
     }
 
     async function loadGarages() {
-      const { data, error } = await supabaseClient.from('garages').select('*');
-      if (error || !data) return;
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
       let html = '';
       data.forEach(g => {
-        html += `<div class="data-card"><h3 style="margin:0; color:#fff;">${g.name}</h3><p style="color:#888;">📍 ${g.address}</p><p style="color:#00D100;">⚙️ 代工費：NT$ ${g.labor_fee}</p><input type="datetime-local" id="date-${g.id}" class="datetime-picker" /><button class="btn-main" onclick="submitBooking(${g.id}, '${g.name}')">送出預約單</button></div>`;
+        html += `<div class="card"><h4 style="margin-top:0;">${g.name}</h4><p style="font-size:14px; color:#888;">📍 ${g.address}</p><p style="color:#00D100; font-weight:bold;">⚙️ 代工費: NT$ ${g.labor_fee}</p><input type="datetime-local" id="date-${g.id}"><button class="btn-main" onclick="book(${g.id})">送出預約</button></div>`;
       });
       document.getElementById('garage-list').innerHTML = html;
     }
 
-    async function submitBooking(garageId, garageName) {
-      const dateInput = document.getElementById('date-' + garageId).value;
-      if (!dateInput) return alert('請先選擇時間！');
-      
-      // 送出資料到資料庫
-      const { data, error } = await supabaseClient.from('appointments').insert([
-        { user_id: currentUserId, garage_id: garageId, appointment_time: new Date(dateInput).toISOString(), status: 'pending' }
-      ]);
-
-      if (error) {
-        // 這裡就是關鍵！如果出錯，把錯誤訊息完整顯示出來
-        alert('❌ 預約失敗！\n錯誤代碼：' + error.message + '\n細節：' + JSON.stringify(error));
-        console.error("Supabase 錯誤:", error);
-      } else {
-        alert('🎉 預約成功！');
-        document.getElementById('date-' + garageId).value = '';
-        if(document.getElementById('b2b-admin-panel').style.display === 'block') loadAdminOrders();
-      }
-    }
-
-    let isAdminMode = false;
-    function toggleAdminMode() {
-      isAdminMode = !isAdminMode;
-      document.getElementById('b2c-settings').style.display = isAdminMode ? 'none' : 'block';
-      document.getElementById('b2b-admin-panel').style.display = isAdminMode ? 'block' : 'none';
-      if(isAdminMode) loadAdminOrders();
+    async function book(garageId) {
+      const time = document.getElementById('date-'+garageId).value;
+      if(!time) return alert("請選擇時間");
+      await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: garageId, appointment_time: new Date(time) }]);
+      alert("預約成功！廠長將會確認您的訂單。");
     }
 
     async function loadAdminOrders() {
-      const { data, error } = await supabaseClient.from('appointments').select('*').order('created_at', { ascending: false });
-      if (error || !data || data.length === 0) {
-        document.getElementById('admin-order-list').innerHTML = '<p style="color:#888;">目前沒有訂單。</p>';
-        return;
-      }
+      document.getElementById('b2b-panel').style.display = 'block';
+      const garage = await supabaseClient.from('garages').select('id').eq('owner_uid', currentUser.line_uid).single();
+      if(!garage.data) return;
+      const { data } = await supabaseClient.from('appointments').select('*, users(name, license_plate)').eq('garage_id', garage.data.id).order('appointment_time', { ascending: true });
       let html = '';
-      data.forEach(order => {
-        const aptTime = new Date(order.appointment_time).toLocaleString('zh-TW');
-        html += `<div class="data-card"><p style="color:#fff;">🕒 ${aptTime}</p><p style="color:#888;">狀態: ${order.status}</p><div style="display:flex; justify-content:space-between; margin-top:10px;">
-          ${order.status === 'pending' ? `<button class="btn-action primary" onclick="updateOrderStatus(${order.id}, 'confirmed')">接單</button>` : ''}
-          ${order.status === 'confirmed' ? `<button class="btn-action primary" onclick="updateOrderStatus(${order.id}, 'completed')">完工</button>` : ''}
-        </div></div>`;
-      });
-      document.getElementById('admin-order-list').innerHTML = html;
+      data.forEach(o => { html += `<div style="border-bottom:1px solid #444; padding:15px 0;"><p style="margin:0 0 5px 0; color:#fff;">🕒 ${new Date(o.appointment_time).toLocaleString('zh-TW')}</p><p style="margin:0 0 10px 0; color:#888;">👤 ${o.users.name} (${o.users.license_plate})</p><button class="btn-main" style="padding:10px; font-size:14px;" onclick="updateOrder(${o.id}, 'completed')">完工並核銷</button></div>`; });
+      if(html === '') html = '<p style="color:#888;">目前無待處理訂單。</p>';
+      document.getElementById('admin-orders').innerHTML = html;
     }
 
-    async function updateOrderStatus(orderId, newStatus) {
-      const { error } = await supabaseClient.from('appointments').update({ status: newStatus }).eq('id', orderId);
-      if (!error) { alert('✅ 狀態已更新！'); loadAdminOrders(); }
+    async function updateOrder(id, status) {
+      await supabaseClient.from('appointments').update({ status: status }).eq('id', id);
+      alert("✅ 訂單狀態已更新"); loadAdminOrders();
     }
 
-    async function scanUID() {
-      if (!liff.scanCodeV2) return alert("請在 LINE 內操作");
-      const res = await liff.scanCodeV2();
-      if (!res.value) return;
-      const { data, error } = await supabaseClient.from('filters_uid').select('*').eq('uid', res.value).single();
-      if (error || !data) return alert("❌ 無效的 UID！");
-      if (data.status === 'activated') return alert("⚠️ 此濾網已啟用過。");
-      await supabaseClient.from('filters_uid').update({ status: 'activated' }).eq('uid', res.value);
-      alert("🎉 濾網已啟用！");
-      document.getElementById('health-score').innerText = '100%';
+    function generateMGM() {
+      const link = `https://liff.line.me/你的_LIFF_ID?ref=${currentUser.line_uid}`;
+      alert(`請複製傳給好友：\n${link}\n\n(好友結帳可輸入 HYPASS2026 享首購優惠)`);
+    }
+
+    async function loadRewards() {
+      const { data } = await supabaseClient.from('rewards').select('type, amount').eq('user_uid', currentUser.line_uid);
+      let total = 0;
+      if(data) data.forEach(r => { total += (r.type === 'earn' ? r.amount : -r.amount); });
+      document.getElementById('reward-balance').innerText = `$${total}`;
+    }
+
+    async function redeemPoints() {
+      const balText = document.getElementById('reward-balance').innerText.replace('$','');
+      if(parseInt(balText) < 100) return alert('獎勵金需滿 $100 才能申請兌換喔！');
+      if(!confirm('確定要申請兌換 LINE Points 嗎？')) return;
+      
+      const { error } = await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', amount: 100 }]);
+      if(!error) {
+        alert('✅ 申請已送出！客服將會盡快核發 LINE Points 給您。');
+        loadRewards();
+      }
+    }
+
+    function switchPage(id, el) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-'+id).classList.add('active');
+      if(el) el.classList.add('active');
     }
 
     initApp();
