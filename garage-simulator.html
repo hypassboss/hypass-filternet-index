@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>濾聯網 - 廠長接單模擬器 V2</title>
+  <title>濾聯網 - 廠長接單模擬器 V2.2</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: -apple-system, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 600px; margin: 0 auto; }
@@ -18,7 +18,7 @@
 </head>
 <body>
 
-  <h2>👨‍🔧 廠長接單模擬器 (含車主評鑑)</h2>
+  <h2>👨‍🔧 廠長接單模擬器 (V2.2 含車主評鑑)</h2>
   <label style="color:#888; font-size:14px;">請選擇您要模擬的保修廠：</label>
   <select id="garage-select" onchange="loadOrders()">
     <option value="">-- 讀取店家中 --</option>
@@ -70,7 +70,6 @@
       await supabaseClient.from('appointments').update({ status: newStatus }).eq('id', orderId); loadOrders(); 
     }
 
-    // 廠長完工並對車主進行評鑑 (V2 黑名單驅動引擎)
     async function completeAndRate(orderId, userUid, carModel, city, gId) {
       let uidCode = prompt("請輸入車主的新濾網 UID (模擬廠長掃碼，例: HP-12345678)：");
       if(!uidCode) return alert("必須輸入 UID 才能核銷！");
@@ -78,13 +77,8 @@
       let score = prompt("請為此車主評分 (1-5星)：\n(若低於3顆星，總部將審核是否列為黑名單)", "5");
       if(!score || score < 1 || score > 5) return alert("請輸入 1-5 之間的數字");
 
-      // 1. 更新訂單狀態與評分
       await supabaseClient.from('appointments').update({ status: 'completed', user_rating: parseInt(score) }).eq('id', orderId);
-      
-      // 2. 舊濾網淘汰
       await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', userUid).eq('status', 'activated');
-      
-      // 3. 綁定新濾網 (標記為 Garage 安裝)
       await supabaseClient.from('filters_uid').update({ 
         status: 'activated', activated_by_uid: userUid, activated_at: new Date(),
         activation_type: 'Garage', installed_garage_id: gId, installed_car_model: carModel, installed_location: city
