@@ -3,44 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>HYPASS Air+</title>
+  <title>HYPASS Air+ 智能座艙</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 0; background: #0a0a0c; color: #fff; padding-bottom: 90px; }
-    .page { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
+    .page { display: none; padding: 15px; animation: fadeIn 0.4s ease; }
     .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+    .card { background: #16181a; padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #2a2d32; }
     .btn-main { background: linear-gradient(135deg, #00D100 0%, #009900 100%); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; }
     input, select { width: 100%; padding: 14px; margin-bottom: 12px; background: #000; color: #fff; border: 1px solid #333; border-radius: 10px; box-sizing: border-box; }
-    .card { background: #16181a; padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #2a2d32; }
-    .tech-tag { display: inline-block; background: #222; color: #00D100; padding: 4px 8px; border-radius: 6px; font-size: 10px; margin: 2px 2px 0 0; border: 1px solid #005500; }
-    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #16181a; display: flex; justify-content: space-around; padding: 15px 0 25px 0; border-top: 1px solid #2a2d32; }
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(22, 24, 26, 0.95); display: flex; justify-content: space-around; padding: 12px 0 25px 0; border-top: 1px solid #2a2d32; z-index: 999; }
     .nav-item { color: #666; font-size: 11px; cursor: pointer; text-align: center; width: 20%; }
     .nav-item.active { color: #00D100; font-weight: bold; }
+    .tech-tag { display: inline-block; background: #222; color: #00D100; padding: 4px 8px; border-radius: 6px; font-size: 10px; margin: 2px 2px 0 0; border: 1px solid #005500; }
   </style>
 </head>
 <body>
 
   <div id="page-register" class="page">
     <h2 style="color:#00D100;">HYPASS 首次登入授權</h2>
-    <div class="card"><p style="font-size:12px; color:#aaa; margin:0;"><strong>【個資與免責聲明】</strong><br>本系統蒐集資料僅供保固預約使用。濾網壽命為演算法估算值。</p></div>
-    <button class="btn-main" onclick="showForm('customer')">A. 我是濾網客人 (車主)</button>
-    <button class="btn-main" style="background:#222; color:#fff;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
+    <button class="btn-main" onclick="showForm('customer')">我是濾網客人 (車主)</button>
+    <button class="btn-main" style="background:#222; color:#fff;" onclick="showForm('garage')">我是保修廠加盟夥伴</button>
 
     <div id="form-customer" style="display:none; margin-top:20px;">
       <input type="text" id="c-name" placeholder="* 姓名">
       <input type="tel" id="c-phone" placeholder="* 手機號碼">
-      <select id="c-city"><option value="">* 居住縣市</option><option value="台南市">台南市</option><option value="其他">其他</option></select>
-      <input type="text" id="c-model" placeholder="* 車款 (例：Tesla Model Y)">
+      <select id="c-city">
+        <option value="">* 居住縣市 (六都優先)</option>
+        <optgroup label="六大都會區">
+          <option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option>
+          <option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+        </optgroup>
+        <optgroup label="其他縣市">
+          <option value="基隆市">基隆市</option><option value="新竹縣">新竹縣</option><option value="新竹市">新竹市</option>
+          <option value="苗栗縣">苗栗縣</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option>
+          <option value="雲林縣">雲林縣</option><option value="嘉義縣">嘉義縣</option><option value="嘉義市">嘉義市</option>
+          <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option>
+          <option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+        </optgroup>
+      </select>
+      
+      <select id="c-brand" onchange="updateCarModels()">
+        <option value="">* 選擇品牌</option>
+        <option value="Tesla">Tesla (特斯拉)</option><option value="Toyota">Toyota (豐田)</option>
+        <option value="Lexus">Lexus (凌志)</option><option value="Benz">Mercedes-Benz (賓士)</option>
+        <option value="BMW">BMW (寶馬)</option><option value="Honda">Honda (本田)</option>
+        <option value="Other">其他品牌</option>
+      </select>
+      <select id="c-model"><option value="">* 請先選擇品牌</option></select>
       <input type="text" id="c-plate" placeholder="* 車牌號碼">
-      <select id="c-mileage"><option value="20000">* 年里程習慣: 2萬公里</option></select>
-      <button class="btn-main" onclick="submitRegister('customer')">完成車主註冊</button>
-    </div>
-    
-    <div id="form-garage" style="display:none; margin-top:20px;">
-      <input type="text" id="g-name" placeholder="* 保修廠名稱"><input type="text" id="g-address" placeholder="* 地址"><input type="tel" id="g-phone" placeholder="* 電話">
-      <button class="btn-main" onclick="submitRegister('garage')">送出加盟審核</button>
+      
+      <select id="c-mileage">
+        <option value="">* 年里程習慣</option>
+        <option value="10000">10,000 公里</option><option value="20000">20,000 公里</option>
+        <option value="30000">30,000 公里</option><option value="40000">40,000 公里</option>
+        <option value="50000">50,000 公里以上</option>
+      </select>
+      <button class="btn-main" onclick="submitRegister('customer')">完成註冊</button>
     </div>
   </div>
 
@@ -48,12 +69,11 @@
     <div class="card" style="border-left: 4px solid #00D100;">
       <p id="ui-owner" style="font-size:18px; font-weight:bold; margin:0;">讀取中...</p>
       <p id="ui-car-info" style="font-size:13px; color:#888; margin:5px 0 10px 0;">讀取中...</p>
-      <div style="margin-bottom:8px;"><span style="color:#00D100; font-weight:bold; font-size:14px;">Hypass 台灣製汽車冷氣濾網</span></div>
-      <div><span class="tech-tag">最新靜電纖維技術</span><span class="tech-tag">熔噴超細纖維濾材</span><span class="tech-tag">椰殼除臭活性碳</span></div>
+      <div><span class="tech-tag">最新靜電纖維技術</span><span class="tech-tag">椰殼除臭活性碳</span></div>
     </div>
     <div class="card" style="text-align:center;">
-      <div style="font-size:11px; color:#888; margin-bottom:10px;">📍 所在地 (即時)</div>
-      <div id="ui-gps-location" style="color:#00D100; font-weight:bold; font-size:18px;">解析定位中...</div>
+        <div style="font-size:11px; color:#888;">📍 所在地 (即時)</div>
+        <div id="ui-gps-location" style="color:#00D100; font-weight:bold; margin:5px 0;">定位中...</div>
     </div>
     <div class="card" style="text-align:center;">
       <h1 id="ui-health" style="color:#00D100; font-size:48px; margin:0;">100%</h1>
@@ -65,67 +85,52 @@
   <div class="bottom-nav" id="nav-bar" style="display:none;">
     <div class="nav-item active" onclick="switchPage('home', this)">座艙</div>
     <div class="nav-item" onclick="switchPage('book', this)">預約</div>
+    <div class="nav-item" onclick="switchPage('rewards', this)">獎勵</div>
     <div class="nav-item" onclick="switchPage('settings', this)">設定</div>
   </div>
 
   <script>
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
+    const carData = { "Tesla": ["Model Y", "Model 3", "Model X"], "Toyota": ["RAV4", "Altis", "Cross"], "Other": ["其他"] };
+
+    function updateCarModels() {
+      const b = document.getElementById('c-brand').value;
+      const m = document.getElementById('c-model');
+      m.innerHTML = '<option value="">* 選擇車型</option>';
+      if(carData[b]) carData[b].forEach(i => m.innerHTML += `<option value="${i}">${i}</option>`);
+    }
 
     async function initApp() {
-      try {
-        await liff.init({ liffId: "2009187567-58hBrZRj" });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-        const profile = await liff.getProfile();
-        
-        const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
-        
-        if (data && data.name) {
-          document.getElementById('nav-bar').style.display = 'flex';
-          document.getElementById('ui-owner').innerText = data.name + " 的座艙";
-          document.getElementById('ui-car-info').innerText = data.car_model + " | " + data.license_plate;
-          switchPage('home', null);
-          getGPS();
-        } else {
-          switchPage('register', null);
-        }
-      } catch (err) { alert("LIFF 初始化失敗"); }
-    }
-
-    function showForm(role) {
-      document.getElementById('form-customer').style.display = role === 'customer' ? 'block' : 'none';
-      document.getElementById('form-garage').style.display = role === 'garage' ? 'block' : 'none';
-    }
-
-    async function submitRegister(role) {
-      try {
-        const profile = await liff.getProfile();
-        const { error } = await supabaseClient.from('users').upsert({
-          line_uid: profile.userId, 
-          role: role,
-          name: document.getElementById('c-name')?.value || document.getElementById('g-name')?.value,
-          phone: document.getElementById('c-phone')?.value || document.getElementById('g-phone')?.value,
-          city: document.getElementById('c-city')?.value || '',
-          car_model: document.getElementById('c-model')?.value || '',
-          license_plate: document.getElementById('c-plate')?.value || '',
-          yearly_mileage: 20000
-        });
-        
-        if (error) {
-          alert("註冊失敗！錯誤原因：" + error.message);
-        } else {
-          location.reload();
-        }
-      } catch (err) { alert("系統錯誤，無法送出資料"); }
+      await liff.init({ liffId: "2009187567-58hBrZRj" });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const p = await liff.getProfile();
+      const { data } = await supabaseClient.from('users').select('*').eq('line_uid', p.userId).maybeSingle();
+      if (data && data.name) {
+        document.getElementById('nav-bar').style.display = 'flex';
+        document.getElementById('ui-owner').innerText = data.name + " 的專屬座艙";
+        document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model} | ${data.license_plate}`;
+        switchPage('home', null);
+        getGPS();
+      } else { switchPage('register', null); }
     }
 
     function getGPS() {
       navigator.geolocation.getCurrentPosition(async (pos) => {
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
-          const d = await res.json();
-          document.getElementById('ui-gps-location').innerText = `📍 ${d.address.city || ''}${d.address.suburb || d.address.town || ''}`;
-        } catch (e) { document.getElementById('ui-gps-location').innerText = "📍 定位解析中..."; }
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
+        const d = await res.json();
+        document.getElementById('ui-gps-location').innerText = `📍 ${d.address.city || ''}、${d.address.suburb || d.address.town || ''}`;
       });
+    }
+
+    async function submitRegister(role) {
+      const p = await liff.getProfile();
+      const { error } = await supabaseClient.from('users').upsert({
+        line_uid: p.userId, role: role, name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value,
+        city: document.getElementById('c-city').value, car_brand: document.getElementById('c-brand').value,
+        car_model: document.getElementById('c-model').value, license_plate: document.getElementById('c-plate').value,
+        yearly_mileage: parseInt(document.getElementById('c-mileage').value)
+      });
+      if(!error) location.reload();
     }
 
     function switchPage(id, el) {
