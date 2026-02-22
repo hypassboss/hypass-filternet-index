@@ -19,7 +19,7 @@
 
   <div class="panel">
     <h2>防偽 UID 生產線</h2>
-    <p style="font-weight: bold; color: #333;">產品型號：Hypass 台灣製汽車冷氣濾網 (最新靜電纖維技術 / 熔噴超細纖維濾材 / 椰殼除臭活性碳)</p>
+    <p style="font-weight: bold; color: #333;">產品型號：Hypass 台灣製汽車冷氣濾網</p>
     <button onclick="generateUIDs(10)">批次生成 10 組新 UID</button>
     <div id="uid-result" style="margin-top:10px; color:green; white-space: pre-wrap;"></div>
   </div>
@@ -33,10 +33,7 @@
   </div>
 
   <script>
-    const supabaseClient = supabase.createClient(
-      'https://qznvabjtxcbffjryfgqi.supabase.co', 
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
-    );
+    const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
     function makeId(length) {
       let result = '';
