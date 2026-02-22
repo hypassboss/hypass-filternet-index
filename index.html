@@ -17,7 +17,7 @@
     .btn-main { background: linear-gradient(135deg, #00D100 0%, #009900 100%); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; box-shadow: 0 4px 10px rgba(0, 209, 0, 0.2); }
     input, select { width: 100%; padding: 14px; margin-bottom: 12px; background: #000; color: #fff; border: 1px solid #333; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
     
-    /* 儀表板專屬 UI */
+    /* 儀表板 UI */
     .vehicle-title { font-size: 18px; font-weight: bold; margin: 0 0 5px 0; color: #fff; }
     .vehicle-sub { font-size: 13px; color: #888; margin: 0 0 10px 0; }
     .tech-tag { display: inline-block; background: #222; color: #00D100; padding: 4px 8px; border-radius: 6px; font-size: 10px; margin: 2px 2px 0 0; border: 1px solid #005500; }
@@ -37,13 +37,13 @@
     .esg-val { font-size: 16px; font-weight: bold; color: #fff; }
     .esg-label { font-size: 11px; color: #888; margin-top: 3px; }
 
-    /* 底部導覽列 */
+    /* 底部導覽 */
     .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(22, 24, 26, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 0 25px 0; border-top: 1px solid #2a2d32; z-index: 999; }
     .nav-item { color: #666; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 20%; }
     .nav-icon { font-size: 22px; margin-bottom: 3px; }
     .nav-item.active { color: #00D100; }
     
-    /* 預約頁籤 */
+    /* 預約切換 */
     .tab-btn { padding: 12px; margin: 0; font-size: 14px; flex: 1; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid #333; }
     .tab-btn.active { background: linear-gradient(135deg, #00D100 0%, #009900 100%); color: #000; border-color: #00D100; box-shadow: 0 4px 10px rgba(0, 209, 0, 0.2); }
     .tab-btn.inactive { background: #1e1e1e; color: #888; }
@@ -53,7 +53,7 @@
 
   <div id="page-register" class="page">
     <h2 style="color:#00D100;">HYPASS 首次登入授權</h2>
-    <div class="card"><p style="font-size:12px; color:#aaa; margin:0;"><strong>【資料安全與免責宣告】</strong><br>本系統蒐集之個資僅供保固預約使用。濾網壽命為演算法估算，不負絕對數值保證。</p></div>
+    <div class="card"><p style="font-size:12px; color:#aaa; margin:0;"><strong>【個資與免責聲明】</strong><br>本系統蒐集資料僅供保固預約使用。濾網壽命為演算法估算，不負絕對數值保證。</p></div>
     <button class="btn-main" onclick="showForm('customer')">A. 我是濾網客人 (車主)</button>
     <button class="btn-main" style="background:#222; color:#fff;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
 
@@ -66,14 +66,14 @@
       <input type="text" id="c-model" placeholder="* 車款 (例：Tesla Model Y)">
       <input type="number" id="c-year" placeholder="* 年份 (例：2023)">
       <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
-      <select id="c-mileage"><option value="">* 年里程習慣</option><option value="10000">1萬公里</option><option value="20000">2萬公里</option><option value="30000">3萬公里</option></select>
-      <button class="btn-main" onclick="submitRegister('customer')">同意條款並完成註冊</button>
+      <select id="c-mileage"><option value="">* 年里程習慣</option><option value="10000">1萬公里</option><option value="20000">2萬公里</option><option value="30000">3萬公里</option><option value="40000">4萬公里</option><option value="50000">5萬公里以上</option></select>
+      <button class="btn-main" onclick="submitRegister('customer')">同意並完成註冊</button>
     </div>
     
     <div id="form-garage" style="display:none; margin-top:20px;">
       <h3 style="color:#00D100;">保修廠資料登錄</h3>
       <input type="text" id="g-name" placeholder="* 保修廠名稱"><select id="g-city"><option value="台北市">台北市</option><option value="台南市">台南市</option></select><input type="text" id="g-address" placeholder="* 詳細地址"><input type="text" id="g-contact" placeholder="* 廠長姓名"><input type="tel" id="g-phone" placeholder="* 聯繫電話">
-      <button class="btn-main" onclick="submitRegister('garage')">送出審核</button>
+      <button class="btn-main" onclick="submitRegister('garage')">送出審核資料</button>
     </div>
   </div>
 
@@ -81,19 +81,15 @@
     <div class="card" style="border-left: 4px solid #00D100;">
       <p class="vehicle-title" id="ui-owner">讀取中...</p>
       <p class="vehicle-sub" id="ui-car-info">讀取中...</p>
-      <div style="margin-bottom: 8px;">
-        <span style="font-size:13px; color:#00D100; font-weight:bold;">Hypass 台灣製汽車冷氣濾網</span>
-      </div>
-      <div>
-        <span class="tech-tag">最新靜電纖維技術</span><span class="tech-tag">熔噴超細纖維濾材</span><span class="tech-tag">椰殼除臭活性碳</span>
-      </div>
+      <div style="margin-bottom: 8px;"><span style="font-size:13px; color:#00D100; font-weight:bold;">Hypass 台灣製汽車冷氣濾網</span></div>
+      <div><span class="tech-tag">最新靜電纖維技術</span><span class="tech-tag">熔噴超細纖維濾材</span><span class="tech-tag">椰殼除臭活性碳</span></div>
     </div>
 
     <h4 style="margin: 0 0 10px 5px; color:#aaa; font-size: 13px;">空氣品質</h4>
-    <div class="grid-2 mb-15">
+    <div class="grid-2">
       <div class="aqi-box">
         <div style="font-size:11px; color:#888;">📍 所在地 (即時)</div>
-        <div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-gps-location">定位取得中...</div>
+        <div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-gps-location">解析定位中...</div>
         <div class="aqi-val" id="ui-aqi-local">45</div>
         <div style="font-size:10px; color:#00D100;">🟢 良好</div>
       </div>
@@ -113,68 +109,49 @@
       <button class="btn-main" onclick="scanFilter()">📷 掃描啟用新濾網重置</button>
     </div>
 
-    <h4 style="margin: 0 0 10px 5px; color:#aaa; font-size: 13px;">綠能與 ESG 貢獻</h4>
+    <h4 style="margin: 0 0 10px 5px; color:#aaa; font-size: 13px;">ESG 貢獻值</h4>
     <div class="grid-3">
       <div class="esg-box"><div class="esg-icon">🌱</div><div class="esg-val"><span id="ui-esg-co2">0</span> kg</div><div class="esg-label">省碳足跡</div></div>
       <div class="esg-box"><div class="esg-icon">⚡️</div><div class="esg-val"><span id="ui-esg-kwh">0</span> kWh</div><div class="esg-label">省電效能</div></div>
-      <div class="esg-box"><div class="esg-icon">⛽️</div><div class="esg-val"><span id="ui-esg-oil">12</span> %</div><div class="esg-label">空調節能提升</div></div>
+      <div class="esg-box"><div class="esg-icon">⛽️</div><div class="esg-val"><span id="ui-esg-oil">12</span> %</div><div class="esg-label">空調節能</div></div>
     </div>
   </div>
 
   <div id="page-shop" class="page">
-    <h3 style="color:#00D100;">🛒 HYPASS 官方商城</h3>
+    <h3 style="color:#00D100;">🛒 官方商城</h3>
     <div class="card" style="text-align:center;">
-      <p style="color:#aaa;">車主專屬！結帳輸入代碼享優惠：</p>
+      <p style="color:#aaa;">車主結帳輸入優惠碼：</p>
       <h2 style="color:#00D100; letter-spacing: 2px; border: 1px dashed #00D100; padding: 10px;">AIRPLUS2026</h2>
-      <button class="btn-main" style="background:#333; color:#fff;" onclick="alert('Shopline 串接準備中...')">前往商城購物</button>
+      <button class="btn-main" style="background:#333; color:#fff;" onclick="alert('Shopline 串接中...')">前往商城</button>
     </div>
   </div>
 
   <div id="page-book" class="page">
     <h3 style="color:#00D100;">📍 預約安裝</h3>
-    
     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
       <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
-      <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 手動選取清單</div>
+      <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 手動選取</div>
     </div>
-
-    <div id="booking-smart" style="display: block;">
-      <div class="card" style="text-align:center; border-color:#00D100;">
-        <h4 style="color:#00D100; margin-top:0;">為您配對最近的旗艦保修廠</h4>
-        <p style="font-size:13px; color:#888;">系統將依據您的所在地與車種，推薦最適合的專業技師。</p>
-        <div id="smart-match-result" style="margin-top: 15px; padding: 15px; background: #000; border-radius: 12px; border: 1px solid #333;">
-          分析定位與車型中...
-        </div>
-      </div>
-    </div>
-
-    <div id="booking-manual" style="display: none;">
-      <div id="garage-list">讀取中...</div>
-    </div>
+    <div id="booking-smart"><div id="smart-match-result" class="card" style="text-align:center;">定位配對中...</div></div>
+    <div id="booking-manual" style="display: none;"><div id="garage-list">讀取清單中...</div></div>
   </div>
 
   <div id="page-rewards" class="page">
     <h3 style="color:#00D100;">🎁 獎勵與推薦</h3>
     <div class="card" style="border-color:#FF9800;">
-      <h4 style="margin:0; color:#FF9800;">我的獎勵金餘額</h4>
-      <h1 style="margin:10px 0; color:#fff;"><span id="reward-balance">$0</span></h1>
-      <p style="font-size:12px; color:#888;">累積滿 $100 即可兌換 LINE Points</p>
+      <h4 style="margin:0; color:#FF9800;">獎勵金餘額</h4>
+      <h1 style="margin:10px 0;"><span id="reward-balance">$0</span></h1>
       <button class="btn-main" style="background:#FF9800; color:#000;" onclick="redeemPoints()">申請兌換 LINE Points</button>
     </div>
-    <div class="card">
-      <h4>🔗 推薦好友購網</h4>
-      <p style="font-size:12px; color:#888;">好友透過連結購買並安裝，您可獲得 $50 獎勵金！</p>
-      <button class="btn-main" style="background:#333; color:#fff;" onclick="generateMGM()">複製我的專屬推薦連結</button>
-    </div>
+    <button class="btn-main" style="background:#333; color:#fff;" onclick="generateMGM()">🔗 複製專屬推薦連結</button>
   </div>
 
   <div id="page-settings" class="page">
-    <h3 style="color:#00D100;">⚙️ 設定與數位保固</h3>
+    <h3 style="color:#00D100;">⚙️ 數位合約</h3>
     <div class="card">
-      <h4 style="margin:0 0 10px 0;">📄 數位合約與保固紀錄</h4>
-      <p style="font-size:13px; color:#aaa; margin:5px 0;">綁定車牌：<span id="set-plate" style="color:#fff;"></span></p>
-      <p style="font-size:13px; color:#aaa; margin:5px 0;">最近啟用日期：<span id="set-date" style="color:#fff;">尚未啟用</span></p>
-      <p style="font-size:11px; color:#666; margin-top:15px; padding-top:10px; border-top:1px solid #333;">本產品提供過濾效能保證，濾網壽命視實際用車環境而定。資料僅供 HYPASS 保固核對使用。</p>
+      <h4 style="margin:0 0 10px 0;">📄 數位保固卡</h4>
+      <p style="font-size:13px; color:#aaa;">車牌：<span id="set-plate" style="color:#fff;"></span></p>
+      <p style="font-size:13px; color:#aaa;">最近啟用：<span id="set-date" style="color:#fff;">尚未啟用</span></p>
     </div>
     <div id="b2b-panel" class="card" style="display:none; border-color:#FF9800;">
       <h4 style="color:#FF9800;">👨‍🔧 廠長接單看板</h4>
@@ -191,10 +168,7 @@
   </div>
 
   <script>
-    const supabaseClient = supabase.createClient(
-      'https://qznvabjtxcbffjryfgqi.supabase.co', 
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
-    );
+    const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null;
     let referrerId = new URLSearchParams(window.location.search).get('ref');
 
@@ -202,116 +176,56 @@
       await liff.init({ liffId: "2009187567-58hBrZRj" });
       if (!liff.isLoggedIn()) { liff.login(); return; }
       const profile = await liff.getProfile();
-      
       const { data } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).single();
       
       if (data && data.name) {
         currentUser = data;
         document.getElementById('nav-bar').style.display = 'flex';
+        document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
+        document.getElementById('ui-car-info').innerText = `${data.car_model} | ${data.license_plate}`;
+        document.getElementById('ui-home-city').innerText = data.city;
+        document.getElementById('set-plate').innerText = data.license_plate;
         switchPage('home', document.querySelector('.nav-item'));
-        
-        if(data.role === 'customer') {
-           document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
-           document.getElementById('ui-car-info').innerText = `${data.car_model} | ${data.license_plate}`;
-           document.getElementById('ui-home-city').innerText = data.city;
-           document.getElementById('set-plate').innerText = data.license_plate;
-           
-           getGPSLocation(); // 執行最新精準定位解析
-           calculateDashboardStats();
-           loadGarages();
-           loadRewards();
-           doSmartMatch();
-        } else if (data.role === 'garage') {
-           document.getElementById('b2b-panel').style.display = 'block';
-           loadAdminOrders();
-        }
+        getGPSLocation();
+        calculateDashboardStats();
+        loadGarages();
+        loadRewards();
+        doSmartMatch();
+        if(data.role === 'garage') document.getElementById('b2b-panel').style.display = 'block';
       } else {
         switchPage('register', null);
       }
     }
 
-    // --- 全新解析演算法：透過免費 API 將經緯度轉換為「縣市、區域」 ---
-    function getGPSLocation() {
+    async function getGPSLocation() {
       const locElement = document.getElementById('ui-gps-location');
-      if (navigator.geolocation) {
-        locElement.innerText = "📍 取得定位中...";
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            try {
-              const lat = position.coords.latitude;
-              const lon = position.coords.longitude;
-              // 呼叫開源逆地理編碼 API (OSM Nominatim)
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=zh-TW`);
-              const data = await res.json();
-              if (data && data.address) {
-                // 優先抓取縣市與鄉鎮市區資料
-                const city = data.address.city || data.address.county || "台灣";
-                const district = data.address.suburb || data.address.town || data.address.village || data.address.borough || "";
-                
-                let locationString = `📍 ${city}`;
-                if (district) locationString += `、${district}`;
-                locElement.innerText = locationString;
-                locElement.style.color = "#00D100";
-              } else {
-                locElement.innerText = "📍 GPS 已連線 (解析中)";
-              }
-            } catch (e) {
-              locElement.innerText = "📍 台灣定位區 (GPS已連線)";
-            }
-          },
-          (error) => { locElement.innerText = "⚠️ 未授權定位，以預設區域顯示"; locElement.style.color = "#FF9800"; }
-        );
-      } else {
-        locElement.innerText = "⚠️ 裝置不支援定位";
-      }
-    }
-
-    async function calculateDashboardStats() {
-      const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
-      
-      if(filter && filter.activated_at) {
-        document.getElementById('set-date').innerText = new Date(filter.activated_at).toLocaleDateString('zh-TW');
-        const actDate = new Date(filter.activated_at);
-        const daysActive = Math.max(0, Math.floor((new Date() - actDate) / (1000 * 60 * 60 * 24)));
-        
-        let health = Math.max(0, 100 - (daysActive * 0.27)); 
-        let pm25 = daysActive * 1250; 
-        let co2 = (daysActive * 0.15).toFixed(1);
-        let kwh = (daysActive * 0.3).toFixed(1);
-        
-        document.getElementById('ui-health').innerText = `${Math.round(health)}%`;
-        document.getElementById('ui-health').style.color = health < 30 ? '#FF0000' : (health < 70 ? '#FF9800' : '#00D100');
-        document.getElementById('ui-pm25').innerText = pm25.toLocaleString();
-        document.getElementById('ui-esg-co2').innerText = co2;
-        document.getElementById('ui-esg-kwh').innerText = kwh;
-      }
-    }
-
-    function showForm(role) {
-      document.getElementById('form-customer').style.display = role === 'customer' ? 'block' : 'none';
-      document.getElementById('form-garage').style.display = role === 'garage' ? 'block' : 'none';
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
+          const d = await res.json();
+          const city = d.address.city || d.address.county || "";
+          const dist = d.address.suburb || d.address.town || d.address.district || "";
+          locElement.innerText = `📍 ${city}、${dist}`;
+          locElement.style.color = "#00D100";
+        } catch(e) { locElement.innerText = "📍 定位解析中..."; }
+      });
     }
 
     async function submitRegister(role) {
       const uid = (await liff.getProfile()).userId;
       if (role === 'customer') {
-        const name = document.getElementById('c-name').value;
-        const phone = document.getElementById('c-phone').value;
-        const city = document.getElementById('c-city').value;
-        const model = document.getElementById('c-model').value;
-        const plate = document.getElementById('c-plate').value;
-        if(!name || !city || !model || !plate) return alert('請填寫必填欄位！');
-
-        const { error } = await supabaseClient.from('users').insert([{
-          line_uid: uid, role: 'customer', referrer_uid: referrerId, name: name, phone: phone, city: city, car_model: model, license_plate: plate
-        }]);
-        if(!error) location.reload(); else alert("註冊失敗");
+        const payload = {
+          line_uid: uid, role: 'customer', referrer_uid: referrerId,
+          name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value,
+          city: document.getElementById('c-city').value, car_model: document.getElementById('c-model').value,
+          license_plate: document.getElementById('c-plate').value, yearly_mileage: document.getElementById('c-mileage').value
+        };
+        const { error } = await supabaseClient.from('users').insert([payload]);
+        if(!error) location.reload();
       } else {
-        const gName = document.getElementById('g-name').value;
-        if(!gName) return alert('請填寫廠名');
-        await supabaseClient.from('users').insert([{ line_uid: uid, role: 'garage', name: gName }]);
-        await supabaseClient.from('garages').insert([{ owner_uid: uid, name: gName, status: 'pending' }]);
-        alert("資料已送出審核。"); location.reload();
+        await supabaseClient.from('users').insert([{ line_uid: uid, role: 'garage', name: document.getElementById('g-contact').value }]);
+        await supabaseClient.from('garages').insert([{ owner_uid: uid, name: document.getElementById('g-name').value, status: 'pending' }]);
+        location.reload();
       }
     }
 
@@ -319,96 +233,33 @@
       const res = await liff.scanCodeV2();
       if (!res.value) return;
       const { data } = await supabaseClient.from('filters_uid').select('*').eq('uid', res.value).single();
-      if (!data || data.status === 'activated') return alert("無效或已啟用的濾網！");
+      if (!data || data.status === 'activated') return alert("無效濾網！");
       await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date() }).eq('uid', res.value);
-      if (currentUser.referrer_uid) {
-        const check = await supabaseClient.from('rewards').select('*').eq('source_uid', currentUser.line_uid);
-        if(check.data.length === 0) await supabaseClient.from('rewards').insert([{ user_uid: currentUser.referrer_uid, type: 'earn', amount: 50, source_uid: currentUser.line_uid }]);
-      }
-      alert("🎉 啟用成功！開始保護您的座艙空氣品質。");
-      calculateDashboardStats(); 
+      alert("啟用成功！"); location.reload();
     }
 
-    function switchBookingTab(tab) {
-      if(tab === 'smart') {
-        document.getElementById('booking-smart').style.display = 'block';
-        document.getElementById('booking-manual').style.display = 'none';
-        document.getElementById('tab-btn-smart').className = 'tab-btn active';
-        document.getElementById('tab-btn-manual').className = 'tab-btn inactive';
-      } else {
-        document.getElementById('booking-smart').style.display = 'none';
-        document.getElementById('booking-manual').style.display = 'block';
-        document.getElementById('tab-btn-smart').className = 'tab-btn inactive';
-        document.getElementById('tab-btn-manual').className = 'tab-btn active';
-      }
-    }
-
-    async function doSmartMatch() {
-      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').limit(1);
-      if(data && data.length > 0) {
-        const g = data[0];
-        document.getElementById('smart-match-result').innerHTML = `
-          <h4 style="margin:0 0 5px 0; color:#fff;">✨ 首選推薦：${g.name}</h4>
-          <p style="font-size:12px; color:#aaa; margin:0 0 10px 0;">📍 ${g.city} | 代工費 $${g.labor_fee} | 評價 4.9 ⭐️</p>
-          <input type="datetime-local" id="date-smart-${g.id}" style="margin-bottom:10px; background:#1e1e1e;">
-          <button class="btn-main" style="margin:0; padding:12px;" onclick="book(${g.id}, 'smart')">一鍵智慧預約</button>
-        `;
-      } else {
-        document.getElementById('smart-match-result').innerHTML = '<p style="color:#FF9800;">目前附近尚無可用加盟店。</p>';
-      }
-    }
-
-    async function loadGarages() {
-      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
-      let html = '';
-      if(data) data.forEach(g => { html += `<div class="card"><h4 style="margin-top:0;">${g.name}</h4><p style="font-size:14px; color:#888;">📍 ${g.address}</p><p style="color:#00D100; font-weight:bold;">⚙️ 代工費: NT$ ${g.labor_fee}</p><input type="datetime-local" id="date-${g.id}"><button class="btn-main" onclick="book(${g.id})">送出預約</button></div>`; });
-      document.getElementById('garage-list').innerHTML = html || '<p>目前尚無可用的加盟店。</p>';
-    }
-
-    async function book(garageId, prefix = '') {
-      const inputId = prefix ? `date-${prefix}-${garageId}` : `date-${garageId}`;
-      const time = document.getElementById(inputId).value;
-      if(!time) return alert("請選擇預約時間");
-      const { error } = await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: garageId, appointment_time: new Date(time) }]);
-      if(!error) alert("🎉 預約成功！廠長將會確認您的訂單。"); else alert("預約失敗");
-    }
-
-    async function loadAdminOrders() {
-      const garage = await supabaseClient.from('garages').select('id, status').eq('owner_uid', currentUser.line_uid).single();
-      if(!garage.data) return;
-      if(garage.data.status === 'pending') { document.getElementById('admin-orders').innerHTML = '<p style="color:#888;">您的帳號審核中...</p>'; return; }
-      const { data } = await supabaseClient.from('appointments').select('*, users(name, license_plate)').eq('garage_id', garage.data.id).order('appointment_time', { ascending: true });
-      let html = '';
-      if(data) data.forEach(o => { html += `<div style="border-bottom:1px solid #333; padding:15px 0;"><p style="margin:0 0 5px 0; color:#fff;">🕒 ${new Date(o.appointment_time).toLocaleString('zh-TW')}</p><p style="margin:0 0 10px 0; color:#888;">👤 ${o.users.name} (${o.users.license_plate})</p><button class="btn-main" style="padding:10px; font-size:14px;" onclick="updateOrder(${o.id}, 'completed')">完工並核銷</button></div>`; });
-      document.getElementById('admin-orders').innerHTML = html || '<p style="color:#888;">無待處理訂單。</p>';
-    }
-
-    async function updateOrder(id, status) {
-      await supabaseClient.from('appointments').update({ status: status }).eq('id', id); alert("✅ 狀態已更新"); loadAdminOrders();
+    function switchBookingTab(t) {
+      document.getElementById('booking-smart').style.display = t === 'smart' ? 'block' : 'none';
+      document.getElementById('booking-manual').style.display = t === 'manual' ? 'block' : 'none';
+      document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : 'inactive'}`;
+      document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : 'inactive'}`;
     }
 
     function generateMGM() {
       const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(link).then(() => {
-          alert(`✅ 專屬連結已成功複製到剪貼簿！\n請直接貼上傳給好友即可。\n\n(好友結帳可輸入 AIRPLUS2026 享首購優惠)`);
-        }).catch(() => { alert(`請手動複製以下連結傳給好友：\n${link}`); });
-      } else { alert(`請手動複製以下連結傳給好友：\n${link}`); }
+      navigator.clipboard.writeText(link).then(() => alert("連結已複製！傳給好友賺 $50 點數。"));
     }
 
-    async function loadRewards() {
-      const { data } = await supabaseClient.from('rewards').select('type, amount').eq('user_uid', currentUser.line_uid);
-      let total = 0;
-      if(data) data.forEach(r => { total += (r.type === 'earn' ? r.amount : -r.amount); });
-      document.getElementById('reward-balance').innerText = `$${total}`;
-    }
-
-    async function redeemPoints() {
-      const balText = document.getElementById('reward-balance').innerText.replace('$','');
-      if(parseInt(balText) < 100) return alert('獎勵金需滿 $100 才能兌換喔！');
-      if(!confirm('確定申請兌換 LINE Points？')) return;
-      const { error } = await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', amount: 100 }]);
-      if(!error) { alert('✅ 申請已送出！'); loadRewards(); }
+    async function calculateDashboardStats() {
+      const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
+      if(filter && filter.activated_at) {
+        document.getElementById('set-date').innerText = new Date(filter.activated_at).toLocaleDateString('zh-TW');
+        const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000*60*60*24)));
+        document.getElementById('ui-health').innerText = `${Math.max(0, 100 - Math.round(days * 0.27))}%`;
+        document.getElementById('ui-pm25').innerText = (days * 1250).toLocaleString();
+        document.getElementById('ui-esg-co2').innerText = (days * 0.15).toFixed(1);
+        document.getElementById('ui-esg-kwh').innerText = (days * 0.3).toFixed(1);
+      }
     }
 
     function switchPage(id, el) {
