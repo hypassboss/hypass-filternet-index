@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>HYPASS Air+ 智能座艙 V2.2</title>
+  <title>HYPASS Air+ 智能座艙 V2.3</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -94,7 +94,7 @@
       <input type="tel" id="g-phone" placeholder="* 聯繫電話">
       <button class="btn-main" onclick="window.submitRegister('garage')">送出審核資料</button>
     </div>
-    <div class="v-tag">V 2.2 Final</div>
+    <div class="v-tag">V 2.3 Shopline Integrated</div>
   </div>
 
   <div id="page-home" class="page">
@@ -124,7 +124,14 @@
     </div>
   </div>
 
-  <div id="page-shop" class="page"><h3 style="color:#00D100;">🛒 官方商城</h3><div class="card" style="text-align:center;"><p style="color:#aaa;">專屬優惠碼：</p><h2 style="color:#00D100; letter-spacing: 2px; border: 1px dashed #00D100; padding: 10px;">AIRPLUS2026</h2><button class="btn-main" style="background:#333; color:#fff;" onclick="alert('Shopline 串接中...')">前往商城</button></div></div>
+  <div id="page-shop" class="page">
+    <h3 style="color:#00D100;">🛒 官方商城</h3>
+    <div class="card" style="text-align:center;">
+      <p style="color:#aaa;">車主專屬優惠碼：</p>
+      <h2 style="color:#00D100; letter-spacing: 2px; border: 1px dashed #00D100; padding: 10px;">AIRPLUS2026</h2>
+      <button class="btn-main" style="background:#333; color:#fff;" onclick="window.open('https://www.hypass.com.tw', '_blank')">前往商城購物</button>
+    </div>
+  </div>
 
   <div id="page-book" class="page">
     <h3 style="color:#00D100;">📍 預約安裝</h3>
@@ -171,7 +178,7 @@
     <div id="set-content-b" style="display:none;">
       <div class="card">
         <select id="history-type" onchange="window.loadHistory(this.value)" style="margin-bottom:15px; border-color:#00D100; color:#00D100; font-weight:bold;">
-          <option value="filter">🔄 濾網重置資料</option><option value="book">📍 預約與評價紀錄</option><option value="shop">🛒 購買濾網資料</option><option value="logs">✏️ 資料修正紀錄</option>
+          <option value="filter">🔄 濾網重置資料</option><option value="book">📍 預約與評價紀錄</option><option value="shop">🛒 Shopline 購買資料</option><option value="logs">✏️ 資料修正紀錄</option>
         </select>
         <div id="history-container" style="max-height: 300px; overflow-y: auto;">載入中...</div>
       </div>
@@ -286,9 +293,11 @@
       } else { alert("更新失敗：" + error.message); }
     };
 
+    // 核心整合：呼叫 Shopline API 邊緣函數
     window.loadHistory = async function(type) {
       const container = document.getElementById('history-container');
       container.innerHTML = '讀取中...'; let html = '';
+      
       if (type === 'filter') {
         const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
         if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">🔄 ${new Date(d.activated_at).toLocaleDateString()} - [${d.activation_type}] 啟用 (${d.uid})</div>`);
@@ -302,10 +311,33 @@
             html += `<div class="log-item">📍 ${new Date(d.appointment_time).toLocaleDateString()} - ${d.garages.name} [${d.status}] ${ratingTxt}<br>${rateBtn}</div>`;
           });
         } else html = '<p style="color:#888;">尚無紀錄</p>';
-      } else if (type === 'shop') { html = `<div class="log-item">🛒 詳細紀錄請至官方商城查詢。</div>`;
+      } else if (type === 'shop') { 
+        // 呼叫我們剛剛建立的 Shopline 邊緣函數 (雲端密碼對接)
+        container.innerHTML = '<p style="color:#00D100;">🔄 正在透過安全通道連線至 Shopline 官方商城抓取紀錄...</p>';
+        try {
+          const { data, error } = await supabaseClient.functions.invoke('shopline_api', {
+            body: { email: currentUser.email, phone: currentUser.phone }
+          });
+          
+          if(error) throw error;
+          
+          if(data && data.orders && data.orders.length > 0) {
+            data.orders.forEach(o => {
+              html += `<div class="log-item" style="border-left: 2px solid #00D100; padding-left: 10px;">
+                🛒 <b>${o.date}</b> - 訂單: ${o.order_id}<br>
+                <span style="color:#00D100;">${o.product}</span> (NT$ ${o.amount})<br>
+                狀態: ${o.status}
+              </div>`;
+            });
+          } else {
+             html = '<p style="color:#888;">您在 Shopline 商城尚無購買紀錄</p>';
+          }
+        } catch(err) {
+          html = `<p style="color:#FF4444;">商城連線異常：${err.message}</p>`;
+        }
       } else if (type === 'logs') {
         const { data } = await supabaseClient.from('user_logs').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
-        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">✏️ ${new Date(d.created_at).toLocaleString('zh-TW')} - ${d.action}</div>`);
+        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">✏️ ${new Date(d.created_at).toLocaleString('zh-TW')} - ${d.action} : ${d.details}</div>`);
         else html = '<p style="color:#888;">尚無紀錄</p>';
       }
       container.innerHTML = html;
