@@ -29,13 +29,14 @@
     .tab-btn.inactive { background: #1e1e1e; color: #888; }
     .log-item { border-bottom: 1px solid #333; padding: 10px 0; font-size: 13px; color: #aaa; }
     .log-item:last-child { border-bottom: none; }
+    .alert-box { background: #550000; color: #ffcccc; padding: 15px; border-radius: 10px; border: 1px solid #ff0000; text-align: center; margin-bottom: 15px; }
   </style>
 </head>
 <body>
 
   <div id="page-register" class="page">
     <h2 style="color:#00D100;">HYPASS 首次登入授權</h2>
-    <div class="card"><p style="font-size:12px; color:#aaa; margin:0;">本系統蒐集資料僅供保固預約使用。濾網壽命為演算法估算。</p></div>
+    <div class="card"><p style="font-size:12px; color:#aaa; margin:0;">本系統蒐集資料僅供保固預約使用。</p></div>
     <button class="btn-main" onclick="showForm('customer')">A. 我是濾網客人 (車主)</button>
     <button class="btn-main" style="background:#222; color:#fff;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
 
@@ -43,51 +44,26 @@
       <input type="text" id="c-name" placeholder="* 姓名">
       <input type="tel" id="c-phone" placeholder="* 手機號碼">
       <input type="email" id="c-email" placeholder="* 電子郵件">
-      <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
-      
       <select id="c-city">
-        <option value="">* 居住縣市 (六都優先)</option>
-        <optgroup label="六大都會區">
-          <option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option>
-          <option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
-        </optgroup>
-        <optgroup label="其他縣市">
-          <option value="基隆市">基隆市</option><option value="新竹市">新竹市</option><option value="苗栗縣">苗栗縣</option>
-          <option value="彰化縣">彰化縣</option><option value="嘉義市">嘉義市</option><option value="屏東縣">屏東縣</option>
-          <option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option>
-        </optgroup>
+        <option value="">* 居住縣市</option>
+        <option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option>
+        <option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+        <option value="其他">其他縣市</option>
       </select>
-      
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
-        <option value="">* 選擇品牌</option>
-        <option value="Tesla">Tesla (特斯拉)</option><option value="Toyota">Toyota (豐田)</option>
-        <option value="Lexus">Lexus (凌志)</option><option value="Benz">Mercedes-Benz (賓士)</option>
-        <option value="BMW">BMW (寶馬)</option><option value="Honda">Honda (本田)</option><option value="Other">其他品牌</option>
+        <option value="">* 選擇品牌</option><option value="Tesla">Tesla</option><option value="Toyota">Toyota</option><option value="BMW">BMW</option><option value="Benz">Benz</option><option value="Other">其他</option>
       </select>
       <select id="c-model"><option value="">* 請先選擇品牌</option></select>
-      
-      <input type="number" id="c-year" placeholder="* 年份 (例：2023)">
-      <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
-      
-      <select id="c-mileage">
-        <option value="">* 年里程習慣</option>
-        <option value="10000">10,000 公里</option><option value="20000">20,000 公里</option>
-        <option value="30000">30,000 公里</option><option value="40000">40,000 公里</option>
-        <option value="50000">50,000 公里以上</option>
-      </select>
+      <input type="text" id="c-plate" placeholder="* 車牌號碼">
+      <select id="c-mileage"><option value="20000">* 年里程 (預設2萬)</option></select>
       <button class="btn-main" onclick="submitRegister('customer')">完成註冊</button>
     </div>
     
     <div id="form-garage" style="display:none; margin-top:20px;">
-      <input type="text" id="g-name" placeholder="* 保修廠名稱">
-      <input type="email" id="g-email" placeholder="* 電子郵件">
-      <select id="g-city">
-        <option value="">* 所在縣市</option><option value="台北市">台北市</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
-      </select>
-      <input type="text" id="g-address" placeholder="* 詳細地址">
-      <input type="text" id="g-contact" placeholder="* 廠長姓名">
-      <input type="tel" id="g-phone" placeholder="* 聯繫電話">
-      <button class="btn-main" onclick="submitRegister('garage')">送出審核資料</button>
+      <input type="text" id="g-name" placeholder="* 保修廠名稱"><input type="email" id="g-email" placeholder="* 電子郵件">
+      <select id="g-city"><option value="台北市">台北市</option><option value="台南市">台南市</option></select>
+      <input type="text" id="g-address" placeholder="* 詳細地址"><input type="text" id="g-contact" placeholder="* 廠長姓名"><input type="tel" id="g-phone" placeholder="* 電話">
+      <button class="btn-main" onclick="submitRegister('garage')">送出審核</button>
     </div>
   </div>
 
@@ -98,15 +74,15 @@
       <div><span class="tech-tag">最新靜電纖維技術</span><span class="tech-tag">椰殼除臭活性碳</span></div>
     </div>
     <div class="grid-2 mb-15">
-      <div class="aqi-box"><div style="font-size:11px; color:#888;">📍 所在地 (即時)</div><div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-gps-location">定位中...</div><div style="font-size:24px; font-weight:bold; color:#00D100; margin:5px 0;">45</div></div>
-      <div class="aqi-box"><div style="font-size:11px; color:#888;">🏠 居住地 (近7日)</div><div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-home-city">讀取中...</div><div style="font-size:24px; font-weight:bold; color:#FF9800; margin:5px 0;">68</div></div>
+      <div class="aqi-box"><div style="font-size:11px; color:#888;">📍 所在地</div><div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-gps-location">定位中...</div><div style="font-size:24px; font-weight:bold; color:#00D100; margin:5px 0;">45</div></div>
+      <div class="aqi-box"><div style="font-size:11px; color:#888;">🏠 居住地</div><div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-home-city">讀取中...</div><div style="font-size:24px; font-weight:bold; color:#FF9800; margin:5px 0;">68</div></div>
     </div>
     <div class="card" style="text-align: center; margin-top:15px;">
       <div class="ring-container">
         <div class="ring"><div style="font-size:48px; font-weight:bold; color:#00D100;" id="ui-health">100%</div><div style="font-size:12px; color:#888;">濾網壽命</div></div>
-        <div style="color:#FF9800; font-size:13px; margin-top:15px; font-weight:bold; background:#221500; padding:6px 12px; border-radius:20px;">🛡️ 已攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
+        <div style="color:#FF9800; font-size:13px; margin-top:15px; font-weight:bold; background:#221500; padding:6px 12px; border-radius:20px;">🛡️ 攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
       </div>
-      <button class="btn-main" onclick="scanFilter()">📷 掃描啟用新濾網重置</button>
+      <button class="btn-main" onclick="scanFilter()">📷 DIY 掃描啟用新濾網</button>
     </div>
     <div class="grid-3">
       <div class="esg-box"><div style="font-size:20px;">🌱</div><div style="font-size:16px; font-weight:bold; color:#fff;"><span id="ui-esg-co2">0</span> kg</div><div style="font-size:11px; color:#888;">省碳足跡</div></div>
@@ -119,12 +95,15 @@
 
   <div id="page-book" class="page">
     <h3 style="color:#00D100;">📍 預約安裝</h3>
-    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-      <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
-      <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 手動選取</div>
+    <div id="blacklist-warning" class="alert-box" style="display:none;">⚠️ 您的帳號因多次未依約前往，目前已被限制預約功能。如有疑問請洽客服。</div>
+    <div id="booking-section">
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
+        <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 手動選取</div>
+      </div>
+      <div id="booking-smart"><div id="smart-match-result" class="card" style="text-align:center;">定位配對中...</div></div>
+      <div id="booking-manual" style="display: none;"><div id="garage-list">讀取清單中...</div></div>
     </div>
-    <div id="booking-smart"><div id="smart-match-result" class="card" style="text-align:center;">定位配對中...</div></div>
-    <div id="booking-manual" style="display: none;"><div id="garage-list">讀取清單中...</div></div>
   </div>
 
   <div id="page-rewards" class="page">
@@ -135,56 +114,27 @@
 
   <div id="page-settings" class="page">
     <h3 style="color:#00D100;">⚙️ 設定與紀錄</h3>
-    
     <div style="display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto;">
-      <div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')">👤 基本資料</div>
-      <div class="tab-btn inactive" id="tab-set-b" onclick="switchSetTab('b')">📜 歷史紀錄</div>
-      <div class="tab-btn inactive" id="tab-set-c" onclick="switchSetTab('c')">📄 數位合約</div>
+      <div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')">👤 資料</div>
+      <div class="tab-btn inactive" id="tab-set-b" onclick="switchSetTab('b')">📜 紀錄</div>
+      <div class="tab-btn inactive" id="tab-set-c" onclick="switchSetTab('c')">📄 合約</div>
     </div>
-
     <div id="set-content-a" style="display:block;">
       <div class="card">
-        <h4 style="margin:0 0 15px 0; color:#00D100;">車主基本資料修正</h4>
-        <label style="font-size:12px; color:#888;">姓名</label><input type="text" id="edit-name">
-        <label style="font-size:12px; color:#888;">電話</label><input type="tel" id="edit-phone">
-        <label style="font-size:12px; color:#888;">電子郵件</label><input type="email" id="edit-email">
         <label style="font-size:12px; color:#888;">車牌號碼</label><input type="text" id="edit-plate">
-        <label style="font-size:12px; color:#888;">年里程習慣</label>
-        <select id="edit-mileage">
-          <option value="10000">10,000 公里</option><option value="20000">20,000 公里</option>
-          <option value="30000">30,000 公里</option><option value="40000">40,000 公里</option><option value="50000">50,000 公里以上</option>
-        </select>
-        <button class="btn-main" onclick="updateProfile()">儲存修正資料</button>
+        <button class="btn-main" onclick="updateProfile()">儲存修正</button>
       </div>
     </div>
-
     <div id="set-content-b" style="display:none;">
       <div class="card">
-        <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:15px; border-color:#00D100; color:#00D100; font-weight:bold;">
-          <option value="filter">🔄 濾網更換重置資料</option>
-          <option value="book">📍 保修廠濾網預約紀錄</option>
-          <option value="shop">🛒 購買濾網資料</option>
-          <option value="logs">✏️ 資料修正紀錄</option>
+        <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:15px; color:#00D100; font-weight:bold;">
+          <option value="filter">🔄 濾網紀錄</option><option value="book">📍 預約評價紀錄</option>
         </select>
         <div id="history-container" style="max-height: 300px; overflow-y: auto;">載入中...</div>
       </div>
     </div>
-
     <div id="set-content-c" style="display:none;">
-      <div class="card">
-        <h4 style="margin:0 0 10px 0; color:#fff;">📄 HYPASS 數位保固卡暨服務合約</h4>
-        <p style="font-size:13px; color:#aaa; margin:5px 0;">認證車牌：<span id="contract-plate" style="color:#00D100; font-weight:bold;"></span></p>
-        <p style="font-size:13px; color:#aaa; margin:5px 0;">最近啟用日期：<span id="contract-date" style="color:#00D100;">尚未啟用</span></p>
-        <div style="font-size:11px; color:#666; margin-top:15px; padding-top:10px; border-top:1px solid #333; line-height: 1.5;">
-          <strong>第一條（服務範圍）</strong><br>本產品提供過濾效能保證。濾網健康度與 ESG 數據為系統演算推估值。<br><br>
-          <strong>第二條（個資保護）</strong><br>您所登錄之資料，僅供預約派單及保固核對使用，絕不外洩。<br><br>
-        </div>
-      </div>
-    </div>
-
-    <div id="b2b-panel" class="card" style="display:none; border-color:#FF9800; margin-top:20px;">
-      <h4 style="color:#FF9800;">👨‍🔧 廠長接單看板</h4>
-      <div id="admin-orders"></div>
+      <div class="card"><p style="font-size:13px; color:#aaa;">車牌：<span id="contract-plate"></span></p></div>
     </div>
   </div>
 
@@ -197,14 +147,11 @@
   </div>
 
   <script>
-    // 捕捉所有未預期的錯誤，防止畫面卡死
-    window.onerror = function(msg, url, line) { alert("系統發生未預期錯誤，請截圖給客服：\n" + msg + "\n行號: " + line); return false; };
-
+    window.onerror = function(msg) { alert("系統錯誤: " + msg); return false; };
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null;
-    let referrerId = new URLSearchParams(window.location.search).get('ref');
-
-    const carData = { "Tesla": ["Model Y", "Model 3", "Model X"], "Toyota": ["RAV4", "Corolla Cross", "Altis"], "Lexus": ["NX200", "UX250h"], "Benz": ["C-Class", "GLC"], "BMW": ["3-Series", "X3"], "Honda": ["CR-V", "HR-V"], "Other": ["其他"] };
+    let currentLocation = '台灣';
+    const carData = { "Tesla": ["Model Y", "Model 3"], "Toyota": ["RAV4", "Corolla Cross"], "BMW": ["3-Series", "X3"], "Benz": ["C-Class", "GLC"], "Other": ["其他"] };
 
     function updateCarModels(brandId, modelId) {
       const b = document.getElementById(brandId).value;
@@ -217,10 +164,8 @@
       try {
         await liff.init({ liffId: "2009187567-58hBrZRj" });
         if (!liff.isLoggedIn()) { liff.login(); return; }
-        const profile = await liff.getProfile();
-        
-        const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
-        if(error) { alert("讀取資料庫錯誤：" + error.message); return; }
+        const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', (await liff.getProfile()).userId).maybeSingle();
+        if(error) throw error;
         
         if (data && data.name) {
           currentUser = data;
@@ -230,91 +175,52 @@
             document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
             document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model} | ${data.license_plate}`;
             document.getElementById('ui-home-city').innerText = data.city;
-            
-            document.getElementById('edit-name').value = data.name;
-            document.getElementById('edit-phone').value = data.phone;
-            document.getElementById('edit-email').value = data.email || '';
             document.getElementById('edit-plate').value = data.license_plate;
-            document.getElementById('edit-mileage').value = data.yearly_mileage;
             document.getElementById('contract-plate').innerText = data.license_plate;
+
+            // 黑名單阻擋邏輯
+            if(data.is_blacklisted) {
+              document.getElementById('blacklist-warning').style.display = 'block';
+              document.getElementById('booking-section').style.display = 'none';
+            }
 
             switchPage('home', document.querySelector('.nav-item'));
             getGPSLocation(); calculateDashboardStats(); loadGarages(); loadRewards(); doSmartMatch(); loadHistory('filter');
-          } else if (data.role === 'garage') {
-            switchPage('settings', document.querySelectorAll('.nav-item')[4]);
-            document.getElementById('b2b-panel').style.display = 'block';
-            loadAdminOrders();
           }
-        } else { 
-          switchPage('register', null); 
-        }
-      } catch (err) { alert("LIFF 啟動失敗：" + err.message); }
+        } else { switchPage('register', null); }
+      } catch (err) { alert("啟動失敗：" + err.message); }
     }
 
     function getGPSLocation() {
-      const loc = document.getElementById('ui-gps-location');
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
           try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
             const d = await res.json();
-            loc.innerText = `📍 ${d.address.city || ''} ${d.address.suburb || d.address.town || ''}`;
-          } catch(e) { loc.innerText = "📍 GPS 連線中"; }
+            currentLocation = d.address.city || '台灣';
+            document.getElementById('ui-gps-location').innerText = `📍 ${currentLocation}`;
+          } catch(e) { document.getElementById('ui-gps-location').innerText = "📍 GPS 連線中"; }
         });
       }
-    }
-
-    function showForm(role) {
-      document.getElementById('form-customer').style.display = role === 'customer' ? 'block' : 'none';
-      document.getElementById('form-garage').style.display = role === 'garage' ? 'block' : 'none';
     }
 
     async function submitRegister(role) {
       try {
         const p = await liff.getProfile();
         if(role === 'customer') {
-          const name = document.getElementById('c-name').value;
-          const phone = document.getElementById('c-phone').value;
-          const email = document.getElementById('c-email').value;
-          const city = document.getElementById('c-city').value;
-          const brand = document.getElementById('c-brand').value;
-          const model = document.getElementById('c-model').value;
-          const plate = document.getElementById('c-plate').value;
-          const mileage = document.getElementById('c-mileage').value;
-
-          if(!name || !phone || !email || !city || !brand || !model || !plate || !mileage) {
-            return alert('請完整填寫所有 * 必填欄位！');
-          }
-
           const { error } = await supabaseClient.from('users').upsert({
-            line_uid: p.userId, role: role, referrer_uid: referrerId,
-            name: name, phone: phone, email: email, city: city, car_brand: brand, car_model: model,
-            license_plate: plate, yearly_mileage: parseInt(mileage)
+            line_uid: p.userId, role: role, name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value,
+            city: document.getElementById('c-city').value, car_brand: document.getElementById('c-brand').value, car_model: document.getElementById('c-model').value, license_plate: document.getElementById('c-plate').value, yearly_mileage: 20000
           });
-          
-          if(error) {
-            alert("資料庫寫入失敗 (請確認 SQL 是否更新)：\n" + error.message);
-            return;
-          }
-          alert("✅ 註冊成功！");
-          location.reload();
-
+          if(error) throw error; alert("✅ 註冊成功！"); location.reload();
         } else {
-          const gName = document.getElementById('g-name').value;
-          const contact = document.getElementById('g-contact').value;
-          if(!gName || !contact) return alert('請填寫必填欄位！');
-
-          await supabaseClient.from('users').upsert({ line_uid: p.userId, role: 'garage', name: contact, email: document.getElementById('g-email').value });
-          const { error } = await supabaseClient.from('garages').insert([{ owner_uid: p.userId, name: gName, city: document.getElementById('g-city').value, address: document.getElementById('g-address').value, contact_name: contact, phone: document.getElementById('g-phone').value, status: 'pending' }]);
-          
-          if(error) { alert("寫入失敗：" + error.message); return; }
-          alert("✅ 加盟資料已送出！"); 
-          location.reload();
+          await supabaseClient.from('users').upsert({ line_uid: p.userId, role: 'garage', name: document.getElementById('g-contact').value, email: document.getElementById('g-email').value });
+          await supabaseClient.from('garages').insert([{ owner_uid: p.userId, name: document.getElementById('g-name').value, city: document.getElementById('g-city').value, address: document.getElementById('g-address').value, contact_name: document.getElementById('g-contact').value, phone: document.getElementById('g-phone').value }]);
+          alert("加盟資料送出！"); location.reload();
         }
-      } catch (err) { alert("系統發生錯誤：" + err.message); }
+      } catch (err) { alert("寫入失敗：" + err.message); }
     }
 
-    // --- 以下為設定、預約、與紀錄邏輯 ---
     function switchSetTab(t) {
       document.getElementById('set-content-a').style.display = t === 'a' ? 'block' : 'none';
       document.getElementById('set-content-b').style.display = t === 'b' ? 'block' : 'none';
@@ -325,40 +231,37 @@
     }
 
     async function updateProfile() {
-      const n = document.getElementById('edit-name').value;
-      const p = document.getElementById('edit-phone').value;
-      const e = document.getElementById('edit-email').value;
-      const pl = document.getElementById('edit-plate').value;
-      const m = parseInt(document.getElementById('edit-mileage').value);
-
-      const { error } = await supabaseClient.from('users').update({ name: n, phone: p, email: e, license_plate: pl, yearly_mileage: m }).eq('line_uid', currentUser.line_uid);
-      if(!error) {
-        await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '基本資料修正', details: `修改了基本資料` }]);
-        alert('✅ 資料已更新！'); location.reload();
-      } else { alert("更新失敗：" + error.message); }
+      const { error } = await supabaseClient.from('users').update({ license_plate: document.getElementById('edit-plate').value }).eq('line_uid', currentUser.line_uid);
+      if(!error) { alert('✅ 更新成功！'); location.reload(); }
     }
 
+    // 歷史紀錄與車主評分系統
     async function loadHistory(type) {
       const container = document.getElementById('history-container');
-      container.innerHTML = '讀取中...';
-      let html = '';
-
+      container.innerHTML = '讀取中...'; let html = '';
       if (type === 'filter') {
         const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
-        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">🔄 ${new Date(d.activated_at).toLocaleString('zh-TW')} - 啟用新濾網 (${d.uid})</div>`);
-        else html = '<p style="color:#888;">尚無重置紀錄</p>';
+        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">🔄 ${new Date(d.activated_at).toLocaleDateString()} - [${d.activation_type}] 啟用 (${d.uid})</div>`);
+        else html = '<p>尚無紀錄</p>';
       } else if (type === 'book') {
         const { data } = await supabaseClient.from('appointments').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('appointment_time', { ascending: false });
-        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">📍 ${new Date(d.appointment_time).toLocaleString('zh-TW')} - 預約 ${d.garages.name} (狀態: ${d.status})</div>`);
-        else html = '<p style="color:#888;">尚無預約紀錄</p>';
-      } else if (type === 'shop') {
-        html = `<div class="log-item">🛒 詳細購買紀錄請至 <a href="#" style="color:#00D100;">HYPASS 官方商城</a> 查詢。</div>`;
-      } else if (type === 'logs') {
-        const { data } = await supabaseClient.from('user_logs').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
-        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">✏️ ${new Date(d.created_at).toLocaleString('zh-TW')} - ${d.action} : ${d.details}</div>`);
-        else html = '<p style="color:#888;">尚無修改紀錄</p>';
+        if(data && data.length > 0) {
+          data.forEach(d => {
+            let rateBtn = (d.status === 'completed' && !d.garage_rating) ? `<button onclick="rateGarage(${d.id})" style="background:#FF9800; color:#000; border:none; border-radius:5px; padding:3px 8px; margin-top:5px; cursor:pointer;">⭐ 給予保修廠評價</button>` : '';
+            let ratingTxt = d.garage_rating ? `<span style="color:#FF9800;">(您已評分: ${d.garage_rating}星)</span>` : '';
+            html += `<div class="log-item">📍 ${new Date(d.appointment_time).toLocaleDateString()} - ${d.garages.name} [${d.status}] ${ratingTxt}<br>${rateBtn}</div>`;
+          });
+        } else html = '<p>尚無紀錄</p>';
       }
       container.innerHTML = html;
+    }
+
+    async function rateGarage(appId) {
+      let score = prompt("請為保修廠的服務評分 (1-5星)：\n1: 極差 / 5: 極佳", "5");
+      if(score && score >= 1 && score <= 5) {
+        await supabaseClient.from('appointments').update({ garage_rating: parseInt(score) }).eq('id', appId);
+        alert("感謝您的評價！"); loadHistory('book');
+      } else if(score) { alert("請輸入 1 到 5 之間的數字。"); }
     }
 
     async function calculateDashboardStats() {
@@ -373,12 +276,21 @@
       }
     }
 
+    // V2 DIY 掃碼 (寫入 activation_type 與 Location)
     async function scanFilter() {
       const res = await liff.scanCodeV2();
       if (!res.value) return;
-      await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date() }).eq('uid', res.value);
-      await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '濾網重置', details: `啟用了新濾網: ${res.value}` }]);
-      alert("✅ 啟用成功！"); location.reload();
+      
+      // 1. 將舊的濾網標記為 Replaced
+      await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
+      
+      // 2. 啟用新濾網 (標記為 DIY)
+      await supabaseClient.from('filters_uid').update({ 
+        status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(),
+        activation_type: 'DIY', installed_car_model: currentUser.car_brand + ' ' + currentUser.car_model, installed_location: currentLocation
+      }).eq('uid', res.value);
+      
+      alert("✅ DIY 啟用成功！已寫入履歷。"); location.reload();
     }
 
     function switchBookingTab(t) {
@@ -389,14 +301,14 @@
     }
 
     async function doSmartMatch() {
-      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').limit(1);
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').eq('is_blacklisted', false).limit(1);
       if(data && data.length > 0) {
         document.getElementById('smart-match-result').innerHTML = `<h4 style="margin:0 0 5px 0; color:#fff;">✨ 首選推薦：${data[0].name}</h4><input type="datetime-local" id="date-smart-${data[0].id}" style="margin-bottom:10px;"><button class="btn-main" onclick="book(${data[0].id}, 'smart')">一鍵預約</button>`;
       }
     }
 
     async function loadGarages() {
-      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').eq('is_blacklisted', false);
       let html = '';
       if(data) data.forEach(g => html += `<div class="card"><h4 style="margin-top:0;">${g.name}</h4><p style="font-size:14px; color:#888;">📍 ${g.address}</p><input type="datetime-local" id="date-${g.id}"><button class="btn-main" onclick="book(${g.id})">送出預約</button></div>`);
       document.getElementById('garage-list').innerHTML = html || '<p>無可用店家</p>';
@@ -411,19 +323,18 @@
 
     function generateMGM() {
       const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
-      navigator.clipboard.writeText(link).then(() => alert(`✅ 專屬連結已複製！\n${link}`)).catch(() => alert(`請手動複製連結：\n${link}`));
+      navigator.clipboard.writeText(link).then(() => alert(`✅ 連結已複製！`)).catch(() => alert(`複製失敗`));
     }
 
     async function loadRewards() {
-      const { data } = await supabaseClient.from('rewards').select('type, amount').eq('user_uid', currentUser.line_uid);
-      let total = 0;
-      if(data) data.forEach(r => total += (r.type === 'earn' ? r.amount : -r.amount));
+      const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid);
+      let total = 0; if(data) data.forEach(r => { if(r.status === 'completed') total += (r.type === 'earn' ? r.amount : -r.amount); });
       document.getElementById('reward-balance').innerText = `$${total}`;
     }
 
     async function redeemPoints() {
-      if(parseInt(document.getElementById('reward-balance').innerText.replace('$','')) < 100) return alert('需滿 $100 才能兌換！');
-      await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', amount: 100 }]);
+      if(parseInt(document.getElementById('reward-balance').innerText.replace('$','')) < 100) return alert('餘額不足！');
+      await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', amount: 100, status: 'pending' }]);
       alert('✅ 申請已送出！'); loadRewards();
     }
 
