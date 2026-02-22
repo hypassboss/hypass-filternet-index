@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>HYPASS 總部管理系統</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; background: #f4f6f8; padding: 20px; }
+    .panel { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    button { background: #000; color: #00D100; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight:bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+
+  <h1>HYPASS 總部控制中心</h1>
+
+  <div class="panel">
+    <h2>防偽 UID 生產線</h2>
+    <p style="font-weight: bold; color: #333;">產品型號：Hypass 台灣製汽車冷氣濾網 (最新靜電纖維技術 / 熔噴超細纖維濾材 / 椰殼除臭活性碳)</p>
+    <button onclick="generateUIDs(10)">批次生成 10 組新 UID (模擬印刷廠交單)</button>
+    <div id="uid-result" style="margin-top:10px; color:green; white-space: pre-wrap;"></div>
+  </div>
+
+  <div class="panel">
+    <h2>濾聯網保修廠管理 (待審核列表)</h2>
+    <table>
+      <thead><tr><th>店名</th><th>地址</th><th>設定代工費</th><th>操作</th></tr></thead>
+      <tbody id="garage-list"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const supabaseClient = supabase.createClient('你的_SUPABASE_URL', '你的_SUPABASE_KEY');
+
+    function makeId(length) {
+      let result = '';
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      for (let i = 0; i < length; i++) result += characters.charAt(Math.floor(Math.random() * characters.length));
+      return result;
+    }
+
+    async function generateUIDs(count) {
+      let newUids = [];
+      let insertData = [];
+      for(let i=0; i<count; i++) {
+        let code = 'HP-' + makeId(8);
+        newUids.push(code);
+        // 寫入資料庫時，採用您指定的精準名稱
+        insertData.push({ uid: code, product_model: 'Hypass 台灣製汽車冷氣濾網', status: 'produced' });
+      }
+      const { error } = await supabaseClient.from('filters_uid').insert(insertData);
+      if(!error) {
+        document.getElementById('uid-result').innerText = `✅ 成功生成 10 組防偽碼，請匯出給包裝廠：\n` + newUids.join('\n');
+      } else { alert("生成失敗"); }
+    }
+
+    async function loadPendingGarages() {
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'pending');
+      let html = '';
+      data.forEach(g => {
+        html += `<tr>
+          <td>${g.name}</td><td>${g.address}</td>
+          <td><input type="number" id="fee-${g.id}" value="300" style="width:80px;"> 元</td>
+          <td><button onclick="approveGarage(${g.id})">核准開通</button></td>
+        </tr>`;
+      });
+      if(html === '') html = '<tr><td colspan="4" style="text-align:center; color:#888;">目前無待審核的保修廠</td></tr>';
+      document.getElementById('garage-list').innerHTML = html;
+    }
+
+    async function approveGarage(id) {
+      const fee = document.getElementById(`fee-${id}`).value;
+      await supabaseClient.from('garages').update({ status: 'active', labor_fee: fee }).eq('id', id);
+      alert('已開通上架！現在車主可以在 App 地圖上看到這家店了。'); 
+      loadPendingGarages();
+    }
+
+    loadPendingGarages();
+  </script>
+</body>
+</html>
