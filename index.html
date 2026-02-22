@@ -24,8 +24,6 @@
     .ring { width: 160px; height: 160px; border-radius: 50%; border: 6px solid #00D100; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0, 209, 0, 0.1); }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
     .esg-box { text-align: center; padding: 12px 5px; background: #1a1e1a; border-radius: 12px; border: 1px solid #253025; }
-    
-    /* 頁籤樣式 */
     .tab-btn { padding: 12px; margin: 0; font-size: 14px; flex: 1; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid #333; white-space: nowrap; }
     .tab-btn.active { background: linear-gradient(135deg, #00D100 0%, #009900 100%); color: #000; border-color: #00D100; }
     .tab-btn.inactive { background: #1e1e1e; color: #888; }
@@ -178,9 +176,8 @@
         <p style="font-size:13px; color:#aaa; margin:5px 0;">認證車牌：<span id="contract-plate" style="color:#00D100; font-weight:bold;"></span></p>
         <p style="font-size:13px; color:#aaa; margin:5px 0;">最近啟用日期：<span id="contract-date" style="color:#00D100;">尚未啟用</span></p>
         <div style="font-size:11px; color:#666; margin-top:15px; padding-top:10px; border-top:1px solid #333; line-height: 1.5;">
-          <strong>第一條（服務範圍）</strong><br>本產品採用最新靜電與熔噴技術，提供過濾效能保證。濾網健康度與 ESG 數據為系統演算推估值。<br><br>
-          <strong>第二條（個資保護）</strong><br>您所登錄之姓名、電話、電子郵件等資料，僅供預約派單及保固核對使用，絕不外洩。<br><br>
-          <strong>第三條（免責聲明）</strong><br>實際空氣品質受外在環境極大影響，本系統之 AQI 與 PM2.5 攔截量不作為絕對醫療或法律依據。
+          <strong>第一條（服務範圍）</strong><br>本產品提供過濾效能保證。濾網健康度與 ESG 數據為系統演算推估值。<br><br>
+          <strong>第二條（個資保護）</strong><br>您所登錄之資料，僅供預約派單及保固核對使用，絕不外洩。<br><br>
         </div>
       </div>
     </div>
@@ -200,6 +197,9 @@
   </div>
 
   <script>
+    // 捕捉所有未預期的錯誤，防止畫面卡死
+    window.onerror = function(msg, url, line) { alert("系統發生未預期錯誤，請截圖給客服：\n" + msg + "\n行號: " + line); return false; };
+
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null;
     let referrerId = new URLSearchParams(window.location.search).get('ref');
@@ -214,67 +214,107 @@
     }
 
     async function initApp() {
-      await liff.init({ liffId: "2009187567-58hBrZRj" });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      const profile = await liff.getProfile();
-      const { data } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
-      
-      if (data && data.name) {
-        currentUser = data;
-        document.getElementById('nav-bar').style.display = 'flex';
+      try {
+        await liff.init({ liffId: "2009187567-58hBrZRj" });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
         
-        if(data.role === 'customer') {
-          document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
-          document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model} | ${data.license_plate}`;
-          document.getElementById('ui-home-city').innerText = data.city;
+        const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
+        if(error) { alert("讀取資料庫錯誤：" + error.message); return; }
+        
+        if (data && data.name) {
+          currentUser = data;
+          document.getElementById('nav-bar').style.display = 'flex';
           
-          // 預填設定頁面的修改表單與合約
-          document.getElementById('edit-name').value = data.name;
-          document.getElementById('edit-phone').value = data.phone;
-          document.getElementById('edit-email').value = data.email || '';
-          document.getElementById('edit-plate').value = data.license_plate;
-          document.getElementById('edit-mileage').value = data.yearly_mileage;
-          document.getElementById('contract-plate').innerText = data.license_plate;
+          if(data.role === 'customer') {
+            document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
+            document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model} | ${data.license_plate}`;
+            document.getElementById('ui-home-city').innerText = data.city;
+            
+            document.getElementById('edit-name').value = data.name;
+            document.getElementById('edit-phone').value = data.phone;
+            document.getElementById('edit-email').value = data.email || '';
+            document.getElementById('edit-plate').value = data.license_plate;
+            document.getElementById('edit-mileage').value = data.yearly_mileage;
+            document.getElementById('contract-plate').innerText = data.license_plate;
 
-          switchPage('home', document.querySelector('.nav-item'));
-          getGPSLocation(); calculateDashboardStats(); loadGarages(); loadRewards(); doSmartMatch(); loadHistory('filter');
-        } else if (data.role === 'garage') {
-          switchPage('settings', document.querySelectorAll('.nav-item')[4]);
-          document.getElementById('b2b-panel').style.display = 'block';
-          loadAdminOrders();
+            switchPage('home', document.querySelector('.nav-item'));
+            getGPSLocation(); calculateDashboardStats(); loadGarages(); loadRewards(); doSmartMatch(); loadHistory('filter');
+          } else if (data.role === 'garage') {
+            switchPage('settings', document.querySelectorAll('.nav-item')[4]);
+            document.getElementById('b2b-panel').style.display = 'block';
+            loadAdminOrders();
+          }
+        } else { 
+          switchPage('register', null); 
         }
-      } else { switchPage('register', null); }
+      } catch (err) { alert("LIFF 啟動失敗：" + err.message); }
     }
 
     function getGPSLocation() {
       const loc = document.getElementById('ui-gps-location');
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
-          const d = await res.json();
-          loc.innerText = `📍 ${d.address.city || ''} ${d.address.suburb || d.address.town || ''}`;
-        } catch(e) { loc.innerText = "📍 GPS 連線中"; }
-      });
-    }
-
-    async function submitRegister(role) {
-      const p = await liff.getProfile();
-      if(role === 'customer') {
-        const { error } = await supabaseClient.from('users').upsert({
-          line_uid: p.userId, role: role, referrer_uid: referrerId,
-          name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value, email: document.getElementById('c-email').value,
-          city: document.getElementById('c-city').value, car_brand: document.getElementById('c-brand').value, car_model: document.getElementById('c-model').value,
-          license_plate: document.getElementById('c-plate').value, yearly_mileage: parseInt(document.getElementById('c-mileage').value)
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
+            const d = await res.json();
+            loc.innerText = `📍 ${d.address.city || ''} ${d.address.suburb || d.address.town || ''}`;
+          } catch(e) { loc.innerText = "📍 GPS 連線中"; }
         });
-        if(!error) location.reload();
-      } else {
-        await supabaseClient.from('users').upsert({ line_uid: p.userId, role: 'garage', name: document.getElementById('g-contact').value, email: document.getElementById('g-email').value });
-        await supabaseClient.from('garages').insert([{ owner_uid: p.userId, name: document.getElementById('g-name').value, city: document.getElementById('g-city').value, address: document.getElementById('g-address').value, contact_name: document.getElementById('g-contact').value, phone: document.getElementById('g-phone').value }]);
-        alert("加盟資料送出審核！"); location.reload();
       }
     }
 
-    // --- 設定頁面：資料修改與紀錄 ---
+    function showForm(role) {
+      document.getElementById('form-customer').style.display = role === 'customer' ? 'block' : 'none';
+      document.getElementById('form-garage').style.display = role === 'garage' ? 'block' : 'none';
+    }
+
+    async function submitRegister(role) {
+      try {
+        const p = await liff.getProfile();
+        if(role === 'customer') {
+          const name = document.getElementById('c-name').value;
+          const phone = document.getElementById('c-phone').value;
+          const email = document.getElementById('c-email').value;
+          const city = document.getElementById('c-city').value;
+          const brand = document.getElementById('c-brand').value;
+          const model = document.getElementById('c-model').value;
+          const plate = document.getElementById('c-plate').value;
+          const mileage = document.getElementById('c-mileage').value;
+
+          if(!name || !phone || !email || !city || !brand || !model || !plate || !mileage) {
+            return alert('請完整填寫所有 * 必填欄位！');
+          }
+
+          const { error } = await supabaseClient.from('users').upsert({
+            line_uid: p.userId, role: role, referrer_uid: referrerId,
+            name: name, phone: phone, email: email, city: city, car_brand: brand, car_model: model,
+            license_plate: plate, yearly_mileage: parseInt(mileage)
+          });
+          
+          if(error) {
+            alert("資料庫寫入失敗 (請確認 SQL 是否更新)：\n" + error.message);
+            return;
+          }
+          alert("✅ 註冊成功！");
+          location.reload();
+
+        } else {
+          const gName = document.getElementById('g-name').value;
+          const contact = document.getElementById('g-contact').value;
+          if(!gName || !contact) return alert('請填寫必填欄位！');
+
+          await supabaseClient.from('users').upsert({ line_uid: p.userId, role: 'garage', name: contact, email: document.getElementById('g-email').value });
+          const { error } = await supabaseClient.from('garages').insert([{ owner_uid: p.userId, name: gName, city: document.getElementById('g-city').value, address: document.getElementById('g-address').value, contact_name: contact, phone: document.getElementById('g-phone').value, status: 'pending' }]);
+          
+          if(error) { alert("寫入失敗：" + error.message); return; }
+          alert("✅ 加盟資料已送出！"); 
+          location.reload();
+        }
+      } catch (err) { alert("系統發生錯誤：" + err.message); }
+    }
+
+    // --- 以下為設定、預約、與紀錄邏輯 ---
     function switchSetTab(t) {
       document.getElementById('set-content-a').style.display = t === 'a' ? 'block' : 'none';
       document.getElementById('set-content-b').style.display = t === 'b' ? 'block' : 'none';
@@ -293,9 +333,9 @@
 
       const { error } = await supabaseClient.from('users').update({ name: n, phone: p, email: e, license_plate: pl, yearly_mileage: m }).eq('line_uid', currentUser.line_uid);
       if(!error) {
-        await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '基本資料修正', details: `修改了姓名/電話/信箱/車牌` }]);
-        alert('✅ 資料已更新成功！'); location.reload();
-      }
+        await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '基本資料修正', details: `修改了基本資料` }]);
+        alert('✅ 資料已更新！'); location.reload();
+      } else { alert("更新失敗：" + error.message); }
     }
 
     async function loadHistory(type) {
@@ -312,7 +352,7 @@
         if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">📍 ${new Date(d.appointment_time).toLocaleString('zh-TW')} - 預約 ${d.garages.name} (狀態: ${d.status})</div>`);
         else html = '<p style="color:#888;">尚無預約紀錄</p>';
       } else if (type === 'shop') {
-        html = `<div class="log-item">🛒 詳細購買紀錄請至 <a href="#" style="color:#00D100;">HYPASS Shopline 官方商城</a> 查詢。</div>`;
+        html = `<div class="log-item">🛒 詳細購買紀錄請至 <a href="#" style="color:#00D100;">HYPASS 官方商城</a> 查詢。</div>`;
       } else if (type === 'logs') {
         const { data } = await supabaseClient.from('user_logs').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
         if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">✏️ ${new Date(d.created_at).toLocaleString('zh-TW')} - ${d.action} : ${d.details}</div>`);
@@ -337,7 +377,7 @@
       const res = await liff.scanCodeV2();
       if (!res.value) return;
       await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date() }).eq('uid', res.value);
-      await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '濾網重置', details: `啟用了新濾網 UID: ${res.value}` }]);
+      await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '濾網重置', details: `啟用了新濾網: ${res.value}` }]);
       alert("✅ 啟用成功！"); location.reload();
     }
 
@@ -371,7 +411,7 @@
 
     function generateMGM() {
       const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
-      navigator.clipboard.writeText(link).then(() => alert(`✅ 專屬連結已複製！\n${link}`));
+      navigator.clipboard.writeText(link).then(() => alert(`✅ 專屬連結已複製！\n${link}`)).catch(() => alert(`請手動複製連結：\n${link}`));
     }
 
     async function loadRewards() {
