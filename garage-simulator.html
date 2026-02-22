@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>濾聯網 - 廠長接單模擬器</title>
+  <title>濾聯網 - 廠長接單模擬器 V2</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: -apple-system, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 600px; margin: 0 auto; }
@@ -18,15 +18,13 @@
 </head>
 <body>
 
-  <h2>👨‍🔧 濾聯網 - 廠長接單模擬器</h2>
-  <label for="garage-select" style="color:#888; font-size:14px;">請選擇您要模擬的保修廠：</label>
+  <h2>👨‍🔧 廠長接單模擬器 (含車主評鑑)</h2>
+  <label style="color:#888; font-size:14px;">請選擇您要模擬的保修廠：</label>
   <select id="garage-select" onchange="loadOrders()">
     <option value="">-- 讀取店家中 --</option>
   </select>
 
-  <div id="orders-container">
-    <p style="color:#888;">請先從上方選擇店家</p>
-  </div>
+  <div id="orders-container"><p style="color:#888;">請先從上方選擇店家</p></div>
 
   <script>
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
@@ -35,43 +33,64 @@
       const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
       const select = document.getElementById('garage-select');
       if (data && data.length > 0) {
-        select.innerHTML = '<option value="">-- 請選擇要模擬的保修廠 --</option>';
-        data.forEach(g => select.innerHTML += `<option value="${g.id}">${g.name} (代工費 $${g.labor_fee})</option>`);
-      } else {
-        select.innerHTML = '<option value="">❌ 目前無已開通的保修廠</option>';
+        select.innerHTML = '<option value="">-- 選擇模擬保修廠 --</option>';
+        data.forEach(g => select.innerHTML += `<option value="${g.id}">${g.name}</option>`);
       }
     }
 
     async function loadOrders() {
-      const garageId = document.getElementById('garage-select').value;
+      const gId = document.getElementById('garage-select').value;
       const container = document.getElementById('orders-container');
-      if (!garageId) { container.innerHTML = '<p style="color:#888;">請選擇店家</p>'; return; }
+      if (!gId) { container.innerHTML = '<p style="color:#888;">請選擇店家</p>'; return; }
       
-      container.innerHTML = '<p style="color:#888;">讀取訂單中...</p>';
-      const { data } = await supabaseClient.from('appointments').select('*, users(name, license_plate, phone, car_model)').eq('garage_id', garageId).order('appointment_time', { ascending: true });
+      container.innerHTML = '<p style="color:#888;">讀取中...</p>';
+      const { data } = await supabaseClient.from('appointments').select('*, users(name, license_plate, phone, car_brand, car_model, city)').eq('garage_id', gId).order('appointment_time', { ascending: true });
 
       if (!data || data.length === 0) { container.innerHTML = '<div class="card"><p style="color:#888; text-align:center;">無預約單</p></div>'; return; }
 
       let html = '';
       data.forEach(order => {
-        const time = new Date(order.appointment_time).toLocaleString('zh-TW');
         let statusHtml = order.status === 'pending' ? '<span class="status-badge" style="background:#444; color:#fff;">待確認</span>' : 
                          order.status === 'confirmed' ? '<span class="status-badge" style="background:#FF9800; color:#fff;">已接單</span>' : 
                          '<span class="status-badge" style="background:#00D100; color:#000;">已完工</span>';
+                         
         let buttonsHtml = order.status === 'pending' ? `<button class="btn btn-confirm" onclick="updateOrderStatus(${order.id}, 'confirmed')">確認接單</button>` :
-                          order.status === 'confirmed' ? `<button class="btn btn-complete" onclick="updateOrderStatus(${order.id}, 'completed')">完工並核銷</button>` : '';
+                          order.status === 'confirmed' ? `<button class="btn btn-complete" onclick="completeAndRate(${order.id}, '${order.user_uid}', '${order.users.car_brand} ${order.users.car_model}', '${order.users.city}', ${gId})">完工核銷並評分</button>` : 
+                          `<span style="color:#888; font-size:12px;">(給車主的評分: ${order.user_rating || '未評'} 星)</span>`;
 
-        html += `<div class="card">${statusHtml}<h4 style="margin: 0 0 10px 0; color: #fff;">🕒 ${time}</h4>
+        html += `<div class="card">${statusHtml}<h4 style="margin: 0 0 10px 0; color: #fff;">🕒 ${new Date(order.appointment_time).toLocaleString()}</h4>
                  <p style="margin: 5px 0; color: #aaa;">👤 ${order.users.name} | 📞 ${order.users.phone}</p>
-                 <p style="margin: 5px 0 15px 0; color: #aaa;">🚗 ${order.users.car_model} (${order.users.license_plate})</p>
+                 <p style="margin: 5px 0 15px 0; color: #aaa;">🚗 ${order.users.car_brand} ${order.users.car_model} (${order.users.license_plate})</p>
                  <div>${buttonsHtml}</div></div>`;
       });
       container.innerHTML = html;
     }
 
     async function updateOrderStatus(orderId, newStatus) {
-      await supabaseClient.from('appointments').update({ status: newStatus }).eq('id', orderId);
-      alert('✅ 狀態更新成功！'); loadOrders(); 
+      await supabaseClient.from('appointments').update({ status: newStatus }).eq('id', orderId); loadOrders(); 
+    }
+
+    // 廠長完工並對車主進行評鑑 (V2 黑名單驅動引擎)
+    async function completeAndRate(orderId, userUid, carModel, city, gId) {
+      let uidCode = prompt("請輸入車主的新濾網 UID (模擬廠長掃碼，例: HP-12345678)：");
+      if(!uidCode) return alert("必須輸入 UID 才能核銷！");
+
+      let score = prompt("請為此車主評分 (1-5星)：\n(若低於3顆星，總部將審核是否列為黑名單)", "5");
+      if(!score || score < 1 || score > 5) return alert("請輸入 1-5 之間的數字");
+
+      // 1. 更新訂單狀態與評分
+      await supabaseClient.from('appointments').update({ status: 'completed', user_rating: parseInt(score) }).eq('id', orderId);
+      
+      // 2. 舊濾網淘汰
+      await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', userUid).eq('status', 'activated');
+      
+      // 3. 綁定新濾網 (標記為 Garage 安裝)
+      await supabaseClient.from('filters_uid').update({ 
+        status: 'activated', activated_by_uid: userUid, activated_at: new Date(),
+        activation_type: 'Garage', installed_garage_id: gId, installed_car_model: carModel, installed_location: city
+      }).eq('uid', uidCode);
+
+      alert('✅ 核銷與評分完成！'); loadOrders();
     }
 
     initSimulator();
