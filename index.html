@@ -19,7 +19,9 @@
     .nav-item.active { color: #00D100; font-weight: bold; }
     .tech-tag { display: inline-block; background: #222; color: #00D100; padding: 4px 8px; border-radius: 6px; font-size: 10px; margin: 2px 2px 0 0; border: 1px solid #005500; }
     
-    /* 氣象與空汙專屬 UI */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .aqi-box { text-align: center; padding: 15px 10px; background: #1e2124; border-radius: 12px; border: 1px solid #2a2d32; }
+    
     .env-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
     .env-box { background: #1a1e1a; border-radius: 10px; padding: 12px 5px; text-align: center; border: 1px solid #2a2d32; }
     .env-val { font-size: 22px; font-weight: bold; color: #fff; margin: 5px 0; }
@@ -29,10 +31,11 @@
     .ring-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; }
     .ring { width: 160px; height: 160px; border-radius: 50%; border: 6px solid #00D100; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0, 209, 0, 0.1); }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .esg-box { text-align: center; padding: 12px 5px; background: #1a1e1a; border-radius: 12px; border: 1px solid #253025; }
     .tab-btn { padding: 12px; margin: 0; font-size: 14px; flex: 1; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid #333; }
     .tab-btn.active { background: linear-gradient(135deg, #00D100 0%, #009900 100%); color: #000; border-color: #00D100; }
     .tab-btn.inactive { background: #1e1e1e; color: #888; }
-    .log-item { border-bottom: 1px solid #333; padding: 10px 0; font-size: 13px; color: #aaa; }
+    .log-item { border-bottom: 1px solid #333; padding: 10px 0; font-size: 13px; color: #aaa; line-height: 1.4; }
     .log-item:last-child { border-bottom: none; }
   </style>
 </head>
@@ -40,31 +43,72 @@
 
   <div id="page-register" class="page">
     <h2 style="color:#00D100;">HYPASS 首次登入授權</h2>
-    <div class="card"><p style="font-size:12px; color:#aaa; margin:0;">本系統蒐集資料僅供保固預約使用。</p></div>
+    <div class="card"><p style="font-size:12px; color:#aaa; margin:0;">本系統蒐集資料僅供保固預約與環境演算使用。</p></div>
+    
     <button class="btn-main" onclick="window.showForm('customer')">A. 我是濾網客人 (車主)</button>
     <button class="btn-main" style="background:#222; color:#fff;" onclick="window.showForm('garage')">B. 我是保修廠加盟夥伴</button>
 
     <div id="form-customer" style="display:none; margin-top:20px;">
-      <input type="text" id="c-name" placeholder="* 姓名"><input type="tel" id="c-phone" placeholder="* 手機號碼"><input type="email" id="c-email" placeholder="* 電子郵件">
+      <input type="text" id="c-name" placeholder="* 姓名">
+      <input type="tel" id="c-phone" placeholder="* 手機號碼">
+      <input type="email" id="c-email" placeholder="* 電子郵件">
       <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
-      <select id="c-city"><option value="">* 居住縣市</option><option value="台北市">台北市</option><option value="台中市">台中市</option><option value="高雄市">高雄市</option></select>
-      <select id="c-brand" onchange="window.updateCarModels('c-brand', 'c-model')"><option value="">* 選擇品牌</option><option value="Tesla">Tesla</option><option value="Toyota">Toyota</option><option value="Other">其他</option></select>
-      <select id="c-model"><option value="">* 選擇車型</option></select>
-      <input type="number" id="c-year" placeholder="* 出廠年份"><input type="text" id="c-plate" placeholder="* 車牌號碼">
-      <select id="c-mileage"><option value="10000">1萬公里</option><option value="20000" selected>2萬公里</option><option value="30000">3萬公里</option><option value="50000">5萬公里以上</option></select>
+      <select id="c-city">
+        <option value="">* 居住縣市 (用作居住地空汙基準)</option>
+        <optgroup label="六大都會區">
+          <option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option>
+          <option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+        </optgroup>
+        <optgroup label="其他縣市">
+          <option value="基隆市">基隆市</option><option value="新竹縣">新竹縣</option><option value="新竹市">新竹市</option>
+          <option value="苗栗縣">苗栗縣</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option>
+          <option value="雲林縣">雲林縣</option><option value="嘉義縣">嘉義縣</option><option value="嘉義市">嘉義市</option>
+          <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option>
+          <option value="台東縣">台東縣</option>
+        </optgroup>
+      </select>
+      
+      <select id="c-brand" onchange="window.updateCarModels('c-brand', 'c-model')">
+        <option value="">* 選擇車輛品牌</option>
+        <option value="Toyota">Toyota (豐田)</option><option value="Honda">Honda (本田)</option>
+        <option value="Nissan">Nissan (日產)</option><option value="Ford">Ford (福特)</option>
+        <option value="Mitsubishi">Mitsubishi (三菱)</option><option value="Mazda">Mazda (馬自達)</option>
+        <option value="Hyundai">Hyundai (現代)</option><option value="Kia">Kia (起亞)</option>
+        <option value="Volkswagen">Volkswagen (福斯)</option><option value="Skoda">Skoda (司科達)</option>
+        <option value="Mercedes-Benz">Mercedes-Benz (賓士)</option><option value="BMW">BMW (寶馬)</option>
+        <option value="Lexus">Lexus (凌志)</option><option value="Volvo">Volvo (富豪)</option>
+        <option value="Audi">Audi (奧迪)</option><option value="Porsche">Porsche (保時捷)</option>
+        <option value="Tesla">Tesla (特斯拉)</option><option value="Suzuki">Suzuki (鈴木)</option>
+        <option value="Subaru">Subaru (速霸陸)</option><option value="Luxgen">Luxgen (納智捷)</option>
+        <option value="MG">MG (名爵)</option><option value="Peugeot">Peugeot (寶獅)</option>
+        <option value="Land Rover">Land Rover (荒原路華)</option><option value="Mini">Mini (迷你)</option>
+        <option value="Other">其他品牌</option>
+      </select>
+      <select id="c-model"><option value="">* 請先選擇品牌</option></select>
+      
+      <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
+      <input type="text" id="c-plate" placeholder="* 車牌號碼">
+      <select id="c-mileage">
+        <option value="">* 年平均里程習慣</option>
+        <option value="10000">10,000 公里</option>
+        <option value="20000">20,000 公里</option>
+        <option value="30000">30,000 公里</option>
+        <option value="40000">40,000 公里</option>
+        <option value="50000">50,000 公里以上</option>
+      </select>
       <button class="btn-main" onclick="window.submitRegister('customer')">完成註冊</button>
     </div>
     
     <div id="form-garage" style="display:none; margin-top:20px;">
-      <input type="text" id="g-name" placeholder="* 店名"><input type="email" id="g-email" placeholder="* 信箱">
-      <select id="g-city"><option value="台北市">台北市</option></select>
-      <input type="text" id="g-address" placeholder="* 地址"><input type="text" id="g-contact" placeholder="* 廠長"><input type="tel" id="g-phone" placeholder="* 電話">
-      <button class="btn-main" onclick="window.submitRegister('garage')">送出審核</button>
+      <input type="text" id="g-name" placeholder="* 保修廠名稱"><input type="email" id="g-email" placeholder="* 電子郵件">
+      <select id="g-city"><option value="">* 所在縣市</option><option value="台北市">台北市</option><option value="台中市">台中市</option><option value="高雄市">高雄市</option><option value="台南市">台南市</option></select>
+      <input type="text" id="g-address" placeholder="* 詳細地址"><input type="text" id="g-contact" placeholder="* 廠長姓名"><input type="tel" id="g-phone" placeholder="* 聯繫電話">
+      <button class="btn-main" onclick="window.submitRegister('garage')">送出審核資料</button>
     </div>
   </div>
 
   <div id="page-home" class="page">
-    <div class="card" style="border-left: 4px solid #00D100; margin-bottom: 10px;">
+    <div class="card" style="border-left: 4px solid #00D100; margin-bottom: 15px;">
       <p id="ui-owner" style="font-size:18px; font-weight:bold; margin:0;">讀取中...</p>
       <p id="ui-car-info" style="font-size:13px; color:#888; margin:5px 0 10px 0;">讀取中...</p>
       <div><span class="tech-tag">醫療級靜電技術</span><span class="tech-tag">氣候連動演算</span></div>
@@ -72,19 +116,28 @@
     
     <div id="aqi-severe-alert" class="alert-danger">⚠️ [紫爆警報] 所在區域空氣品質惡劣，請緊閉車窗並開啟內循環！</div>
 
-    <div style="font-size:12px; color:#aaa; margin-bottom:5px;">🌍 <span id="ui-loc-name">雷達連線中...</span> 即時環境</div>
-    <div class="env-grid">
-      <div class="env-box">
-        <div style="font-size:11px; color:#888;">溫度</div>
-        <div class="env-val" id="env-temp">--°C</div>
+    <div class="grid-2" style="margin-bottom: 15px;">
+      <div class="aqi-box" style="padding: 10px;">
+        <div style="font-size:11px; color:#888;">📍 即時所在地</div>
+        <div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-loc-name">定位中...</div>
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px solid #333; padding-top: 8px;">
+          <div style="text-align: left;">
+            <div style="font-size:10px; color:#888;">氣溫/濕度</div>
+            <div style="font-size:14px; color:#fff; font-weight:bold;"><span id="env-temp">--</span>°C / <span id="env-hum" style="color:#4fa3ff;">--</span>%</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size:10px; color:#888;">即時 AQI</div>
+            <div style="font-size:18px; font-weight:bold; color:#00D100;" id="env-aqi">--</div>
+          </div>
+        </div>
       </div>
-      <div class="env-box">
-        <div style="font-size:11px; color:#888;">濕度</div>
-        <div class="env-val" id="env-hum" style="color:#4fa3ff;">--%</div>
-      </div>
-      <div class="env-box">
-        <div style="font-size:11px; color:#888;">AQI 指數</div>
-        <div class="env-val" id="env-aqi" style="color:#00D100;">--</div>
+      
+      <div class="aqi-box" style="padding: 10px; display: flex; flex-direction: column; justify-content: center;">
+        <div style="font-size:11px; color:#888;">🏠 居住地 (近7日)</div>
+        <div style="font-size:12px; color:#fff; margin-top:4px;" id="ui-home-city">讀取中...</div>
+        <div style="font-size:10px; color:#888; margin-top:5px;">平均 AQI 空汙指數</div>
+        <div style="font-size:28px; font-weight:bold; color:#FF9800; margin-top:2px;" id="ui-home-aqi">--</div>
       </div>
     </div>
 
@@ -108,10 +161,80 @@
     </div>
   </div>
 
-  <div id="page-shop" class="page"><h3 style="color:#00D100;">🛒 商城</h3><button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw/oauth/line/quick_sign_up'">自動登入商城</button></div>
-  <div id="page-book" class="page"><h3 style="color:#00D100;">📍 預約安裝</h3><div id="garage-list">讀取中...</div></div>
-  <div id="page-rewards" class="page"><h3 style="color:#00D100;">🎁 獎勵</h3><h1 id="reward-balance">$0</h1><button class="btn-main" onclick="window.redeemPoints()">申請兌換</button></div>
-  <div id="page-settings" class="page"><h3 style="color:#00D100;">⚙️ 設定</h3><div id="history-container"></div></div>
+  <div id="page-shop" class="page">
+    <h3 style="color:#00D100;">🛒 官方商城</h3>
+    <div class="card" style="text-align:center;">
+      <p style="color:#aaa;">專屬優惠碼：</p>
+      <h2 style="color:#00D100; letter-spacing: 2px; border: 1px dashed #00D100; padding: 10px;">AIRPLUS2026</h2>
+      <button class="btn-main" style="background:#333; color:#fff;" onclick="window.location.href='https://www.hypass.com.tw/oauth/line/quick_sign_up'">前往商城並自動登入</button>
+    </div>
+  </div>
+
+  <div id="page-book" class="page">
+    <h3 style="color:#00D100;">📍 預約安裝</h3>
+    <div id="blacklist-warning" class="alert-danger" style="display:none; margin-bottom:15px;">⚠️ 您的帳號已被限制預約功能，如有疑問請洽客服。</div>
+    <div id="booking-section">
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <div class="tab-btn active" id="tab-btn-smart" onclick="window.switchBookingTab('smart')">🤖 智能配對</div>
+        <div class="tab-btn inactive" id="tab-btn-manual" onclick="window.switchBookingTab('manual')">📋 手動選取</div>
+      </div>
+      <div id="booking-smart"><div id="smart-match-result" class="card" style="text-align:center;">定位配對中...</div></div>
+      <div id="booking-manual" style="display: none;"><div id="garage-list">讀取清單中...</div></div>
+    </div>
+  </div>
+
+  <div id="page-rewards" class="page">
+    <h3 style="color:#00D100;">🎁 獎勵與推薦</h3>
+    <div class="card" style="border-color:#FF9800;">
+      <h4 style="margin:0; color:#FF9800;">獎勵金餘額</h4>
+      <h1 style="margin:10px 0;"><span id="reward-balance">$0</span></h1>
+      <p style="font-size:12px; color:#888;">累積滿 $100 即可申請兌換</p>
+      <button class="btn-main" style="background:#FF9800; color:#000;" onclick="window.redeemPoints()">申請兌換 LINE Points</button>
+    </div>
+    <button class="btn-main" style="background:#333; color:#fff;" onclick="window.generateMGM()">🔗 複製專屬推薦連結</button>
+  </div>
+
+  <div id="page-settings" class="page">
+    <h3 style="color:#00D100;">⚙️ 設定與紀錄</h3>
+    <div style="display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto;">
+      <div class="tab-btn active" id="tab-set-a" onclick="window.switchSetTab('a')">👤 基本資料</div>
+      <div class="tab-btn inactive" id="tab-set-b" onclick="window.switchSetTab('b')">📜 歷史紀錄</div>
+      <div class="tab-btn inactive" id="tab-set-c" onclick="window.switchSetTab('c')">📄 數位合約</div>
+    </div>
+
+    <div id="set-content-a" style="display:block;">
+      <div class="card">
+        <label style="font-size:12px; color:#888;">姓名</label><input type="text" id="edit-name">
+        <label style="font-size:12px; color:#888;">電話</label><input type="tel" id="edit-phone">
+        <label style="font-size:12px; color:#888;">電子郵件</label><input type="email" id="edit-email">
+        <label style="font-size:12px; color:#888;">車牌號碼</label><input type="text" id="edit-plate">
+        <label style="font-size:12px; color:#888;">年平均行駛里程</label>
+        <select id="edit-mileage">
+          <option value="10000">10,000 公里</option><option value="20000">20,000 公里</option>
+          <option value="30000">30,000 公里</option><option value="40000">40,000 公里</option><option value="50000">50,000 公里以上</option>
+        </select>
+        <button class="btn-main" onclick="window.updateProfile()">儲存修正資料</button>
+      </div>
+    </div>
+
+    <div id="set-content-b" style="display:none;">
+      <div class="card">
+        <select id="history-type" onchange="window.loadHistory(this.value)" style="margin-bottom:15px; color:#00D100; font-weight:bold;">
+          <option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 預約評價紀錄</option>
+          <option value="shop">🛒 官方商城購買紀錄</option><option value="logs">✏️ 其他操作紀錄</option>
+        </select>
+        <div id="history-container" style="max-height: 300px; overflow-y: auto;">載入中...</div>
+      </div>
+    </div>
+
+    <div id="set-content-c" style="display:none;">
+      <div class="card">
+        <h4 style="margin:0 0 10px 0; color:#fff;">📄 HYPASS 數位保固卡暨服務合約</h4>
+        <p style="font-size:13px; color:#aaa; margin:5px 0;">認證車牌：<span id="contract-plate" style="color:#00D100; font-weight:bold;"></span></p>
+        <p style="font-size:13px; color:#aaa; margin:5px 0;">最近啟用日期：<span id="contract-date" style="color:#00D100;">尚未啟用</span></p>
+      </div>
+    </div>
+  </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
     <div class="nav-item active" onclick="window.switchPage('home', this)"><div style="font-size:22px;">◓</div>座艙</div>
@@ -122,37 +245,131 @@
   </div>
 
   <script>
-    window.onerror = function(msg) { console.log(msg); return false; };
+    window.onerror = function(msg) { console.error("系統錯誤:", msg); return false; };
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     
     let currentUser = null;
     let currentLocName = '台灣';
-    
-    // 全域環境參數 (將影響演算法)
-    let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+    let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 }; // 預設環境變數
 
-    const carData = { "Tesla": ["Model Y", "Model 3"], "Toyota": ["RAV4", "Corolla Cross"], "Other": ["其他"] };
-    window.updateCarModels = function(b, m) { document.getElementById(m).innerHTML = '<option value="">* 車型</option>'; if(carData[document.getElementById(b).value]) carData[document.getElementById(b).value].forEach(i => document.getElementById(m).innerHTML += `<option value="${i}">${i}</option>`); };
-    window.switchPage = function(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('page-'+id).classList.add('active'); if(el) el.classList.add('active'); };
+    // 🌟 完整台灣 25 大車廠建檔
+    const carData = {
+      "Toyota": ["Corolla Cross", "RAV4", "Altis", "Yaris Cross", "Town Ace", "Sienta", "Vios", "Camry", "Hilux", "Alphard", "Crown", "Prius", "bZ4X", "GR Yaris"],
+      "Honda": ["CR-V", "HR-V", "Fit", "Civic"],
+      "Nissan": ["Kicks", "Sentra", "X-Trail", "Altima", "Juke", "Leaf", "Ariya"],
+      "Ford": ["Focus", "Kuga", "Ranger", "Mustang", "Tourneo Connect"],
+      "Mitsubishi": ["Delica", "Veryca", "Outlander", "Colt Plus", "Eclipse Cross", "Zinger"],
+      "Mazda": ["Mazda3", "CX-5", "CX-30", "CX-60", "CX-90", "Mazda2", "Mazda6"],
+      "Hyundai": ["Tucson L", "Custin", "Venue", "Staria", "Santa Fe", "Ioniq 5", "Ioniq 6", "Kona"],
+      "Kia": ["Picanto", "Stonic", "Sportage", "Sorento", "Carnival", "EV6", "EV9"],
+      "Volkswagen": ["Golf", "Tiguan", "T-Roc", "T-Cross", "Polo", "Arteon", "Touran", "Caddy"],
+      "Skoda": ["Octavia", "Kamiq", "Kodiaq", "Karoq", "Fabia", "Superb", "Scala", "Enyaq"],
+      "Mercedes-Benz": ["A-Class", "B-Class", "C-Class", "E-Class", "S-Class", "GLA", "GLB", "GLC", "GLE", "GLS", "CLA", "EQA", "EQB", "EQE", "EQS", "G-Class"],
+      "BMW": ["1 Series", "2 Series", "3 Series", "4 Series", "5 Series", "7 Series", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "i4", "iX", "iX1"],
+      "Lexus": ["NX", "RX", "UX", "ES", "IS", "LM", "LS", "LC", "RZ"],
+      "Volvo": ["XC40", "XC60", "XC90", "V60", "S60", "S90", "C40", "EX90"],
+      "Audi": ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q5", "Q7", "Q8", "e-tron"],
+      "Porsche": ["Macan", "Cayenne", "Taycan", "Panamera", "911", "718"],
+      "Tesla": ["Model Y", "Model 3", "Model X", "Model S"],
+      "Suzuki": ["Swift", "Ignis", "Vitara", "Jimny", "S-Cross", "Carry"],
+      "Subaru": ["Forester", "Crosstrek", "Outback", "WRX", "BRZ", "Solterra"],
+      "Luxgen": ["URX NEO", "U6 NEO", "n7"],
+      "MG": ["HS", "ZS", "MG4"],
+      "Peugeot": ["208", "2008", "308", "3008", "408", "5008"],
+      "Land Rover": ["Range Rover", "Defender", "Discovery", "Evoque"],
+      "Mini": ["Cooper", "Countryman", "Clubman"],
+      "Other": ["其他品牌車款"]
+    };
 
-    // 🌟 全新！抓取即時天氣與空汙 API (使用免費開源的 Open-Meteo)
+    window.updateCarModels = function(brandId, modelId) {
+      const b = document.getElementById(brandId).value;
+      const m = document.getElementById(modelId);
+      m.innerHTML = '<option value="">* 選擇車型</option>';
+      if(carData[b]) carData[b].forEach(i => m.innerHTML += `<option value="${i}">${i}</option>`);
+    };
+
+    window.switchPage = function(id, el) { 
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+      document.getElementById('page-'+id).classList.add('active'); 
+      if(el) el.classList.add('active'); 
+    };
+
+    window.switchSetTab = function(t) {
+      document.getElementById('set-content-a').style.display = t === 'a' ? 'block' : 'none';
+      document.getElementById('set-content-b').style.display = t === 'b' ? 'block' : 'none';
+      document.getElementById('set-content-c').style.display = t === 'c' ? 'block' : 'none';
+      document.getElementById('tab-set-a').className = `tab-btn ${t === 'a' ? 'active' : 'inactive'}`;
+      document.getElementById('tab-set-b').className = `tab-btn ${t === 'b' ? 'active' : 'inactive'}`;
+      document.getElementById('tab-set-c').className = `tab-btn ${t === 'c' ? 'active' : 'inactive'}`;
+    };
+
+    window.switchBookingTab = function(t) {
+      document.getElementById('booking-smart').style.display = t === 'smart' ? 'block' : 'none';
+      document.getElementById('booking-manual').style.display = t === 'manual' ? 'block' : 'none';
+      document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : 'inactive'}`;
+      document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : 'inactive'}`;
+    };
+
+    window.showForm = function(role) {
+      document.getElementById('form-customer').style.display = role === 'customer' ? 'block' : 'none';
+      document.getElementById('form-garage').style.display = role === 'garage' ? 'block' : 'none';
+    };
+
+    window.submitRegister = async function(role) {
+      try {
+        const p = await liff.getProfile();
+        if(role === 'customer') {
+          const name = document.getElementById('c-name').value;
+          const phone = document.getElementById('c-phone').value;
+          const email = document.getElementById('c-email').value;
+          const gender = document.getElementById('c-gender').value;
+          const city = document.getElementById('c-city').value;
+          const brand = document.getElementById('c-brand').value;
+          const model = document.getElementById('c-model').value;
+          const year = document.getElementById('c-year').value;
+          const plate = document.getElementById('c-plate').value;
+          const mileage = document.getElementById('c-mileage').value;
+
+          if(!name || !phone || !email || !city || !brand || !model || !plate || !mileage) return alert('請完整填寫 * 必填欄位！');
+
+          await supabaseClient.from('users').upsert({ line_uid: p.userId, role: role, name: name, phone: phone, email: email, gender: gender, city: city, car_brand: brand, car_model: model, car_year: parseInt(year)||null, license_plate: plate, yearly_mileage: parseInt(mileage) });
+          alert("✅ 註冊成功！"); location.reload();
+        } else {
+          // 保修廠註冊邏輯略 (同上一版)
+          await supabaseClient.from('users').upsert({ line_uid: p.userId, role: 'garage', name: document.getElementById('g-contact').value, email: document.getElementById('g-email').value });
+          await supabaseClient.from('garages').insert([{ owner_uid: p.userId, name: document.getElementById('g-name').value, city: document.getElementById('g-city').value, address: document.getElementById('g-address').value, contact_name: document.getElementById('g-contact').value, phone: document.getElementById('g-phone').value }]);
+          alert("加盟資料送出！"); location.reload();
+        }
+      } catch (err) { alert("寫入失敗：" + err.message); }
+    };
+
+    window.updateProfile = async function() {
+      const n = document.getElementById('edit-name').value;
+      const p = document.getElementById('edit-phone').value;
+      const e = document.getElementById('edit-email').value;
+      const pl = document.getElementById('edit-plate').value;
+      const m = parseInt(document.getElementById('edit-mileage').value);
+
+      const { error } = await supabaseClient.from('users').update({ name: n, phone: p, email: e, license_plate: pl, yearly_mileage: m }).eq('line_uid', currentUser.line_uid);
+      if(!error) { alert('✅ 資料已更新成功！'); location.reload(); } else { alert("更新失敗"); }
+    };
+
+    // 🌟 1. 抓取即時所在地 (GPS) 氣象與空汙
     async function fetchEnvironmentalData(lat, lon) {
       try {
-        // 1. 抓溫度與濕度
         const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m`);
         const weather = await weatherRes.json();
         envData.temp = weather.current.temperature_2m;
         envData.hum = weather.current.relative_humidity_2m;
         
-        // 2. 抓 AQI 與 PM2.5
         const aqiRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,aqi`);
         const aqi = await aqiRes.json();
         envData.pm25 = aqi.current.pm2_5;
         envData.aqi = aqi.current.aqi;
 
-        // 3. 更新畫面 UI
-        document.getElementById('env-temp').innerText = `${envData.temp}°C`;
-        document.getElementById('env-hum').innerText = `${envData.hum}%`;
+        document.getElementById('env-temp').innerText = envData.temp;
+        document.getElementById('env-hum').innerText = envData.hum;
         document.getElementById('env-aqi').innerText = envData.aqi;
         
         const aqiEl = document.getElementById('env-aqi');
@@ -160,10 +377,40 @@
         else if (envData.aqi > 100) { aqiEl.style.color = '#ff9800'; }
         else { aqiEl.style.color = '#00D100'; }
 
-        // 4. 有了即時數據，重新計算更精準的壽命
         calculateDashboardStats();
+      } catch (e) { console.error("即時氣象連線失敗", e); calculateDashboardStats(); }
+    }
 
-      } catch (e) { console.log("氣象連線失敗", e); calculateDashboardStats(); }
+    // 🌟 2. 抓取車主「居住地」過去 7 天的平均 AQI
+    async function fetchHomeCity7DayAQI(cityName) {
+      try {
+        document.getElementById('ui-home-city').innerText = cityName;
+        // 透過地名取得該縣市經緯度
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${cityName},Taiwan`);
+        const geoData = await geoRes.json();
+        if(geoData && geoData.length > 0) {
+          const lat = geoData[0].lat; const lon = geoData[0].lon;
+          
+          // 抓取過去 7 天的 AQI 歷史資料
+          const aqiRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=aqi&past_days=7`);
+          const aqiData = await aqiRes.json();
+          
+          if(aqiData.hourly && aqiData.hourly.aqi) {
+            // 濾除空值並算出平均值
+            const validAqi = aqiData.hourly.aqi.filter(val => val !== null);
+            const avg = validAqi.length > 0 ? Math.round(validAqi.reduce((a, b) => a + b, 0) / validAqi.length) : '--';
+            
+            const aqiEl = document.getElementById('ui-home-aqi');
+            aqiEl.innerText = avg;
+            if(avg > 150) aqiEl.style.color = '#ff0000';
+            else if(avg > 100) aqiEl.style.color = '#ff9800';
+            else aqiEl.style.color = '#00D100';
+          }
+        }
+      } catch(e) {
+        console.error("抓取居住地歷史 AQI 失敗", e);
+        document.getElementById('ui-home-aqi').innerText = '無資料';
+      }
     }
 
     function getGPS() {
@@ -174,46 +421,30 @@
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=zh-TW`);
             const d = await res.json();
             currentLocName = `${d.address.city||''}${d.address.suburb||d.address.town||''}`;
-            document.getElementById('ui-loc-name').innerText = `📍 ${currentLocName}`;
-            
-            // 定位成功後，觸發氣象大數據引擎
-            fetchEnvironmentalData(lat, lon);
-          } catch(e) { document.getElementById('ui-loc-name').innerText = "📍 GPS 連線中"; calculateDashboardStats(); }
-        }, () => { calculateDashboardStats(); }); // 拒絕定位則用預設值算
+            document.getElementById('ui-loc-name').innerText = currentLocName;
+            fetchEnvironmentalData(lat, lon); // 觸發即時天氣
+          } catch(e) { document.getElementById('ui-loc-name').innerText = "定位失敗"; calculateDashboardStats(); }
+        }, () => { calculateDashboardStats(); });
       }
     }
 
-    // 🌟 全新！氣候連動大數據演算引擎
+    // 動態壽命演算法
     async function calculateDashboardStats() {
       if(!currentUser) return;
       const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
       
       if(filter && filter.activated_at) {
+        document.getElementById('contract-date').innerText = new Date(filter.activated_at).toLocaleDateString('zh-TW');
         const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000*60*60*24)));
         
-        // 【動態參數矩陣】
-        let baseDecay = 0.27; // 基礎每日耗損
-        let basePm25 = 1250;  // 基礎每日攔截量
-        
-        // 1. 里程係數 (開得多損耗快)
         let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
-        
-        // 2. AQI 空汙係數 (環境愈糟損耗愈快)
-        let aqiRate = 1.0;
-        if(envData.aqi > 150) aqiRate = 1.8;
-        else if(envData.aqi > 100) aqiRate = 1.4;
-        else if(envData.aqi < 30) aqiRate = 0.8; // 好空氣消耗慢
-        
-        // 3. 濕度係數 (濕度大於80%，發霉風險增高，壽命扣減加速)
+        let aqiRate = envData.aqi > 150 ? 1.8 : (envData.aqi > 100 ? 1.4 : (envData.aqi < 30 ? 0.8 : 1.0));
         let humRate = envData.hum > 80 ? 1.2 : 1.0;
 
-        // 綜合運算
         let totalMultiplier = mileageRate * aqiRate * humRate;
-        
-        let finalHealth = 100 - (days * baseDecay * totalMultiplier);
-        let finalPm25 = days * basePm25 * mileageRate * aqiRate; // 濕度不影響物理攔截量
+        let finalHealth = 100 - (days * 0.27 * totalMultiplier);
+        let finalPm25 = days * 1250 * mileageRate * aqiRate;
 
-        // 寫入儀表板
         const healthEl = document.getElementById('ui-health');
         healthEl.innerText = `${Math.max(0, Math.round(finalHealth))}%`;
         if(finalHealth < 30) healthEl.style.color = '#ff0000';
@@ -224,21 +455,86 @@
       }
     }
 
+    // 歷史紀錄讀取
+    window.loadHistory = async function(type) {
+      const container = document.getElementById('history-container');
+      container.innerHTML = '讀取中...'; let html = '';
+      if (type === 'filter') {
+        const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
+        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">🔄 ${new Date(d.activated_at).toLocaleDateString()} - [${d.activation_type}] 啟用 (${d.uid})</div>`);
+        else html = '<p style="color:#888;">尚無紀錄</p>';
+      } else if (type === 'book') {
+        const { data } = await supabaseClient.from('appointments').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('appointment_time', { ascending: false });
+        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">📍 ${new Date(d.appointment_time).toLocaleDateString()} - ${d.garages.name} [${d.status}]</div>`);
+        else html = '<p style="color:#888;">尚無紀錄</p>';
+      } else {
+        const filterStr = type === 'shop' ? '🛒 商城購買' : '';
+        let query = supabaseClient.from('user_logs').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
+        if (filterStr) query = query.eq('action', filterStr);
+        const { data } = await query;
+        if(data && data.length > 0) data.forEach(d => html += `<div class="log-item">📝 ${new Date(d.created_at).toLocaleDateString()} - ${d.action}: ${d.details}</div>`);
+        else html = '<p style="color:#888;">尚無紀錄</p>';
+      }
+      container.innerHTML = html;
+    };
+
+    // 其他基礎功能 (與上一版相同)
+    window.scanFilter = async function() { const res = await liff.scanCodeV2(); if (!res.value) return; await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated'); await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand + ' ' + currentUser.car_model, installed_location: currentLocName }).eq('uid', res.value); alert("✅ DIY 啟用成功！"); location.reload(); };
+    window.book = async function(gId, prefix = '') { const timeInput = document.getElementById(prefix ? `date-${prefix}-${gId}` : `date-${gId}`); if(!timeInput || !timeInput.value) return alert("請選擇預約時間"); await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: gId, appointment_time: new Date(timeInput.value) }]); alert("🎉 預約成功！"); };
+    window.generateMGM = function() { navigator.clipboard.writeText(`https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`).then(() => alert(`✅ 連結已複製！`)); };
+    window.redeemPoints = async function() { if(parseInt(document.getElementById('reward-balance').innerText.replace('$','')) < 100) return alert('餘額不足！'); await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', amount: 100, status: 'pending' }]); alert('✅ 申請已送出！'); location.reload(); };
+
+    async function loadGarages() {
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').eq('is_blacklisted', false);
+      let html = '';
+      if(data) data.forEach(g => html += `<div class="card"><h4 style="margin-top:0;">${g.name}</h4><p style="font-size:14px; color:#888;">📍 ${g.address}</p><input type="datetime-local" id="date-${g.id}" style="margin-bottom:10px;"><button class="btn-main" onclick="window.book(${g.id})">送出預約</button></div>`);
+      document.getElementById('garage-list').innerHTML = html || '<p>無可用店家</p>';
+    }
+    
+    async function loadRewards() {
+      const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid);
+      let total = 0; if(data) data.forEach(r => { if(r.status === 'completed') total += (r.type === 'earn' ? r.amount : -r.amount); });
+      document.getElementById('reward-balance').innerText = `$${total}`;
+    }
+
+    async function doSmartMatch() {
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active').eq('is_blacklisted', false).limit(1);
+      if(data && data.length > 0) document.getElementById('smart-match-result').innerHTML = `<h4 style="margin:0 0 5px 0; color:#fff;">✨ 推薦：${data[0].name}</h4><input type="datetime-local" id="date-smart-${data[0].id}" style="margin-bottom:10px;"><button class="btn-main" style="margin:0;" onclick="window.book(${data[0].id}, 'smart')">一鍵預約</button>`;
+    }
+
     async function initApp() {
       try {
         await liff.init({ liffId: "2009187567-58hBrZRj" });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const { data } = await supabaseClient.from('users').select('*').eq('line_uid', (await liff.getProfile()).userId).maybeSingle();
+        
         if (data && data.name) {
           currentUser = data; document.getElementById('nav-bar').style.display = 'flex';
+          
           if(data.role === 'customer') {
             document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
-            document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model}`;
+            document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model} | ${data.license_plate}`;
+            
+            // 預填設定頁面資料
+            document.getElementById('edit-name').value = data.name || '';
+            document.getElementById('edit-phone').value = data.phone || '';
+            document.getElementById('edit-email').value = data.email || '';
+            document.getElementById('edit-plate').value = data.license_plate || '';
+            document.getElementById('edit-mileage').value = data.yearly_mileage || '20000';
+            document.getElementById('contract-plate').innerText = data.license_plate;
+            
+            if(data.is_blacklisted) { document.getElementById('blacklist-warning').style.display = 'block'; document.getElementById('booking-section').style.display = 'none'; }
+
             window.switchPage('home', document.querySelector('.nav-item'));
-            getGPS(); // 啟動一連串的 GPS -> 天氣 -> 演算法計算
+            
+            // 🌟 啟動環境連線與計算引擎
+            getGPS(); // 即時所在地
+            if(data.city) fetchHomeCity7DayAQI(data.city); // 居住地近 7 日
+            
+            loadGarages(); loadRewards(); doSmartMatch(); window.loadHistory('filter');
           }
         } else { window.switchPage('register', null); }
-      } catch (err) { alert("啟動失敗"); }
+      } catch (err) { alert("啟動失敗：" + err.message); }
     }
 
     initApp();
