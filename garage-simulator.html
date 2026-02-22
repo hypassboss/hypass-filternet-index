@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>濾聯網 - 廠長接單模擬器</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: -apple-system, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 600px; margin: 0 auto; }
+    h2 { color: #FF9800; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .card { background: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; }
+    select { width: 100%; padding: 12px; margin-bottom: 20px; background: #000; color: #00D100; border: 1px solid #444; border-radius: 8px; font-size: 16px; font-weight: bold; }
+    .btn { padding: 10px 15px; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; margin-right: 10px; font-size: 14px; }
+    .btn-confirm { background: #FF9800; color: #fff; }
+    .btn-complete { background: #00D100; color: #000; }
+    .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>👨‍🔧 濾聯網 - 廠長接單模擬器</h2>
+  <p style="color:#aaa; font-size: 14px;">此為內部測試專用網頁，免登入即可模擬任何加盟店的接單狀況。</p>
+
+  <label for="garage-select" style="color:#888; font-size:14px;">請選擇您要模擬的保修廠：</label>
+  <select id="garage-select" onchange="loadOrders()">
+    <option value="">-- 讀取店家中 --</option>
+  </select>
+
+  <div id="orders-container">
+    <p style="color:#888;">請先從上方選擇店家</p>
+  </div>
+
+  <script>
+    // 您的專屬 Supabase 金鑰
+    const supabaseClient = supabase.createClient(
+      'https://qznvabjtxcbffjryfgqi.supabase.co', 
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
+    );
+
+    async function initSimulator() {
+      // 抓取所有狀態為 'active' (已開通) 的保修廠
+      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
+      const select = document.getElementById('garage-select');
+      
+      if (data && data.length > 0) {
+        select.innerHTML = '<option value="">-- 請選擇要模擬的保修廠 --</option>';
+        data.forEach(g => {
+          select.innerHTML += `<option value="${g.id}">${g.name} (代工費 $${g.labor_fee})</option>`;
+        });
+      } else {
+        select.innerHTML = '<option value="">❌ 目前無已開通的保修廠，請先至總部後台開通</option>';
+      }
+    }
+
+    async function loadOrders() {
+      const garageId = document.getElementById('garage-select').value;
+      const container = document.getElementById('orders-container');
+      
+      if (!garageId) {
+        container.innerHTML = '<p style="color:#888;">請先從上方選擇店家</p>';
+        return;
+      }
+
+      container.innerHTML = '<p style="color:#888;">讀取訂單中...</p>';
+
+      // 抓取該保修廠的所有預約單，並關聯車主資料
+      const { data } = await supabaseClient.from('appointments')
+        .select('*, users(name, license_plate, phone, car_model)')
+        .eq('garage_id', garageId)
+        .order('appointment_time', { ascending: true });
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="card"><p style="color:#888; text-align:center;">目前無任何預約單</p></div>';
+        return;
+      }
+
+      let html = '';
+      data.forEach(order => {
+        const time = new Date(order.appointment_time).toLocaleString('zh-TW');
+        let statusHtml = '';
+        let buttonsHtml = '';
+
+        // 依據訂單狀態顯示不同的按鈕與標籤
+        if (order.status === 'pending') {
+          statusHtml = '<span class="status-badge" style="background:#444; color:#fff;">待確認</span>';
+          buttonsHtml = `<button class="btn btn-confirm" onclick="updateOrderStatus(${order.id}, 'confirmed')">確認接單</button>`;
+        } else if (order.status === 'confirmed') {
+          statusHtml = '<span class="status-badge" style="background:#FF9800; color:#fff;">已接單排程</span>';
+          buttonsHtml = `<button class="btn btn-complete" onclick="updateOrderStatus(${order.id}, 'completed')">完工並核銷</button>`;
+        } else if (order.status === 'completed') {
+          statusHtml = '<span class="status-badge" style="background:#00D100; color:#000;">已完工核銷</span>';
+        }
+
+        html += `
+          <div class="card">
+            ${statusHtml}
+            <h4 style="margin: 0 0 10px 0; color: #fff;">🕒 預約時間：${time}</h4>
+            <p style="margin: 5px 0; color: #aaa;">👤 車主姓名：<span style="color:#fff;">${order.users.name}</span></p>
+            <p style="margin: 5px 0; color: #aaa;">🚗 車款車牌：<span style="color:#fff;">${order.users.car_model} (${order.users.license_plate})</span></p>
+            <p style="margin: 5px 0 15px 0; color: #aaa;">📞 聯絡電話：<span style="color:#fff;">${order.users.phone}</span></p>
+            <div>${buttonsHtml}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+      const { error } = await supabaseClient.from('appointments')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+        
+      if (!error) {
+        alert('✅ 狀態更新成功！');
+        loadOrders(); // 重新載入畫面
+      } else {
+        alert('❌ 更新失敗：' + error.message);
+      }
+    }
+
+    // 網頁載入時初始化
+    initSimulator();
+  </script>
+</body>
+</html>
