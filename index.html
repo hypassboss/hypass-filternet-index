@@ -7,7 +7,6 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* 採用老闆認可的深色科技風 UI */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #0a0a0c; color: #fff; padding-bottom: 90px; }
     .page { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
     .page.active { display: block; }
@@ -73,20 +72,23 @@
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
     async function initApp() {
-      await liff.init({ liffId: "2009187567-58hBrZRj" });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      const profile = await liff.getProfile();
-      
-      const { data } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).single();
-      if (data && data.name) {
-        document.getElementById('nav-bar').style.display = 'flex';
-        document.getElementById('ui-owner').innerText = data.name + " 的座艙";
-        document.getElementById('ui-car-info').innerText = data.car_model + " | " + data.license_plate;
-        switchPage('home', null);
-        getGPS();
-      } else {
-        switchPage('register', null);
-      }
+      try {
+        await liff.init({ liffId: "2009187567-58hBrZRj" });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+        
+        const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
+        
+        if (data && data.name) {
+          document.getElementById('nav-bar').style.display = 'flex';
+          document.getElementById('ui-owner').innerText = data.name + " 的座艙";
+          document.getElementById('ui-car-info').innerText = data.car_model + " | " + data.license_plate;
+          switchPage('home', null);
+          getGPS();
+        } else {
+          switchPage('register', null);
+        }
+      } catch (err) { alert("LIFF 初始化失敗"); }
     }
 
     function showForm(role) {
@@ -95,23 +97,34 @@
     }
 
     async function submitRegister(role) {
-      const profile = await liff.getProfile();
-      if (role === 'customer') {
-        const { error } = await supabaseClient.from('users').insert([{
-          line_uid: profile.userId, role: 'customer',
-          name: document.getElementById('c-name').value, phone: document.getElementById('c-phone').value,
-          city: document.getElementById('c-city').value, car_model: document.getElementById('c-model').value,
-          license_plate: document.getElementById('c-plate').value, yearly_mileage: 20000
-        }]);
-        if(!error) location.reload(); else alert("註冊失敗");
-      }
+      try {
+        const profile = await liff.getProfile();
+        const { error } = await supabaseClient.from('users').upsert({
+          line_uid: profile.userId, 
+          role: role,
+          name: document.getElementById('c-name')?.value || document.getElementById('g-name')?.value,
+          phone: document.getElementById('c-phone')?.value || document.getElementById('g-phone')?.value,
+          city: document.getElementById('c-city')?.value || '',
+          car_model: document.getElementById('c-model')?.value || '',
+          license_plate: document.getElementById('c-plate')?.value || '',
+          yearly_mileage: 20000
+        });
+        
+        if (error) {
+          alert("註冊失敗！錯誤原因：" + error.message);
+        } else {
+          location.reload();
+        }
+      } catch (err) { alert("系統錯誤，無法送出資料"); }
     }
 
     function getGPS() {
       navigator.geolocation.getCurrentPosition(async (pos) => {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
-        const d = await res.json();
-        document.getElementById('ui-gps-location').innerText = `📍 ${d.address.city || ''}${d.address.suburb || d.address.town || ''}`;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`);
+          const d = await res.json();
+          document.getElementById('ui-gps-location').innerText = `📍 ${d.address.city || ''}${d.address.suburb || d.address.town || ''}`;
+        } catch (e) { document.getElementById('ui-gps-location').innerText = "📍 定位解析中..."; }
       });
     }
 
