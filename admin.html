@@ -2,78 +2,175 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>HYPASS 總部管理系統</title>
+  <title>HYPASS V2 總部戰情室</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: sans-serif; background: #f4f6f8; padding: 20px; }
-    .panel { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    button { background: #000; color: #00D100; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight:bold; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background: #f0f0f0; }
+    body { font-family: sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
+    .sidebar { width: 220px; background: #0a0a0c; color: #fff; padding: 20px 0; }
+    .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; border-left: 4px solid transparent; }
+    .nav-btn:hover { color: #fff; background: #222; }
+    .nav-btn.active { color: #00D100; border-left-color: #00D100; background: #1a1e1a; font-weight: bold; }
+    .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+    .panel { display: none; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .panel.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background: #f8f9fa; color: #555; }
+    .btn { background: #00D100; color: #000; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight:bold; }
+    .btn-danger { background: #ff4444; color: #fff; }
+    .btn-warn { background: #ff9800; color: #fff; }
+    .stat-card { background: #1a1e1a; color: #00D100; padding: 20px; border-radius: 8px; text-align: center; flex: 1; margin-right: 15px; border: 1px solid #333; }
+    .stat-card h1 { font-size: 36px; margin: 10px 0; }
+    .stat-card p { color: #888; margin: 0; font-size: 14px; }
   </style>
 </head>
 <body>
 
-  <h1>HYPASS 總部控制中心</h1>
-
-  <div class="panel">
-    <h2>防偽 UID 生產線</h2>
-    <p style="font-weight: bold; color: #333;">產品型號：Hypass 台灣製汽車冷氣濾網</p>
-    <button onclick="generateUIDs(10)">批次生成 10 組新 UID</button>
-    <div id="uid-result" style="margin-top:10px; color:green; white-space: pre-wrap;"></div>
+  <div class="sidebar">
+    <h2 style="color:#00D100; padding: 0 20px; border:none;">HYPASS ADMIN</h2>
+    <button class="nav-btn active" onclick="switchTab('esg', this)">🌍 ESG 戰情室</button>
+    <button class="nav-btn" onclick="switchTab('crm', this)">👥 CRM 客戶管理</button>
+    <button class="nav-btn" onclick="switchTab('garage', this)">👨‍🔧 保修廠審核</button>
+    <button class="nav-btn" onclick="switchTab('uid', this)">🏷️ UID 防偽庫存</button>
+    <button class="nav-btn" onclick="switchTab('rewards', this)">🎁 獎勵金派發</button>
   </div>
 
-  <div class="panel">
-    <h2>濾聯網保修廠管理 (待審核列表)</h2>
-    <table>
-      <thead><tr><th>店名</th><th>廠長姓名</th><th>電話</th><th>地址</th><th>設定代工費</th><th>操作</th></tr></thead>
-      <tbody id="garage-list"></tbody>
-    </table>
+  <div class="main-content">
+    
+    <div id="panel-esg" class="panel active">
+      <h2>🌍 HYPASS 綠能貢獻總覽</h2>
+      <div style="display: flex; margin-bottom: 20px;">
+        <div class="stat-card"><h1><span id="esg-pm25">0</span> µg</h1><p>全網累計攔截 PM2.5</p></div>
+        <div class="stat-card"><h1><span id="esg-co2">0</span> kg</h1><p>全網減少碳排放</p></div>
+        <div class="stat-card" style="margin-right:0;"><h1><span id="esg-active">0</span> 片</h1><p>目前防護中濾網總數</p></div>
+      </div>
+      <button class="btn" onclick="loadESG()">重新計算最新數據</button>
+    </div>
+
+    <div id="panel-crm" class="panel">
+      <h2>👥 濾網客人 CRM (含黑名單管理)</h2>
+      <table id="crm-table"><thead><tr><th>姓名</th><th>電話</th><th>車款/車牌</th><th>狀態</th><th>操作</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div id="panel-garage" class="panel">
+      <h2>👨‍🔧 濾聯網保修廠管理</h2>
+      <table id="garage-table"><thead><tr><th>店名</th><th>地址</th><th>平均評分</th><th>狀態</th><th>操作</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div id="panel-uid" class="panel">
+      <h2>🏷️ 防偽 UID 生命週期管理</h2>
+      <button class="btn" onclick="generateUIDs(5)">+ 批次生產 5 組新 UID</button>
+      <table id="uid-table" style="margin-top:15px;"><thead><tr><th>UID 碼</th><th>狀態</th><th>啟用類型</th><th>綁定車型/地點</th><th>操作時間</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div id="panel-rewards" class="panel">
+      <h2>🎁 LINE Points 人工兌換審核</h2>
+      <p style="color:#666; font-size:14px;">請於 LINE 官方帳號發送序號給車主後，在此點擊「完成發放結案」。</p>
+      <table id="reward-table"><thead><tr><th>申請車主</th><th>申請項目</th><th>時間</th><th>操作</th></tr></thead><tbody></tbody></table>
+    </div>
+
   </div>
 
   <script>
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
-    function makeId(length) {
-      let result = '';
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      for (let i = 0; i < length; i++) result += characters.charAt(Math.floor(Math.random() * characters.length));
-      return result;
+    function switchTab(id, btn) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-'+id).classList.add('active');
+      btn.classList.add('active');
+      
+      if(id==='esg') loadESG();
+      if(id==='crm') loadCRM();
+      if(id==='garage') loadGarages();
+      if(id==='uid') loadUIDs();
+      if(id==='rewards') loadRewards();
     }
 
-    async function generateUIDs(count) {
-      let newUids = [];
-      let insertData = [];
-      for(let i=0; i<count; i++) {
-        let code = 'HP-' + makeId(8);
-        newUids.push(code);
-        insertData.push({ uid: code, product_model: 'Hypass 台灣製汽車冷氣濾網', status: 'produced' });
+    // 1. ESG 計算
+    async function loadESG() {
+      const { data } = await supabaseClient.from('filters_uid').select('activated_at').eq('status', 'activated');
+      if(data) {
+        let totalDays = 0;
+        data.forEach(d => { if(d.activated_at) totalDays += Math.floor((new Date() - new Date(d.activated_at)) / (1000*60*60*24)); });
+        document.getElementById('esg-pm25').innerText = (totalDays * 1250).toLocaleString();
+        document.getElementById('esg-co2').innerText = (totalDays * 0.15).toFixed(1);
+        document.getElementById('esg-active').innerText = data.length;
       }
-      const { error } = await supabaseClient.from('filters_uid').insert(insertData);
-      if(!error) document.getElementById('uid-result').innerText = `✅ 成功生成 10 組：\n` + newUids.join('\n'); else alert("生成失敗");
     }
 
-    async function loadPendingGarages() {
-      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'pending');
+    // 2. CRM
+    async function loadCRM() {
+      const { data } = await supabaseClient.from('users').select('*').eq('role', 'customer').order('created_at', { ascending: false });
+      let html = '';
+      if(data) data.forEach(u => {
+        let status = u.is_blacklisted ? '<span style="color:red; font-weight:bold;">黑名單</span>' : '<span style="color:green;">正常</span>';
+        let action = u.is_blacklisted ? `<button class="btn" onclick="toggleBlacklist('${u.line_uid}', false, 'users')">解除黑名單</button>` : `<button class="btn btn-danger" onclick="toggleBlacklist('${u.line_uid}', true, 'users')">設為黑名單</button>`;
+        html += `<tr><td>${u.name}</td><td>${u.phone}</td><td>${u.car_brand} ${u.car_model} (${u.license_plate})</td><td>${status}</td><td>${action}</td></tr>`;
+      });
+      document.getElementById('crm-table').querySelector('tbody').innerHTML = html;
+    }
+
+    // 3. 保修廠
+    async function loadGarages() {
+      const { data } = await supabaseClient.from('garages').select('*, appointments(garage_rating)').order('created_at', { ascending: false });
       let html = '';
       if(data) data.forEach(g => {
-        html += `<tr>
-          <td>${g.name}</td><td>${g.contact_name}</td><td>${g.phone}</td><td>${g.city}${g.address}</td>
-          <td><input type="number" id="fee-${g.id}" value="300" style="width:80px;"> 元</td>
-          <td><button onclick="approveGarage(${g.id})">核准開通</button></td>
-        </tr>`;
+        let ratings = g.appointments.map(a => a.garage_rating).filter(r => r);
+        let avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '尚無評分';
+        let status = g.status === 'pending' ? '待審核' : (g.is_blacklisted ? '<span style="color:red;">停權/黑名單</span>' : '<span style="color:green;">營業中</span>');
+        let action = g.status === 'pending' ? `<button class="btn" onclick="approveGarage(${g.id})">核准開通</button>` : 
+                     (g.is_blacklisted ? `<button class="btn" onclick="toggleBlacklist(${g.id}, false, 'garages')">解除停權</button>` : `<button class="btn btn-danger" onclick="toggleBlacklist(${g.id}, true, 'garages')">強制停權</button>`);
+        html += `<tr><td>${g.name}</td><td>${g.city}${g.address}</td><td>${avg} ⭐</td><td>${status}</td><td>${action}</td></tr>`;
       });
-      document.getElementById('garage-list').innerHTML = html || '<tr><td colspan="6" style="text-align:center;">目前無待審核的保修廠</td></tr>';
+      document.getElementById('garage-table').querySelector('tbody').innerHTML = html;
     }
 
-    async function approveGarage(id) {
-      const fee = document.getElementById(`fee-${id}`).value;
-      await supabaseClient.from('garages').update({ status: 'active', labor_fee: fee }).eq('id', id);
-      alert('已開通上架！'); loadPendingGarages();
+    async function approveGarage(id) { await supabaseClient.from('garages').update({ status: 'active' }).eq('id', id); loadGarages(); }
+    async function toggleBlacklist(id, isBlack, table) { 
+      if(table === 'users') await supabaseClient.from('users').update({ is_blacklisted: isBlack }).eq('line_uid', id);
+      else await supabaseClient.from('garages').update({ is_blacklisted: isBlack }).eq('id', id);
+      table === 'users' ? loadCRM() : loadGarages(); 
     }
 
-    loadPendingGarages();
+    // 4. UID 管理
+    function makeId(length) { let r = ''; const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; for(let i=0; i<length; i++) r += c.charAt(Math.floor(Math.random() * c.length)); return r; }
+    
+    async function generateUIDs(count) {
+      let ins = []; for(let i=0; i<count; i++) ins.push({ uid: 'HP-' + makeId(8) });
+      await supabaseClient.from('filters_uid').insert(ins); alert('生產完成'); loadUIDs();
+    }
+
+    async function loadUIDs() {
+      const { data } = await supabaseClient.from('filters_uid').select('*').order('created_at', { ascending: false }).limit(50);
+      let html = '';
+      if(data) data.forEach(d => {
+        let status = d.status === 'produced' ? '🏷️ 未使用' : d.status === 'activated' ? '🟢 服役中' : '🗑️ 已淘汰';
+        let type = d.activation_type ? d.activation_type : '-';
+        let info = d.installed_car_model ? `${d.installed_car_model} (${d.installed_location})` : '-';
+        let time = d.activated_at ? new Date(d.activated_at).toLocaleString() : new Date(d.created_at).toLocaleString();
+        html += `<tr><td><b>${d.uid}</b></td><td>${status}</td><td>${type}</td><td>${info}</td><td>${time}</td></tr>`;
+      });
+      document.getElementById('uid-table').querySelector('tbody').innerHTML = html;
+    }
+
+    // 5. 獎勵金
+    async function loadRewards() {
+      const { data } = await supabaseClient.from('rewards').select('*, users(name, phone)').eq('type', 'redeem').eq('status', 'pending').order('created_at', { ascending: true });
+      let html = '';
+      if(data) data.forEach(r => {
+        html += `<tr><td>${r.users.name} (${r.users.phone})</td><td>兌換 LINE Point 100點</td><td>${new Date(r.created_at).toLocaleString()}</td><td><button class="btn" onclick="completeReward(${r.id})">✅ 完成發放結案</button></td></tr>`;
+      });
+      document.getElementById('reward-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4">目前無待處理申請</td></tr>';
+    }
+
+    async function completeReward(id) {
+      await supabaseClient.from('rewards').update({ status: 'completed' }).eq('id', id); alert('已結案！'); loadRewards();
+    }
+
+    loadESG();
   </script>
 </body>
 </html>
