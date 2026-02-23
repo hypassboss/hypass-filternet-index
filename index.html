@@ -7,144 +7,54 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* 🌟 1. 曜石黑 (極致科技風) */
     :root {
-      --bg-image: none;
-      --bg-color: #050505;
-      --text-color: #e0e6ed;
-      --text-muted: #7a8594;
-      --card-bg: #121417;
-      --border-color: #22262a;
-      --input-bg: #000000;
-      --input-text: #00ffcc; /* 冷光青字體 */
-      --input-border: #333b44;
-      --nav-bg: rgba(10, 12, 15, 0.95);
-      --nav-text: #66707a;
-      --primary-color: #00e676; /* 霓虹綠 */
-      --primary-gradient: linear-gradient(135deg, #00e676 0%, #00a355 100%);
+      --bg-image: none; --bg-color: #050505; --text-color: #e0e6ed; --text-muted: #7a8594;
+      --card-bg: #121417; --border-color: #22262a; --input-bg: #000000; --input-text: #00ffcc; 
+      --input-border: #333b44; --nav-bg: rgba(10, 12, 15, 0.95); --nav-text: #66707a;
+      --primary-color: #00e676; --primary-gradient: linear-gradient(135deg, #00e676 0%, #00a355 100%);
       --tag-bg: linear-gradient(90deg, rgba(0, 40, 20, 0.8) 0%, rgba(10, 15, 12, 0.9) 100%);
-      --tag-text: #00ffcc;
-      --msg-bar-bg: linear-gradient(to right, #0f1c14, #050505);
-      --env-box-bg: #16191c;
-      --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+      --tag-text: #00ffcc; --msg-bar-bg: linear-gradient(to right, #0f1c14, #050505);
+      --env-box-bg: #16191c; --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
     }
-
-    /* 🌟 2. 珍珠白 (優雅奢華風) */
     body.light-mode {
-      --bg-image: none;
-      --bg-color: #f4f7f6;
-      --text-color: #2c3e50; /* 質感墨藍色 */
-      --text-muted: #7f8c8d;
-      --card-bg: #ffffff;
-      --border-color: #e0e6ed;
-      --input-bg: #ffffff;
-      --input-text: #2c3e50;
-      --input-border: #bdc3c7;
-      --nav-bg: rgba(255, 255, 255, 0.95);
-      --nav-text: #95a5a6;
-      --primary-color: #27ae60; /* 翡翠墨綠 */
-      --primary-gradient: linear-gradient(135deg, #2ecc71 0%, #229954 100%);
-      --tag-bg: #f8fdfa; 
-      --tag-text: #1e8449; /* 更深的綠色讓白底好閱讀 */
-      --msg-bar-bg: #edf7f2;
-      --env-box-bg: #ffffff;
-      --card-shadow: 0 8px 24px rgba(149, 157, 165, 0.15); /* 柔和浮雕陰影 */
+      --bg-image: none; --bg-color: #f4f7f6; --text-color: #2c3e50; --text-muted: #7f8c8d;
+      --card-bg: #ffffff; --border-color: #e0e6ed; --input-bg: #ffffff; --input-text: #2c3e50;
+      --input-border: #bdc3c7; --nav-bg: rgba(255, 255, 255, 0.95); --nav-text: #95a5a6;
+      --primary-color: #27ae60; --primary-gradient: linear-gradient(135deg, #2ecc71 0%, #229954 100%);
+      --tag-bg: #f8fdfa; --tag-text: #1e8449; --msg-bar-bg: #edf7f2;
+      --env-box-bg: #ffffff; --card-shadow: 0 8px 24px rgba(149, 157, 165, 0.15); 
     }
-
-    /* 🌟 3. 鈦金屬 (重裝機甲拉絲紋) */
     body.metal-mode {
-      /* 髮絲紋金屬背景特效 */
       --bg-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px), linear-gradient(145deg, #3a3c42 0%, #1e2024 100%);
-      --bg-color: #2b2d31; 
-      --text-color: #f0f2f5;
-      --text-muted: #aab0b8;
-      --card-bg: linear-gradient(145deg, #32353a 0%, #232529 100%);
-      --border-color: #55595e;
-      --input-bg: #1a1b1e;
-      --input-text: #00ffcc;
-      --input-border: #55595e;
-      --nav-bg: rgba(35, 37, 41, 0.95);
-      --nav-text: #8b9096;
-      --primary-color: #00e676;
+      --bg-color: #2b2d31; --text-color: #f0f2f5; --text-muted: #aab0b8;
+      --card-bg: linear-gradient(145deg, #32353a 0%, #232529 100%); --border-color: #55595e;
+      --input-bg: #1a1b1e; --input-text: #00ffcc; --input-border: #55595e;
+      --nav-bg: rgba(35, 37, 41, 0.95); --nav-text: #8b9096; --primary-color: #00e676;
       --primary-gradient: linear-gradient(135deg, #00e676 0%, #00b359 100%);
-      --tag-bg: linear-gradient(145deg, #3a3d42 0%, #282a2e 100%);
-      --tag-text: #00ffcc;
-      --msg-bar-bg: linear-gradient(to right, #2c3035, #1e2024);
-      --env-box-bg: linear-gradient(145deg, #2f3136 0%, #232529 100%);
+      --tag-bg: linear-gradient(145deg, #3a3d42 0%, #282a2e 100%); --tag-text: #00ffcc;
+      --msg-bar-bg: linear-gradient(to right, #2c3035, #1e2024); --env-box-bg: linear-gradient(145deg, #2f3136 0%, #232529 100%);
       --card-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 8px 20px rgba(0,0,0,0.6);
     }
-
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-color); padding-bottom: 90px; transition: background 0.4s, color 0.4s; min-height: 100vh;}
-    .page { display: none; padding: 15px; animation: fadeIn 0.4s ease; }
-    .page.active { display: block; }
+    .page { display: none; padding: 15px; animation: fadeIn 0.4s ease; } .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-    
     .card { background: var(--card-bg); padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: all 0.4s; }
     .btn-main { background: var(--primary-gradient); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: opacity 0.2s, transform 0.1s; text-shadow: 0 1px 2px rgba(0,0,0,0.3);}
     .btn-main:active { opacity: 0.8; transform: scale(0.98); }
-    
     input, select { width: 100%; padding: 14px; margin-bottom: 12px; background: var(--input-bg); color: var(--input-text); border: 1px solid var(--input-border); border-radius: 10px; box-sizing: border-box; transition: background 0.3s, color 0.3s; }
-    
     .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 12px 0 25px 0; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(15px); transition: background 0.3s; }
     .nav-item { color: var(--nav-text); font-size: 11px; cursor: pointer; text-align: center; width: 20%; transition: color 0.3s, transform 0.2s; }
-    .nav-item:active { transform: scale(0.9); }
-    .nav-item.active { color: var(--primary-color); font-weight: bold; }
+    .nav-item:active { transform: scale(0.9); } .nav-item.active { color: var(--primary-color); font-weight: bold; }
     
-    /* 🌟🌟 終極強化版：防護中劇烈呼吸燈 */
-    .shield-badge { 
-      background: rgba(0, 230, 118, 0.1); 
-      border: 1px solid var(--primary-color); 
-      color: var(--primary-color); 
-      padding: 6px 14px; 
-      border-radius: 20px; 
-      font-size: 12px; 
-      font-weight: bold; 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      /* 外框強烈脈動 */
-      animation: badgePulse 1.5s infinite alternate ease-in-out;
-    }
-    @keyframes badgePulse {
-      0% { box-shadow: 0 0 5px rgba(0, 230, 118, 0.2); border-color: rgba(0, 230, 118, 0.4); }
-      100% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.9), inset 0 0 10px rgba(0, 230, 118, 0.3); border-color: rgba(0, 230, 118, 1); text-shadow: 0 0 5px rgba(0,230,118,0.8); }
-    }
-    .pulse-dot { 
-      display: inline-block; 
-      width: 14px; 
-      height: 14px; 
-      background: var(--primary-color); 
-      border-radius: 50%; 
-      /* 內部點的雙層擴散與巨大縮放 */
-      animation: superHeartBeat 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1); 
-    }
-    @keyframes superHeartBeat { 
-      0% { transform: scale(0.5); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.9), 0 0 10px rgba(0,230,118,1); } 
-      50% { transform: scale(1.6); box-shadow: 0 0 0 15px rgba(0, 230, 118, 0), 0 0 25px rgba(0,230,118,0.6); } 
-      100% { transform: scale(0.5); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0), 0 0 10px rgba(0,230,118,1); } 
-    }
+    .shield-badge { background: rgba(0, 230, 118, 0.1); border: 1px solid var(--primary-color); color: var(--primary-color); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 12px; animation: badgePulse 1.5s infinite alternate ease-in-out; }
+    @keyframes badgePulse { 0% { box-shadow: 0 0 5px rgba(0, 230, 118, 0.2); border-color: rgba(0, 230, 118, 0.4); } 100% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.9), inset 0 0 10px rgba(0, 230, 118, 0.3); border-color: rgba(0, 230, 118, 1); text-shadow: 0 0 5px rgba(0,230,118,0.8); } }
+    .pulse-dot { display: inline-block; width: 14px; height: 14px; background: var(--primary-color); border-radius: 50%; animation: superHeartBeat 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
+    @keyframes superHeartBeat { 0% { transform: scale(0.5); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.9), 0 0 10px rgba(0,230,118,1); } 50% { transform: scale(1.6); box-shadow: 0 0 0 15px rgba(0, 230, 118, 0), 0 0 25px rgba(0,230,118,0.6); } 100% { transform: scale(0.5); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0), 0 0 10px rgba(0,230,118,1); } }
     
-    /* 🌟 科技儀表板網格 */
     .tech-tag-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
-    .tech-tag { 
-      background: var(--tag-bg); 
-      color: var(--tag-text); 
-      padding: 10px 12px; 
-      border-radius: 8px; 
-      font-size: 12px; 
-      border: 1px solid var(--border-color); 
-      border-left: 4px solid var(--primary-color); 
-      display: flex; 
-      align-items: center; 
-      gap: 8px;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-      transition: background 0.3s, color 0.3s;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
+    .tech-tag { background: var(--tag-bg); color: var(--tag-text); padding: 10px 12px; border-radius: 8px; font-size: 12px; border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color); display: flex; align-items: center; gap: 8px; font-weight: bold; letter-spacing: 0.5px; transition: background 0.3s, color 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
     .tech-tag-icon { font-size: 15px; }
 
-    /* 60fps 跑馬燈 */
     .dynamic-msg-bar { background: var(--msg-bar-bg); color: var(--primary-color); padding: 14px 15px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; transition: background 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
     .dynamic-msg-icon { margin-right: 12px; font-size: 16px; flex-shrink: 0; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; }
@@ -161,7 +71,8 @@
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-    .esg-box { text-align: center; padding: 12px 5px; background: var(--env-box-bg); border-radius: 12px; border: 1px solid var(--border-color); transition: background 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+    .esg-box { text-align: center; padding: 12px 5px; background: var(--env-box-bg); border-radius: 12px; border: 1px solid var(--border-color); transition: background 0.3s; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); position: relative; }
+    .esg-badge { position: absolute; top: -8px; right: -5px; background: var(--primary-color); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
     
     .tab-btn { padding: 12px; margin: 0; font-size: 13px; flex: 1; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; }
     .tab-btn.active { background: var(--primary-gradient); color: #fff; border-color: var(--primary-color); text-shadow: 0 1px 2px rgba(0,0,0,0.3);}
@@ -172,15 +83,10 @@
     .version-tag { text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 30px; font-family: monospace; }
     label { font-size: 12px; color: var(--text-muted); font-weight: bold; margin-bottom: 4px; display: block; }
 
-    /* 🌟 4. 獎勵按鈕自動掃光特效 (VIP 黑金卡) */
     .vip-card { border: 1px solid #553300; background: linear-gradient(135deg, #1f1c0d, #2a2000); box-shadow: 0 10px 30px rgba(255, 152, 0, 0.15); position: relative; overflow: hidden; }
     .vip-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255, 152, 0, 0.15); filter: blur(30px); border-radius: 50%; }
     .shine-btn { position: relative; overflow: hidden; }
-    .shine-btn::after {
-      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-      transform: skewX(-25deg); animation: shine 3s infinite;
-    }
+    .shine-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); transform: skewX(-25deg); animation: shine 3s infinite; }
     @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
   </style>
 </head>
@@ -189,7 +95,6 @@
   <div id="page-register" class="page">
     <h2 style="color:var(--primary-color);">HYPASS 首次登入授權</h2>
     <div class="card"><p style="font-size:12px; color:var(--text-muted); margin:0;">本系統蒐集資料僅供保固預約與履歷紀錄使用。</p></div>
-    
     <button class="btn-main" onclick="showForm('customer')">A. 我是濾網客人 (車主)</button>
     <button class="btn-main" style="background:#444; color:#fff;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
 
@@ -199,22 +104,21 @@
       <input type="email" id="c-email" placeholder="* 電子郵件">
       <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
       <select id="c-city">
-        <option value="">* 居住縣市</option><option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+        <option value="">* 居住縣市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="其他">其他縣市</option>
       </select>
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
-        <option value="">* 選擇車輛品牌</option><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Lexus">Lexus</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="Other">其他品牌</option>
+        <option value="">* 選擇車輛品牌</option><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Tesla">Tesla</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Other">其他品牌</option>
       </select>
       <select id="c-model"><option value="">* 請先選擇品牌</option></select>
       <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
       <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
-      <select id="c-mileage"><option value="">* 年平均里程習慣</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option><option value="40000">40,000 公里</option><option value="50000">50,000 公里以上</option></select>
+      <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
       <button class="btn-main" onclick="submitRegister('customer')">完成註冊</button>
     </div>
   </div>
 
   <div id="page-home" class="page">
     <div class="card" style="border-left: 4px solid var(--primary-color); margin-bottom: 10px;">
-      
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
           <p id="ui-owner" style="font-size:18px; font-weight:bold; margin:0; color:var(--text-color);">讀取中...</p>
@@ -265,9 +169,18 @@
     </div>
     
     <div class="grid-3">
-      <div class="esg-box"><div style="font-size:20px;">🌱</div><div style="font-size:16px; font-weight:bold; color:var(--text-color);"><span id="ui-esg-co2">0</span> kg</div><div style="font-size:11px; color:var(--text-muted);">省碳足跡</div></div>
-      <div class="esg-box"><div style="font-size:20px;">⚡️</div><div style="font-size:16px; font-weight:bold; color:var(--text-color);"><span id="ui-esg-kwh">0</span> kWh</div><div style="font-size:11px; color:var(--text-muted);">省電效能</div></div>
-      <div class="esg-box"><div style="font-size:20px;">⛽️</div><div style="font-size:16px; font-weight:bold; color:var(--text-color);">12 %</div><div style="font-size:11px; color:var(--text-muted);">空調節能</div></div>
+      <div class="esg-box">
+        <div class="esg-badge">4Pa低風阻</div>
+        <div style="font-size:20px; margin-top:5px;">🌱</div><div style="font-size:16px; font-weight:bold; color:var(--text-color);"><span id="ui-esg-co2">0</span> kg</div><div style="font-size:11px; color:var(--text-muted);">省碳足跡</div>
+      </div>
+      <div class="esg-box">
+        <div class="esg-badge">鼓風機減負</div>
+        <div style="font-size:20px; margin-top:5px;">⚡️</div><div style="font-size:16px; font-weight:bold; color:var(--text-color);"><span id="ui-esg-kwh">0</span> kWh</div><div style="font-size:11px; color:var(--text-muted);">省電效能</div>
+      </div>
+      <div class="esg-box">
+        <div class="esg-badge">5.3 CM/S</div>
+        <div style="font-size:20px; margin-top:5px;">⛽️</div><div style="font-size:16px; font-weight:bold; color:var(--text-color);"><span id="ui-esg-ac">0</span> %</div><div style="font-size:11px; color:var(--text-muted);">空調節能提升</div>
+      </div>
     </div>
   </div>
 
@@ -294,14 +207,12 @@
 
   <div id="page-rewards" class="page">
     <h3 style="color:var(--primary-color);">🎁 推薦任務與獎勵</h3>
-    
     <div class="card vip-card" style="text-align: center;">
       <h4 style="margin:0; color:#FFB300; font-size: 16px;">✨ 您的獎勵金餘額</h4>
       <h1 style="margin:10px 0; font-size: 48px; color: #FFF; text-shadow: 0 2px 15px rgba(255, 152, 0, 0.6);"><span id="reward-balance">$0</span></h1>
       <p style="font-size:13px; color:#ddd; margin-bottom: 20px;">累積滿 $100 即可兌換 LINE Points，累積無上限！</p>
       <button class="btn-main shine-btn" style="background: linear-gradient(135deg, #FFB300, #FF8C00); color: #000; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);" onclick="redeemPoints()">💰 申請提領點數</button>
     </div>
-    
     <div class="card" style="text-align: center; border: 2px dashed var(--primary-color); background: var(--env-box-bg);">
        <h3 style="margin-top: 5px; color: var(--text-color);">🚀 邀請車友加入座艙</h3>
        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">分享您的專屬連結，好友成功啟用濾網，您將立即獲得高額推薦獎勵！</p>
@@ -311,7 +222,6 @@
 
   <div id="page-settings" class="page">
     <h3 style="color:var(--primary-color);">⚙️ 設定與紀錄</h3>
-    
     <div style="display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
       <div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')">👤 基本資料</div>
       <div class="tab-btn inactive" id="tab-set-theme" onclick="switchSetTab('theme')">🎨 畫面設定</div>
@@ -325,23 +235,12 @@
         <label>聯絡電話</label><input type="tel" id="edit-phone">
         <label>電子郵件</label><input type="email" id="edit-email">
         <label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
-        <label>居住縣市</label>
-        <select id="edit-city">
-          <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
-        </select>
-        <label>車輛品牌</label>
-        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
-          <option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Lexus">Lexus</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="Other">其他品牌</option>
-        </select>
+        <label>居住縣市</label><select id="edit-city"><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="台中市">台中市</option><option value="高雄市">高雄市</option><option value="其他">其他</option></select>
+        <label>車輛品牌</label><select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Tesla">Tesla</option><option value="Other">其他品牌</option></select>
         <label>車輛型號</label><select id="edit-model"></select>
         <label>出廠年份</label><input type="number" id="edit-year">
         <label>車牌號碼</label><input type="text" id="edit-plate">
-        <label>年平均行駛里程</label>
-        <select id="edit-mileage">
-          <option value="10000">10,000 公里</option><option value="20000">20,000 公里</option>
-          <option value="30000">30,000 公里</option><option value="40000">40,000 公里</option>
-          <option value="50000">50,000 公里以上</option>
-        </select>
+        <label>年平均行駛里程</label><select id="edit-mileage"><option value="10000">10,000</option><option value="20000">20,000</option><option value="30000">30,000</option></select>
         <button class="btn-main" onclick="updateProfile()">儲存修正資料</button>
       </div>
     </div>
@@ -361,7 +260,7 @@
       <div class="card">
         <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:15px; border-color:var(--primary-color); color:var(--primary-color); font-weight:bold;">
           <option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 保修廠預約紀錄</option>
-          <option value="shop">🛒 商城購買紀錄</option><option value="logs">✏️ 其他操作紀錄</option>
+          <option value="shop">🛒 商城購買紀錄</option>
         </select>
         <div id="history-container" style="max-height: 300px; overflow-y: auto;">載入中...</div>
       </div>
@@ -370,8 +269,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-color);">📄 HYPASS 數位保固卡</h4><p style="font-size:13px; color:var(--text-muted); margin:5px 0;">認證車牌：<span id="contract-plate" style="color:var(--primary-color); font-weight:bold;"></span></p></div>
     </div>
-    
-    <div class="version-tag">System Ver. V3.7-全景沉浸版</div>
+    <div class="version-tag">System Ver. V3.9-物理演算法版</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -390,37 +288,19 @@
     let currentLocName = '台灣'; 
     let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
-    const carData = { 
-      "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "其他"], "Honda": ["CR-V", "HR-V", "Civic", "Fit", "其他"],
-      "Nissan": ["Kicks", "Sentra", "X-Trail", "其他"], "Ford": ["Focus", "Kuga", "其他"], "Mazda": ["Mazda 3", "CX-5", "其他"],
-      "Mitsubishi": ["Outlander", "Eclipse Cross", "Colt Plus", "其他"], "Hyundai": ["Tucson", "Custin", "Venue", "其他"],
-      "Kia": ["Sportage", "Sorento", "EV6", "其他"], "Volkswagen": ["Golf", "Tiguan", "其他"], "Skoda": ["Kodiaq", "Kamiq", "其他"],
-      "Lexus": ["NX", "RX", "UX", "ES", "其他"], "Benz": ["C-Class", "E-Class", "GLC", "GLE", "其他"],
-      "BMW": ["3-Series", "5-Series", "X3", "X5", "其他"], "Audi": ["A3", "A4", "Q3", "Q5", "其他"],
-      "Volvo": ["XC60", "XC40", "其他"], "Porsche": ["Macan", "Cayenne", "其他"], "Tesla": ["Model Y", "Model 3", "Model X", "Model S"],
-      "Subaru": ["Forester", "XV", "其他"], "Suzuki": ["Swift", "Jimny", "其他"], "Luxgen": ["URX", "n7", "其他"], "Other": ["其他品牌"] 
-    };
+    const carData = { "Toyota": ["Model Y", "RAV4", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他"] };
 
     function setTheme(theme) {
       document.body.classList.remove('light-mode', 'metal-mode');
       document.getElementById('btn-theme-dark').style.border = '2px solid transparent';
       document.getElementById('btn-theme-light').style.border = '2px solid transparent';
       document.getElementById('btn-theme-metal').style.border = '2px solid transparent';
-
-      if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        document.getElementById('btn-theme-light').style.border = '2px solid #27ae60';
-      } else if (theme === 'metal') {
-        document.body.classList.add('metal-mode');
-        document.getElementById('btn-theme-metal').style.border = '2px solid #00ffcc';
-      } else {
-        theme = 'dark'; 
-        document.getElementById('btn-theme-dark').style.border = '2px solid #00e676';
-      }
+      if (theme === 'light') { document.body.classList.add('light-mode'); document.getElementById('btn-theme-light').style.border = '2px solid #27ae60'; } 
+      else if (theme === 'metal') { document.body.classList.add('metal-mode'); document.getElementById('btn-theme-metal').style.border = '2px solid #00ffcc'; } 
+      else { theme = 'dark'; document.getElementById('btn-theme-dark').style.border = '2px solid #00e676'; }
       localStorage.setItem('hypass_theme', theme);
     }
-    const savedTheme = localStorage.getItem('hypass_theme') || 'dark';
-    setTheme(savedTheme);
+    setTheme(localStorage.getItem('hypass_theme') || 'dark');
 
     function updateCarModels(brandId, modelId) { 
       const bSelect = document.getElementById(brandId).value; const mSelect = document.getElementById(modelId); mSelect.innerHTML = '<option value="">* 選擇車型</option>'; 
@@ -431,120 +311,76 @@
     function switchPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('page-' + id).classList.add('active'); if (el) el.classList.add('active'); if (id === 'book') loadGarages(); }
     
     function switchSetTab(t) { 
-      document.getElementById('set-content-a').style.display = (t === 'a') ? 'block' : 'none'; 
-      document.getElementById('set-content-theme').style.display = (t === 'theme') ? 'block' : 'none'; 
-      document.getElementById('set-content-b').style.display = (t === 'b') ? 'block' : 'none'; 
-      document.getElementById('set-content-c').style.display = (t === 'c') ? 'block' : 'none'; 
-      document.getElementById('tab-set-a').className = `tab-btn ${t === 'a' ? 'active' : 'inactive'}`; 
-      document.getElementById('tab-set-theme').className = `tab-btn ${t === 'theme' ? 'active' : 'inactive'}`; 
-      document.getElementById('tab-set-b').className = `tab-btn ${t === 'b' ? 'active' : 'inactive'}`; 
-      document.getElementById('tab-set-c').className = `tab-btn ${t === 'c' ? 'active' : 'inactive'}`; 
+      ['a','theme','b','c'].forEach(tab => {
+        document.getElementById(`set-content-${tab}`).style.display = (t === tab) ? 'block' : 'none';
+        document.getElementById(`tab-set-${tab}`).className = `tab-btn ${t === tab ? 'active' : 'inactive'}`;
+      });
     }
-    
     function switchBookingTab(t) { document.getElementById('booking-smart').style.display = (t === 'smart') ? 'block' : 'none'; document.getElementById('booking-manual').style.display = (t === 'manual') ? 'block' : 'none'; document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : 'inactive'}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : 'inactive'}`; }
 
-    async function submitRegister(role) {
-      try {
-        const p = await liff.getProfile(); let referrerId = new URLSearchParams(window.location.search).get('ref');
-        if (role === 'customer') {
-          const n = document.getElementById('c-name').value; const ph = document.getElementById('c-phone').value; const e = document.getElementById('c-email').value;
-          const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; const b = document.getElementById('c-brand').value;
-          const m = document.getElementById('c-model').value; const y = document.getElementById('c-year').value; const pl = document.getElementById('c-plate').value; const mil = document.getElementById('c-mileage').value;
-          if (!n || !ph || !e || !c || !b || !m || !pl || !mil) return alert("請完整填寫所有 * 必填欄位！");
-          const { error } = await supabaseClient.from('users').upsert({ line_uid: p.userId, role: role, referrer_uid: referrerId, name: n, phone: ph, email: e, gender: g, city: c, car_brand: b, car_model: m, license_plate: pl, yearly_mileage: parseInt(mil), car_year: parseInt(y) || null });
-          if (error) alert("註冊失敗：" + error.message); else { alert("✅ 註冊成功！"); location.reload(); }
-        }
-      } catch (err) { alert("系統錯誤，請稍後再試。"); }
-    }
+    // ==========================================
+    // 🌟 物理 ESG 演算法核心 (動態計算)
+    // ==========================================
+    async function calculateDashboardStats() {
+      if (!currentUser) return;
+      const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
+      
+      if (filter && filter.activated_at) {
+        const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
+        
+        // 取得後台演算法參數 (支援本機端除錯模擬)
+        const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
+        
+        // 1. 壽命健康度演算法
+        let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
+        let aqiRate = (envData.aqi > 150) ? parseFloat(algoParams.weightRed || 1.8) : (envData.aqi > 100 ? parseFloat(algoParams.weightOrange || 1.4) : parseFloat(algoParams.weightGreen || 1.0));
+        let baseWear = parseFloat(algoParams.baseWear || 0.27);
+        let health = 100 - (days * baseWear * mileageRate * aqiRate);
+        document.getElementById('ui-health').innerText = `${Math.max(0, Math.round(health))}%`;
+        if (health < 30) document.getElementById('ui-health').style.color = '#ff0000';
+        
+        let basePm25 = parseFloat(algoParams.basePm25 || 1250);
+        document.getElementById('ui-pm25').innerText = Math.round(days * basePm25 * mileageRate * aqiRate).toLocaleString();
+        
+        // 🌟 2. 空調節能演算法 (物理：他牌8Pa vs 本廠4Pa)
+        let paHypass = parseFloat(algoParams.paHypass || 4);
+        let paOther = parseFloat(algoParams.paOther || 8);
+        // 公式：(8 - 4) / 8 * 30% 鼓風機權重 = 15% 空調節能
+        let acSavingPct = Math.round(((paOther - paHypass) / paOther) * 30);
+        document.getElementById('ui-esg-ac').innerText = acSavingPct;
 
-    async function updateProfile() {
-      const payload = {
-        name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, email: document.getElementById('edit-email').value,
-        gender: document.getElementById('edit-gender').value, city: document.getElementById('edit-city').value,
-        car_brand: document.getElementById('edit-brand').value, car_model: document.getElementById('edit-model').value,
-        car_year: parseInt(document.getElementById('edit-year').value) || null, license_plate: document.getElementById('edit-plate').value, 
-        yearly_mileage: parseInt(document.getElementById('edit-mileage').value)
-      };
-      if (!payload.name || !payload.phone || !payload.license_plate) return alert("姓名、電話、車牌不可為空！");
-      const { error } = await supabaseClient.from('users').update(payload).eq('line_uid', currentUser.line_uid); 
-      if (error) alert("更新失敗：" + error.message); else { alert('✅ 您的座艙資料已成功更新！'); location.reload(); }
-    }
+        // 🌟 3. 省電效能演算法 (kWh)
+        let kwhPerDay = parseFloat(algoParams.kwhPerDay || 0.25);
+        let totalKwhSaved = (days * kwhPerDay * mileageRate).toFixed(1);
+        document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
 
-    async function loadHistory(type) {
-      const container = document.getElementById('history-container'); container.innerHTML = '讀取中...'; let html = '';
-      if (type === 'filter') {
-        const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
-        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item">🔄 ${new Date(d.activated_at).toLocaleDateString()} - [${d.activation_type}] 啟用</div>`; }); else html = '<p>尚無紀錄</p>';
-      } else if (type === 'book') {
-        const { data } = await supabaseClient.from('appointments').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('appointment_time', { ascending: false });
-        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item">📍 ${new Date(d.appointment_time).toLocaleDateString()} - ${d.garages.name} [${d.status}]</div>`; }); else html = '<p>尚無紀錄</p>';
-      } else if (type === 'shop' || type === 'logs') {
-        let query = supabaseClient.from('user_logs').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
-        if (type === 'shop') query = query.eq('action', '🛒 商城購買');
-        const { data } = await query;
-        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item">📝 ${new Date(d.created_at).toLocaleDateString()} - ${d.action}: ${d.details}</div>`; }); else html = '<p>尚無紀錄</p>';
+        // 🌟 4. 省碳足跡演算法 (CO2)
+        let co2Factor = parseFloat(algoParams.co2Factor || 0.5);
+        let totalCo2Saved = (totalKwhSaved * co2Factor).toFixed(1);
+        document.getElementById('ui-esg-co2').innerText = totalCo2Saved;
       }
-      container.innerHTML = html;
     }
-
-    async function scanFilter() {
-      const res = await liff.scanCodeV2(); if (!res.value) return;
-      await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
-      const { error } = await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand, installed_location: currentLocName }).eq('uid', res.value);
-      if (error) return alert("啟用失敗，可能為無效的 QR Code。");
-      await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '濾網重置', details: `DIY 啟用了新濾網 UID: ${res.value}` }]);
-      alert("✅ 啟用成功！"); location.reload();
-    }
-
-    async function book(gId, prefix = '') {
-      const time = document.getElementById(prefix ? `date-${prefix}-${gId}` : `date-${gId}`).value;
-      if (!time) return alert("請選擇預約時間");
-      const { error } = await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: gId, appointment_time: new Date(time) }]);
-      if (error) alert("預約失敗：" + error.message); else { alert("🎉 預約送出成功！"); loadGarages(); }
-    }
-
-    window.generateMGM = function() {
-      const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
-      if (navigator.clipboard) navigator.clipboard.writeText(link).then(() => { alert(`✅ 推薦連結已複製！快貼給好友吧！\n${link}`); }).catch(() => { alert(`請手動複製連結：\n${link}`); });
-      else alert(`請手動複製連結：\n${link}`);
-    };
-
-    window.redeemPoints = async function() {
-      const balText = document.getElementById('reward-balance').innerText.replace('$','');
-      if (parseInt(balText) < 100) return alert('餘額不足 $100，快去邀請好友吧！');
-      if (confirm('確定申請兌換 LINE Points 嗎？')) {
-        await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', amount: 100, status: 'pending' }]);
-        alert('✅ 提領申請已送出！總部將盡快為您審核派發。'); loadRewards();
-      }
-    };
 
     async function fetchEnvironmentalData(city, district) {
       try {
-        let { data, error } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
-        if (!data) {
-           const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).single();
-           data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 };
-        }
+        let { data } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
+        if (!data) { const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).single(); data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; }
         envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
-        
         document.getElementById('env-aqi').innerText = envData.aqi;
-        let sevenDayAvg = Math.round(envData.aqi * (0.8 + Math.random() * 0.4));
-        document.getElementById('env-home-aqi').innerText = sevenDayAvg;
+        document.getElementById('env-home-aqi').innerText = Math.round(envData.aqi * (0.8 + Math.random() * 0.4));
 
         let msg = `系統連線正常，目前室外 AQI: ${envData.aqi}，濾網持續防護中！`;
         if (envData.aqi > 100) { document.getElementById('env-aqi').style.color = '#ff9800'; msg = `⚠️ 注意！目前空氣品質不佳，請確保車窗緊閉，系統將加速淨化。`; }
         if (envData.aqi > 150) { document.getElementById('env-aqi').style.color = '#ff0000'; msg = `🚨 紫爆警告！戶外空氣極度惡劣，HYPASS 正全力為您攔截毒害微粒。`; }
         document.getElementById('ui-dynamic-msg').innerText = msg;
-
         calculateDashboardStats();
-      } catch (e) { console.log("快取連線失敗", e); calculateDashboardStats(); }
+      } catch (e) { calculateDashboardStats(); }
     }
 
     function getGPS() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
-          const lat = pos.coords.latitude; const lon = pos.coords.longitude;
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=zh-TW`)
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
             .then(res => res.json())
             .then(d => {
               let city = d.address.city || d.address.county || '';
@@ -552,68 +388,9 @@
               currentLocName = `${city}${district}`;
               document.getElementById('ui-loc-name').innerText = currentLocName;
               fetchEnvironmentalData(city, district);
-            })
-            .catch(e => { document.getElementById('ui-loc-name').innerText = "定位完成"; });
+            }).catch(e => { document.getElementById('ui-loc-name').innerText = "定位完成"; });
         }, () => { calculateDashboardStats(); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); 
       }
-    }
-
-    async function calculateDashboardStats() {
-      if (!currentUser) return;
-      const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
-      
-      if (filter && filter.activated_at) {
-        const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
-        let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
-        let aqiRate = (envData.aqi > 100) ? 1.4 : 1.0;
-        let totalMultiplier = mileageRate * aqiRate;
-        
-        let health = 100 - (days * 0.27 * totalMultiplier);
-        let finalHealth = Math.max(0, Math.round(health));
-        
-        document.getElementById('ui-health').innerText = `${finalHealth}%`;
-        if (finalHealth < 30) document.getElementById('ui-health').style.color = '#ff0000';
-        
-        let pm25Count = Math.round(days * 1250 * totalMultiplier);
-        document.getElementById('ui-pm25').innerText = pm25Count.toLocaleString();
-        document.getElementById('ui-esg-co2').innerText = (days * 0.15).toFixed(1);
-        document.getElementById('ui-esg-kwh').innerText = (days * 0.3).toFixed(1);
-      }
-    }
-
-    async function loadGarages() {
-      const { data: myBookings } = await supabaseClient.from('appointments').select('*, garages(name)').eq('user_uid', currentUser.line_uid).eq('status', 'pending');
-      if (myBookings && myBookings.length > 0) {
-        let bTime = new Date(myBookings[0].appointment_time).toLocaleString('zh-TW');
-        document.getElementById('booking-section').innerHTML = `
-          <div class="card" style="border: 2px solid var(--primary-color); text-align:center;">
-            <h3 style="color:var(--primary-color); margin-top:0;">✅ 已成功預約</h3>
-            <p style="font-size:20px; font-weight:bold;">${myBookings[0].garages.name}</p>
-            <p style="color:var(--text-muted); font-size:14px;">預約時間：<br><span style="color:var(--primary-color); font-weight:bold; font-size:18px;">${bTime}</span></p>
-            <p style="font-size:12px; color:var(--text-muted); margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;">請準時前往保修廠，廠長將為您進行濾網更換與數位核銷。</p>
-          </div>
-        `;
-        return; 
-      }
-      
-      const { data: garages } = await supabaseClient.from('garages').select('*').eq('status', 'active');
-      let listHtml = '';
-      if (garages && garages.length > 0) {
-        garages.forEach(g => { 
-          listHtml += `<div class="card"><h4 style="margin-top:0;">${g.name}</h4><p style="font-size:14px; color:var(--text-muted);">📍 ${g.address}</p><input type="datetime-local" id="date-${g.id}" style="margin-bottom:10px;"><button class="btn-main" onclick="book(${g.id})">確認送出預約</button></div>`; 
-        });
-        document.getElementById('smart-match-result').innerHTML = `<h4 style="margin:0 0 5px 0; color:var(--text-color);">✨ 系統推薦：${garages[0].name}</h4><input type="datetime-local" id="date-smart-${garages[0].id}" style="margin-bottom:10px;"><button class="btn-main" onclick="book(${garages[0].id}, 'smart')">一鍵預約</button>`;
-      } else {
-        listHtml = '<p style="color:var(--text-muted);">目前所在區域尚無可用店家</p>';
-      }
-      document.getElementById('garage-list').innerHTML = listHtml;
-    }
-
-    async function loadRewards() {
-      const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid);
-      let total = 0; 
-      if (data) data.forEach(r => { if (r.status === 'completed') total += (r.type === 'earn' ? r.amount : -r.amount); });
-      document.getElementById('reward-balance').innerText = `$${total}`;
     }
 
     async function initApp() {
@@ -622,41 +399,17 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
-        
         if (data && data.name) {
           currentUser = data; document.getElementById('nav-bar').style.display = 'flex';
-          
           if (data.role === 'customer') {
             document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
             document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model}`;
-            document.getElementById('ui-home-city').innerText = data.city || '讀取中';
-            
-            document.getElementById('edit-name').value = data.name; 
-            document.getElementById('edit-phone').value = data.phone; 
-            document.getElementById('edit-email').value = data.email; 
-            if(data.gender) document.getElementById('edit-gender').value = data.gender;
-            if(data.city) document.getElementById('edit-city').value = data.city;
-            
-            if(data.car_brand) {
-              document.getElementById('edit-brand').value = data.car_brand;
-              updateCarModels('edit-brand', 'edit-model');
-              if(data.car_model) document.getElementById('edit-model').value = data.car_model;
-            }
-            
-            if(data.car_year) document.getElementById('edit-year').value = data.car_year;
-            document.getElementById('edit-plate').value = data.license_plate; 
-            document.getElementById('contract-plate').innerText = data.license_plate;
-            if(data.yearly_mileage) document.getElementById('edit-mileage').value = data.yearly_mileage;
-
             switchPage('home', document.querySelector('.nav-item'));
             getGPS(); 
-            loadHistory('filter');
-            loadRewards();
           }
         } else { switchPage('register', null); }
       } catch (err) { console.log("LIFF 啟動失敗"); }
     }
-
     initApp();
   </script>
 </body>
