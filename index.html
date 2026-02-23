@@ -7,6 +7,10 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    /* =========================================
+       💎 V4.8 Tesla 極簡中控設計系統 (對齊排版優化版)
+       ========================================= */
+       
     :root {
       --bg-image: none; --bg-color: #000000; --surface-color: #111111; --border-color: #222222;
       --text-primary: #ffffff; --text-secondary: #888888;
@@ -38,7 +42,8 @@
       --input-bg: #111112;
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(100px + env(safe-area-inset-bottom, 15px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
+    /* 修改 padding-bottom，讓畫面更大 */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .page.active { display: block; }
@@ -52,12 +57,30 @@
     input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: center; padding: 12px 5px calc(12px + env(safe-area-inset-bottom, 15px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
-    .nav-item { color: var(--text-secondary); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 5px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); -webkit-tap-highlight-color: transparent; }
-    .nav-item:active { transform: scale(0.85); }
-    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: translateY(-4px); }
-    .nav-icon { font-size: 22px; display: block; line-height: 1; }
-    
+    /* =========================================
+       🌟 修復一：底部導覽列絕對對齊與貼底
+       ========================================= */
+    .bottom-nav { 
+      position: fixed; bottom: 0; left: 0; right: 0; 
+      background: var(--glass-bg); 
+      display: flex; justify-content: space-between; align-items: flex-end; /* 鎖定底部對齊 */
+      /* 極限縮小上下 padding，緊貼螢幕邊緣 */
+      padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; 
+      border-top: 1px solid var(--border-color); z-index: 999; 
+      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); 
+    }
+    .nav-item { 
+      color: var(--text-secondary); cursor: pointer; 
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+      flex: 1; height: 42px; /* 固定高度，強制文字對齊在同一條線 */
+      transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; 
+    }
+    .nav-item:active { transform: scale(0.9); }
+    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: none; /* 移除浮動，保證水平線一致 */}
+    .nav-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; height: 24px; margin: 0; line-height: 1; }
+    .nav-text { font-size: 11px; line-height: 1; display: block; margin-top: 2px;}
+
+    /* 標題與防護呼吸燈 */
     .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -67,40 +90,56 @@
     .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
     @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
+    /* 巨大中央儀表板 */
     .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 30px 0; }
     .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     .pm25-badge { color: var(--gold-color); font-size: 13px; margin-top: -20px; font-weight: 700; background: var(--surface-color); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--gold-color); box-shadow: 0 5px 15px var(--gold-glow); z-index: 3; position: relative;}
 
-    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
-    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 10px 4px; border-radius: 12px; font-size: 11px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    /* =========================================
+       🌟 修復二：6大特點 獨立字體縮放與對齊
+       ========================================= */
+    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 20px; }
+    .tech-tag { 
+      background: var(--input-bg); color: var(--text-primary); 
+      padding: 8px 2px; /* 極大化內部空間 */
+      border-radius: 10px; 
+      border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 3px; 
+      font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .t-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0;}
     
+    /* 跑馬燈 */
     .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 14px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; }
     .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
+    /* 雙卡片數據 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 100px; }
     .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
     .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
     .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; display: flex; align-items: center; justify-content: center; flex: 1;}
 
+    /* ESG 物理數據 */
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;}
     .esg-box { text-align: center; padding: 16px 6px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
     .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
     
+    /* 設定頁面 Tab */
     .tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
     .tab-btn { padding: 14px 10px; margin: 0; font-size: 13px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
     .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 6px 15px var(--accent-glow);}
     
     .log-item { border-bottom: 1px solid var(--border-color); padding: 16px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
     .log-item:last-child { border-bottom: none; }
-    .version-tag { text-align: center; color: var(--text-secondary); font-size: 13px; margin-top: 40px; font-family: -apple-system, sans-serif; font-weight: bold; opacity: 0.5;}
+    .version-tag { text-align: center; color: var(--text-secondary); font-size: 11px; margin-top: 40px; font-family: monospace; letter-spacing: 1px; opacity: 0.6;}
     label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block; padding-left: 4px;}
 
+    /* VIP 黑金任務卡 */
     .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
     .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: var(--gold-glow); filter: blur(50px); border-radius: 50%; }
     .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; box-shadow: 0 8px 25px var(--gold-glow); border-radius: 16px;}
@@ -177,8 +216,12 @@
     </div>
     
     <div class="tech-tag-container">
-      <div class="tech-tag">🇹🇼 台灣製造</div><div class="tech-tag">⚡ 靜電淨化</div><div class="tech-tag">🥥 椰殼除臭</div>
-      <div class="tech-tag">📡 空污雷達</div><div class="tech-tag">🧠 AI 演算</div><div class="tech-tag">🌱 ESG 環保</div>
+      <div class="tech-tag"><span class="t-icon">🇹🇼</span><span style="font-size:12px;">台灣製造</span></div>
+      <div class="tech-tag"><span class="t-icon">⚡</span><span style="font-size:11px; letter-spacing:-0.5px;">高效靜電過濾</span></div>
+      <div class="tech-tag"><span class="t-icon">🥥</span><span style="font-size:10px; letter-spacing:-0.5px;">高效活性碳除臭</span></div>
+      <div class="tech-tag"><span class="t-icon">📡</span><span style="font-size:11px; letter-spacing:-0.5px;">空汙雷達警示</span></div>
+      <div class="tech-tag"><span class="t-icon">🧠</span><span style="font-size:10px; letter-spacing:-0.5px;">Ai智能演算推播</span></div>
+      <div class="tech-tag"><span class="t-icon">🌱</span><span style="font-size:10px; letter-spacing:-0.5px;">ESG降低碳足跡</span></div>
     </div>
 
     <div class="dynamic-msg-bar">
@@ -330,15 +373,15 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">4.7</div>
+    <div class="version-tag">4.8</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
-    <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span>座艙</div>
-    <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span>商城</div>
-    <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span>預約</div>
-    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span>任務</div>
-    <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span>設定</div>
+    <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span><span class="nav-text">座艙</span></div>
+    <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span><span class="nav-text">商城</span></div>
+    <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
+    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span><span class="nav-text">任務</span></div>
+    <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
   </div>
 
   <script>
