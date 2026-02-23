@@ -25,7 +25,11 @@
     .pulse-dot { display: inline-block; width: 8px; height: 8px; background: #00D100; border-radius: 50%; box-shadow: 0 0 5px #00D100; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 209, 0, 0.7); } 70% { opacity: 0.5; box-shadow: 0 0 0 6px rgba(0, 209, 0, 0); } 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 209, 0, 0); } }
     
-    .dynamic-msg-bar { background: #1e1e1e; color: #00D100; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #333; }
+    /* 🌟 優化：動態資訊跑馬燈的排版比例與垂直置中 */
+    .dynamic-msg-bar { background: #1e1e1e; color: #00D100; padding: 12px 15px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #333; overflow: hidden; }
+    .dynamic-msg-icon { margin-right: 10px; font-size: 16px; display: flex; align-items: center; }
+    .dynamic-marquee { flex: 1; line-height: 1.2; padding-top: 2px; }
+    
     .env-box { background: #1a1e1a; border-radius: 10px; padding: 15px 10px; text-align: center; border: 1px solid #2a2d32; }
     .env-val { font-size: 26px; font-weight: bold; color: #fff; margin: 8px 0 0 0; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
@@ -125,8 +129,8 @@
     </div>
     
     <div class="dynamic-msg-bar">
-      <span style="margin-right: 8px;">💬</span>
-      <marquee scrollamount="4" id="ui-dynamic-msg">系統連線中，正在高速獲取環境數據...</marquee>
+      <span class="dynamic-msg-icon">💬</span>
+      <marquee scrollamount="4" id="ui-dynamic-msg" class="dynamic-marquee">系統連線中，正在高速獲取環境數據...</marquee>
     </div>
 
     <div class="grid-2">
@@ -230,7 +234,7 @@
       <div class="card"><h4 style="margin:0 0 10px 0; color:#fff;">📄 HYPASS 數位保固卡</h4><p style="font-size:13px; color:#aaa; margin:5px 0;">認證車牌：<span id="contract-plate" style="color:#00D100; font-weight:bold;"></span></p></div>
     </div>
     
-    <div class="version-tag">System Ver. V2.8-FULL</div>
+    <div class="version-tag">System Ver. V2.9-FULL</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -340,13 +344,10 @@
       }
     };
 
-    // 🌟 全新極速架構：直接向自家 Supabase env_cache 索取資料
     async function fetchEnvironmentalData(city, district) {
       try {
-        // 第一秒：向自家的快取池要資料
         let { data, error } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
         
-        // 萬一客人所在鄉鎮還沒被建檔，拿全台第一筆當作兜底
         if (!data) {
            const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).single();
            data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 };
@@ -361,6 +362,7 @@
         let sevenDayAvg = Math.round(envData.aqi * (0.8 + Math.random() * 0.4));
         document.getElementById('env-home-aqi').innerText = sevenDayAvg;
 
+        // 🌟 對齊跑馬燈的 Emoji 與文字
         let msg = `🟢 系統連線正常 | 目前室外 AQI: ${envData.aqi} | 濾網持續防護中！`;
         if (envData.aqi > 100) { document.getElementById('env-aqi').style.color = '#ff9800'; msg = `⚠️ 注意！目前空氣品質不佳，請確保車窗緊閉。`; }
         if (envData.aqi > 150) { document.getElementById('env-aqi').style.color = '#ff0000'; msg = `🚨 紫爆警告！戶外空氣極度惡劣，HYPASS 正全力為您淨化座艙。`; }
@@ -386,7 +388,6 @@
               currentLocName = `${city}${district}`;
               document.getElementById('ui-loc-name').innerText = currentLocName;
               
-              // 取得地名後，一秒向自家資料庫抓取最新天氣
               fetchEnvironmentalData(city, district);
             })
             .catch(e => {
