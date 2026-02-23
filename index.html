@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.8 Tesla 極簡中控設計系統 (對齊排版優化版)
+       💎 V4.9 Tesla 極簡中控設計系統 (細節淬鍊版)
        ========================================= */
        
     :root {
@@ -42,7 +42,6 @@
       --input-bg: #111112;
     }
 
-    /* 修改 padding-bottom，讓畫面更大 */
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -57,30 +56,13 @@
     input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    /* =========================================
-       🌟 修復一：底部導覽列絕對對齊與貼底
-       ========================================= */
-    .bottom-nav { 
-      position: fixed; bottom: 0; left: 0; right: 0; 
-      background: var(--glass-bg); 
-      display: flex; justify-content: space-between; align-items: flex-end; /* 鎖定底部對齊 */
-      /* 極限縮小上下 padding，緊貼螢幕邊緣 */
-      padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; 
-      border-top: 1px solid var(--border-color); z-index: 999; 
-      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); 
-    }
-    .nav-item { 
-      color: var(--text-secondary); cursor: pointer; 
-      display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-      flex: 1; height: 42px; /* 固定高度，強制文字對齊在同一條線 */
-      transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; 
-    }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); }
+    .nav-item { color: var(--text-secondary); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex: 1; height: 42px; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
     .nav-item:active { transform: scale(0.9); }
-    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: none; /* 移除浮動，保證水平線一致 */}
+    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: none; }
     .nav-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; height: 24px; margin: 0; line-height: 1; }
     .nav-text { font-size: 11px; line-height: 1; display: block; margin-top: 2px;}
 
-    /* 標題與防護呼吸燈 */
     .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -90,46 +72,32 @@
     .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
     @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
-    /* 巨大中央儀表板 */
     .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 30px 0; }
     .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     .pm25-badge { color: var(--gold-color); font-size: 13px; margin-top: -20px; font-weight: 700; background: var(--surface-color); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--gold-color); box-shadow: 0 5px 15px var(--gold-glow); z-index: 3; position: relative;}
 
-    /* =========================================
-       🌟 修復二：6大特點 獨立字體縮放與對齊
-       ========================================= */
     .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 20px; }
-    .tech-tag { 
-      background: var(--input-bg); color: var(--text-primary); 
-      padding: 8px 2px; /* 極大化內部空間 */
-      border-radius: 10px; 
-      border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 3px; 
-      font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 3px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .t-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0;}
     
-    /* 跑馬燈 */
     .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 14px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; }
     .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
-    /* 雙卡片數據 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 100px; }
     .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
     .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
     .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; display: flex; align-items: center; justify-content: center; flex: 1;}
 
-    /* ESG 物理數據 */
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;}
     .esg-box { text-align: center; padding: 16px 6px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
     .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
     
-    /* 設定頁面 Tab */
     .tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
     .tab-btn { padding: 14px 10px; margin: 0; font-size: 13px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
     .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 6px 15px var(--accent-glow);}
@@ -139,7 +107,6 @@
     .version-tag { text-align: center; color: var(--text-secondary); font-size: 11px; margin-top: 40px; font-family: monospace; letter-spacing: 1px; opacity: 0.6;}
     label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block; padding-left: 4px;}
 
-    /* VIP 黑金任務卡 */
     .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
     .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: var(--gold-glow); filter: blur(50px); border-radius: 50%; }
     .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; box-shadow: 0 8px 25px var(--gold-glow); border-radius: 16px;}
@@ -213,6 +180,7 @@
         <div style="font-size:14px; color:var(--text-secondary); font-weight:700; margin-top:8px;">動態壽命推估</div>
       </div>
       <div class="pm25-badge">🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:8px; z-index:3; position:relative; letter-spacing:0.5px;">濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
     </div>
     
     <div class="tech-tag-container">
@@ -353,9 +321,9 @@
       <div class="card" style="text-align: center; padding: 40px 20px;">
         <h3 style="margin-top:0; color:var(--text-primary); margin-bottom: 30px; font-size:20px;">選擇座艙顯示模式</h3>
         <div style="display:flex; flex-direction: column; gap:16px;">
-          <button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#00e676; border:1px solid #222222; box-shadow: 0 8px 25px rgba(0,0,0,0.8);" onclick="setTheme('dark')">🌙 曜石黑 (Tesla 純黑極簡)</button>
-          <button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #e5e5ea; box-shadow: 0 8px 25px rgba(0,0,0,0.06);" onclick="setTheme('light')">☀️ 珍珠白 (優雅精品奢華)</button>
-          <button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); color:#06b6d4; border:1px solid #3a3a3c; box-shadow: 0 8px 25px rgba(0,0,0,0.6);" onclick="setTheme('metal')">⚙️ 鈦金屬 (重裝機甲科技)</button>
+          <button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#00e676; border:1px solid #222222; box-shadow: 0 8px 25px rgba(0,0,0,0.8);" onclick="setTheme('dark')">🌙 曜石黑</button>
+          <button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #e5e5ea; box-shadow: 0 8px 25px rgba(0,0,0,0.06);" onclick="setTheme('light')">☀️ 極簡白</button>
+          <button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); color:#06b6d4; border:1px solid #3a3a3c; box-shadow: 0 8px 25px rgba(0,0,0,0.6);" onclick="setTheme('metal')">🌊 淨化藍</button>
         </div>
       </div>
     </div>
@@ -373,7 +341,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">4.8</div>
+    <div class="version-tag">4.9</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -409,7 +377,7 @@
       "新竹市": ["東區", "北區", "香山區"],
       "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
       "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"],
-      "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
+      "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "丰原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
       "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"],
       "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"],
       "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"],
@@ -568,6 +536,10 @@
       const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
       
       if (filter && filter.activated_at) {
+        // 🌟 寫入啟用日期
+        const actDate = new Date(filter.activated_at);
+        document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
+
         const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
         const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
         let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
@@ -586,6 +558,8 @@
         let totalKwhSaved = (days * parseFloat(algoParams.kwhPerDay || 0.25) * mileageRate).toFixed(1);
         document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
         document.getElementById('ui-esg-co2').innerText = (totalKwhSaved * parseFloat(algoParams.co2Factor || 0.5)).toFixed(1);
+      } else {
+        document.getElementById('ui-filter-date').innerText = '尚未啟用';
       }
     }
 
