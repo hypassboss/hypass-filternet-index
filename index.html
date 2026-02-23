@@ -8,166 +8,171 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       🎨 國際精品級 UI 設計系統 (V4.1)
+       💎 國際級 UI 設計系統 (V4.2 頂配減法設計)
        ========================================= */
        
-    /* 🌙 曜石黑 (深空灰黑 + 霓虹薄荷綠 - 頂級純電跑車風) */
+    /* 🌙 曜石黑 (純粹黑 + 薄荷綠 - Apple CarPlay 風格) */
     :root {
       --bg-image: none;
-      --bg-color: #0d0f12;
-      --surface-color: #171920;
-      --border-color: #262933;
-      --text-primary: #e2e8f0;
-      --text-secondary: #718096;
-      --accent-color: #00e676; /* 霓虹薄荷綠 */
-      --accent-gradient: linear-gradient(135deg, #00e676 0%, #00b85c 100%);
-      --accent-glow: rgba(0, 230, 118, 0.25);
-      --glass-bg: rgba(23, 25, 32, 0.85);
-      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      --input-bg: #090a0c;
+      --bg-color: #000000;
+      --surface-color: #121212;
+      --border-color: #2c2c2e;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --accent-color: #30d158; 
+      --accent-gradient: linear-gradient(135deg, #30d158 0%, #28a745 100%);
+      --accent-glow: rgba(48, 209, 88, 0.2);
+      --glass-bg: rgba(18, 18, 18, 0.85);
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      --input-bg: #1c1c1e;
     }
 
-    /* ☀️ 珍珠白 (象牙暖白 + 英國賽車綠 - 頂級奢華房車風) */
+    /* ☀️ 珍珠白 (象牙白 + 祖母綠 - Porsche 奢華內裝風格) */
     body.light-mode {
       --bg-image: none;
-      --bg-color: #f5f7fa;
+      --bg-color: #f5f5f7;
       --surface-color: #ffffff;
-      --border-color: #e2e8f0;
-      --text-primary: #1a202c;
-      --text-secondary: #64748b;
-      --accent-color: #198754; /* 英國賽車綠 */
-      --accent-gradient: linear-gradient(135deg, #20c997 0%, #157347 100%);
-      --accent-glow: rgba(25, 135, 84, 0.2);
+      --border-color: #e5e5ea;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --accent-color: #10b981; 
+      --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --accent-glow: rgba(16, 185, 129, 0.15);
       --glass-bg: rgba(255, 255, 255, 0.9);
-      --card-shadow: 0 12px 35px rgba(148, 163, 184, 0.15);
-      --input-bg: #f8fafc;
+      --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      --input-bg: #f5f5f7;
     }
 
-    /* ⚙️ 鈦金屬 (拉絲槍灰 + 冰晶青藍 - 賽博龐克機甲風) */
+    /* ⚙️ 鈦金屬 (拉絲金屬灰 + 冰晶青 - Cyberpunk 未來機甲風格) */
     body.metal-mode {
-      --bg-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px), linear-gradient(145deg, #3a3c42 0%, #1e2024 100%);
-      --bg-color: #2b2d31; 
-      --surface-color: linear-gradient(145deg, #2a2d32 0%, #1e2024 100%);
-      --border-color: #3f4348;
-      --text-primary: #edf2f7;
-      --text-secondary: #a0aec0;
-      --accent-color: #00e5ff; /* 冰晶青藍 */
-      --accent-gradient: linear-gradient(135deg, #00e5ff 0%, #0088cc 100%);
-      --accent-glow: rgba(0, 229, 255, 0.3);
-      --glass-bg: rgba(30, 32, 36, 0.9);
-      --card-shadow: inset 0 1px 1px rgba(255,255,255,0.08), 0 15px 35px rgba(0,0,0,0.6);
-      --input-bg: #111214;
+      --bg-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px);
+      --bg-color: #151515; 
+      --surface-color: linear-gradient(145deg, #262628 0%, #1c1c1e 100%);
+      --border-color: #3a3a3c;
+      --text-primary: #e5e5ea;
+      --text-secondary: #98989d;
+      --accent-color: #06b6d4; 
+      --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      --accent-glow: rgba(6, 182, 212, 0.25);
+      --glass-bg: rgba(28, 28, 30, 0.9);
+      --card-shadow: inset 0 1px 1px rgba(255,255,255,0.05), 0 8px 25px rgba(0,0,0,0.5);
+      --input-bg: #111112;
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: 90px; transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.3px;}
-    .page { display: none; padding: 16px; animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: 90px; transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
+    
+    .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .card { background: var(--surface-color); padding: 18px; border-radius: 20px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: all 0.4s ease; }
+    .card { background: var(--surface-color); padding: 20px; border-radius: 24px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: all 0.4s ease; }
     
-    .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 14px; font-weight: 600; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: all 0.2s; box-shadow: 0 4px 15px var(--accent-glow); letter-spacing: 1px;}
-    .btn-main:active { transform: scale(0.97); box-shadow: 0 2px 8px var(--accent-glow); }
+    .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 4px 15px var(--accent-glow); letter-spacing: 1px;}
+    .btn-main:active { transform: scale(0.96); box-shadow: 0 2px 8px var(--accent-glow); }
     
-    input, select { width: 100%; padding: 15px; margin-bottom: 14px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 12px; font-size: 15px; transition: all 0.3s; outline: none;}
-    input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-glow); }
+    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
+    input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--glass-bg); display: flex; justify-content: space-around; padding: 14px 0 28px 0; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transition: background 0.4s; }
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--glass-bg); display: flex; justify-content: space-around; padding: 12px 0 28px 0; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); transition: background 0.4s; }
     .nav-item { color: var(--text-secondary); font-size: 11px; cursor: pointer; text-align: center; width: 20%; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .nav-item:active { transform: scale(0.85); }
-    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: translateY(-3px); }
-    .nav-icon { font-size: 24px; margin-bottom: 4px; display: block; }
+    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: translateY(-4px); }
+    .nav-icon { font-size: 22px; margin-bottom: 5px; display: block; }
     
     /* 🌟 動態呼吸燈 (依照主題變換光暈顏色) */
-    .shield-badge { background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 10px; animation: badgePulse 2s infinite alternate ease-in-out; }
+    .shield-badge { background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 10px; animation: badgePulse 2.5s infinite alternate ease-in-out; }
     @keyframes badgePulse { 0% { box-shadow: 0 0 5px var(--accent-glow); border-color: transparent; } 100% { box-shadow: 0 0 20px var(--accent-color); border-color: var(--accent-color); } }
     .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
-    @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.4); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+    @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
-    /* 科技儀表板網格 */
-    .tech-tag-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
-    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 12px 10px; border-radius: 10px; font-size: 12px; border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color); display: flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.3s; }
-    .tech-tag-icon { font-size: 16px; }
+    /* 🌟 優化版：科技儀表板網格 (減法設計，極簡膠囊風) */
+    .tech-tag-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 12px 14px; border-radius: 12px; font-size: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; font-weight: 600; transition: all 0.3s; position: relative; overflow: hidden; }
+    .tech-tag::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent-color); border-radius: 4px 0 0 4px; }
+    .tech-tag-icon { font-size: 16px; opacity: 0.9; }
 
-    /* 跑馬燈 */
-    .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 14px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 500;}
+    /* 60fps 跑馬燈 */
+    .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 16px 20px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
+    .dynamic-msg-icon { margin-right: 14px; font-size: 18px; flex-shrink: 0; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; }
-    .marquee-content { display: inline-block; min-width: 100%; animation: scrollText 12s linear infinite; }
+    .marquee-content { display: inline-block; min-width: 100%; animation: scrollText 14s linear infinite; }
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
-    .env-box { background: var(--input-bg); border-radius: 12px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); }
-    .env-val { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 8px 0 0 0; font-family: -apple-system, sans-serif; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .env-box { background: var(--input-bg); border-radius: 16px; padding: 18px 12px; text-align: center; border: 1px solid var(--border-color); }
+    .env-val { font-size: 32px; font-weight: 700; color: var(--text-primary); margin: 8px 0 0 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 
-    .ring-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px 0; }
-    .ring { width: 170px; height: 170px; border-radius: 50%; border: 8px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 30px var(--accent-glow); position: relative; }
-    .ring::after { content: ''; position: absolute; top: -12px; left: -12px; right: -12px; bottom: -12px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 15s linear infinite; opacity: 0.5;}
+    .ring-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0 20px 0; }
+    .ring { width: 180px; height: 180px; border-radius: 50%; border: 8px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 40px var(--accent-glow); position: relative; }
+    .ring::after { content: ''; position: absolute; top: -14px; left: -14px; right: -14px; bottom: -14px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 20s linear infinite; opacity: 0.3;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    .esg-box { text-align: center; padding: 14px 6px; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color); position: relative; }
-    .esg-badge { position: absolute; top: -8px; right: 50%; transform: translateX(50%); background: var(--accent-color); color: var(--surface-color); font-size: 9px; padding: 3px 8px; border-radius: 12px; font-weight: 700; white-space: nowrap;}
+    .esg-box { text-align: center; padding: 18px 8px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
     
-    .tab-btn { padding: 14px; margin: 0; font-size: 13px; flex: 1; text-align: center; border-radius: 10px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
-    .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 4px 10px var(--accent-glow);}
+    /* 🌟 大白話標籤設計 */
+    .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 10px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
     
-    .log-item { border-bottom: 1px solid var(--border-color); padding: 12px 0; font-size: 13px; color: var(--text-secondary); }
+    .tab-btn { padding: 14px; margin: 0; font-size: 13px; flex: 1; text-align: center; border-radius: 12px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
+    .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 6px 15px var(--accent-glow);}
+    
+    .log-item { border-bottom: 1px solid var(--border-color); padding: 16px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
     .log-item:last-child { border-bottom: none; }
-    .version-tag { text-align: center; color: var(--text-secondary); font-size: 11px; margin-top: 30px; font-family: monospace; letter-spacing: 1px;}
-    label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; display: block; padding-left: 4px;}
+    .version-tag { text-align: center; color: var(--text-secondary); font-size: 11px; margin-top: 40px; font-family: monospace; letter-spacing: 1px; opacity: 0.6;}
+    label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block; padding-left: 4px;}
 
-    /* 🌟 VIP 黑金任務卡 */
-    .vip-card { border: 1px solid #c5a059; background: linear-gradient(135deg, #1f1a10 0%, #0a0804 100%); box-shadow: 0 10px 40px rgba(197, 160, 89, 0.2); position: relative; overflow: hidden; }
-    .vip-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(197, 160, 89, 0.15); filter: blur(40px); border-radius: 50%; }
-    .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #e6c27a 0%, #c5a059 100%); color: #000; box-shadow: 0 5px 15px rgba(197, 160, 89, 0.4);}
-    .shine-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%); transform: skewX(-25deg); animation: shine 3s infinite; }
+    /* 🌟 VIP 黑金任務卡 (極致尊榮) */
+    .vip-card { border: 1px solid #c5a059; background: linear-gradient(135deg, #141108 0%, #050402 100%); box-shadow: 0 15px 40px rgba(197, 160, 89, 0.15); position: relative; overflow: hidden; }
+    .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: rgba(197, 160, 89, 0.15); filter: blur(50px); border-radius: 50%; }
+    .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #e6c27a 0%, #c5a059 100%); color: #000; box-shadow: 0 8px 25px rgba(197, 160, 89, 0.3); border-radius: 16px;}
+    .shine-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%); transform: skewX(-25deg); animation: shine 3s infinite; }
     @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
   </style>
 </head>
 <body>
 
   <div id="page-register" class="page">
-    <h2 style="color:var(--accent-color);">HYPASS 首次登入授權</h2>
-    <div class="card"><p style="font-size:12px; color:var(--text-secondary); margin:0;">本系統蒐集資料僅供保固預約與履歷紀錄使用。</p></div>
+    <h2 style="color:var(--text-primary); text-align:center; margin-bottom:30px;">HYPASS <span style="color:var(--accent-color);">Air+</span></h2>
+    <div class="card"><p style="font-size:13px; color:var(--text-secondary); margin:0; text-align:center; line-height:1.5;">為保障您的數位履歷與專屬保固<br>請完成首次座艙授權</p></div>
     <button class="btn-main" onclick="showForm('customer')">A. 我是濾網客人 (車主)</button>
-    <button class="btn-main" style="background:var(--border-color); color:var(--text-primary); box-shadow:none;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
+    <button class="btn-main" style="background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
 
-    <div id="form-customer" style="display:none; margin-top:20px;">
+    <div id="form-customer" style="display:none; margin-top:30px;">
       <input type="text" id="c-name" placeholder="* 姓名">
       <input type="tel" id="c-phone" placeholder="* 手機號碼">
       <input type="email" id="c-email" placeholder="* 電子郵件">
       <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
       <select id="c-city">
-        <option value="">* 居住縣市</option><option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+        <option value="">* 居住縣市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="其他">其他縣市</option>
       </select>
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
-        <option value="">* 選擇車輛品牌</option><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Lexus">Lexus</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="Other">其他品牌</option>
+        <option value="">* 選擇車輛品牌</option><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Tesla">Tesla</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Other">其他品牌</option>
       </select>
       <select id="c-model"><option value="">* 請先選擇品牌</option></select>
       <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
       <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
-      <select id="c-mileage"><option value="">* 年平均里程習慣</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option><option value="40000">40,000 公里</option><option value="50000">50,000 公里以上</option></select>
-      <button class="btn-main" onclick="submitRegister('customer')">完成註冊</button>
+      <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
+      <button class="btn-main" onclick="submitRegister('customer')">完成授權並啟用座艙</button>
     </div>
   </div>
 
   <div id="page-home" class="page">
-    <div class="card" style="border-left: 4px solid var(--accent-color); padding-top: 20px;">
+    <div class="card" style="padding-top: 24px;">
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
-          <p id="ui-owner" style="font-size:20px; font-weight:700; margin:0; color:var(--text-primary);">讀取中...</p>
-          <p id="ui-car-info" style="font-size:13px; color:var(--text-secondary); margin:6px 0 0 0;">讀取中...</p>
+          <p id="ui-owner" style="font-size:22px; font-weight:800; margin:0; color:var(--text-primary);">讀取中...</p>
+          <p id="ui-car-info" style="font-size:14px; color:var(--text-secondary); margin:6px 0 0 0;">讀取中...</p>
         </div>
         <div class="shield-badge"><span class="pulse-dot"></span> 防護中 開啟</div>
       </div>
       
       <div class="tech-tag-container">
-        <div class="tech-tag"><span class="tech-tag-icon">🇹🇼</span> 台灣製造</div>
-        <div class="tech-tag"><span class="tech-tag-icon">⚡</span> 高效靜電過濾</div>
-        <div class="tech-tag"><span class="tech-tag-icon">🥥</span> 強效椰殼除臭</div>
+        <div class="tech-tag"><span class="tech-tag-icon">🇹🇼</span> 台灣研發製造</div>
+        <div class="tech-tag"><span class="tech-tag-icon">⚡</span> 高效靜電淨化</div>
+        <div class="tech-tag"><span class="tech-tag-icon">🥥</span> 頂級椰殼除臭</div>
         <div class="tech-tag"><span class="tech-tag-icon">📡</span> 即時空污雷達</div>
-        <div class="tech-tag"><span class="tech-tag-icon">🧠</span> Ai動態演算</div>
-        <div class="tech-tag"><span class="tech-tag-icon">🌱</span> ESG減碳貢獻</div>
+        <div class="tech-tag"><span class="tech-tag-icon">🧠</span> AI 動態演算</div>
+        <div class="tech-tag"><span class="tech-tag-icon">🌱</span> ESG 永續環保</div>
       </div>
     </div>
     
@@ -180,57 +185,57 @@
 
     <div class="grid-2">
       <div class="env-box">
-        <div style="font-size:12px; color:var(--text-secondary);">📍 <span id="ui-loc-name">定位中</span> (即時)</div>
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">📍 <span id="ui-loc-name">定位中</span> (即時)</div>
         <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
       </div>
-      <div class="env-box" style="border-color:#554400;">
-        <div style="font-size:12px; color:var(--text-secondary);">🏠 <span id="ui-home-city">讀取中</span> (近7日)</div>
+      <div class="env-box">
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">🏠 <span id="ui-home-city">讀取中</span> (近7日)</div>
         <div class="env-val" id="env-home-aqi" style="color:#f59e0b;">--</div>
       </div>
     </div>
 
-    <div class="card" style="text-align: center;">
+    <div class="card" style="text-align: center; padding: 30px 15px;">
       <div class="ring-container">
         <div class="ring">
-          <div style="font-size:52px; font-weight:800; color:var(--accent-color); letter-spacing:-1px;" id="ui-health">100%</div>
-          <div style="font-size:12px; color:var(--text-secondary); font-weight:600; margin-top:4px;">動態壽命推估</div>
+          <div style="font-size:60px; font-weight:800; color:var(--accent-color); letter-spacing:-2px;" id="ui-health">100%</div>
+          <div style="font-size:13px; color:var(--text-secondary); font-weight:600; margin-top:4px;">動態壽命推估</div>
         </div>
-        <div style="color:#f59e0b; font-size:13px; margin-top:25px; font-weight:700; background:rgba(245, 158, 11, 0.1); padding:8px 16px; border-radius:20px; border: 1px solid rgba(245, 158, 11, 0.3);">
-          🛡️ 已攔截 PM2.5: <span id="ui-pm25">0</span> µg
+        <div style="color:#f59e0b; font-size:14px; margin-top:35px; font-weight:700; background:rgba(245, 158, 11, 0.1); padding:10px 20px; border-radius:24px; border: 1px solid rgba(245, 158, 11, 0.3);">
+          🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg
         </div>
       </div>
-      <button class="btn-main" onclick="scanFilter()" style="margin-top:10px;">📷 DIY 掃描啟用新濾網</button>
+      <button class="btn-main" onclick="scanFilter()" style="margin-top:20px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 DIY 掃描啟用新濾網</button>
     </div>
     
     <div class="grid-3">
       <div class="esg-box">
-        <div class="esg-badge">4Pa低風阻</div>
-        <div style="font-size:22px; margin-top:10px;">🌱</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:12px; color:var(--text-secondary);">kg</span></div><div style="font-size:11px; color:var(--text-secondary);">省碳足跡</div>
+        <div class="esg-badge">極致低風阻</div>
+        <div style="font-size:24px; margin-top:15px;">🌱</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:12px; color:var(--text-secondary);">kg</span></div><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
       </div>
       <div class="esg-box">
-        <div class="esg-badge">鼓風機減負</div>
-        <div style="font-size:22px; margin-top:10px;">⚡️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:12px; color:var(--text-secondary);">kWh</span></div><div style="font-size:11px; color:var(--text-secondary);">省電效能</div>
+        <div class="esg-badge">冷氣輕負載</div>
+        <div style="font-size:24px; margin-top:15px;">⚡️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:12px; color:var(--text-secondary);">kWh</span></div><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">省電效能</div>
       </div>
       <div class="esg-box">
-        <div class="esg-badge">5.3 CM/S</div>
-        <div style="font-size:22px; margin-top:10px;">⛽️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:12px; color:var(--text-secondary);">%</span></div><div style="font-size:11px; color:var(--text-secondary);">空調節能</div>
+        <div class="esg-badge">強效大風量</div>
+        <div style="font-size:24px; margin-top:15px;">⛽️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:12px; color:var(--text-secondary);">%</span></div><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">空調節能</div>
       </div>
     </div>
   </div>
 
   <div id="page-shop" class="page">
-    <h3 style="color:var(--accent-color);">🛒 官方商城</h3>
-    <div class="card" style="text-align:center;">
-      <p style="color:var(--text-secondary);">專屬優惠碼：</p>
-      <h2 style="color:var(--accent-color); letter-spacing: 3px; border: 2px dashed var(--accent-color); padding: 15px; border-radius: 12px;">AIRPLUS2026</h2>
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🛒 官方商城</h3>
+    <div class="card" style="text-align:center; padding: 40px 20px;">
+      <p style="color:var(--text-secondary); font-size:15px; margin-bottom:15px;">您的專屬隱藏優惠碼：</p>
+      <h2 style="color:var(--accent-color); letter-spacing: 4px; border: 2px dashed var(--accent-color); padding: 18px; border-radius: 16px; margin-bottom:30px; font-size:28px;">AIRPLUS2026</h2>
       <button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw/oauth/line/quick_sign_up'">前往商城並自動登入</button>
     </div>
   </div>
 
   <div id="page-book" class="page">
-    <h3 style="color:var(--accent-color);">📍 預約安裝</h3>
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">📍 預約安裝</h3>
     <div id="booking-section">
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <div style="display: flex; gap: 12px; margin-bottom: 24px;">
         <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
         <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 附近保修廠</div>
       </div>
@@ -240,23 +245,24 @@
   </div>
 
   <div id="page-rewards" class="page">
-    <h3 style="color:var(--accent-color);">🎁 推薦任務與獎勵</h3>
-    <div class="card vip-card" style="text-align: center; padding: 30px 20px;">
-      <h4 style="margin:0; color:#e6c27a; font-size: 16px; letter-spacing: 1px;">✨ VIP 專屬獎勵金</h4>
-      <h1 style="margin:15px 0; font-size: 56px; color: #FFF; text-shadow: 0 4px 20px rgba(197, 160, 89, 0.8);"><span id="reward-balance">$0</span></h1>
-      <p style="font-size:13px; color:#d4d4d4; margin-bottom: 25px;">累積滿 $100 即可兌換 LINE Points，無上限！</p>
-      <button class="btn-main shine-btn" onclick="redeemPoints()">💰 申請提領點數</button>
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🎁 任務與獎勵</h3>
+    <div class="card vip-card" style="text-align: center; padding: 40px 20px; border-radius:24px;">
+      <h4 style="margin:0; color:#e6c27a; font-size: 18px; letter-spacing: 2px;">VIP 專屬獎勵金</h4>
+      <h1 style="margin:20px 0; font-size: 64px; color: #FFF; text-shadow: 0 4px 25px rgba(197, 160, 89, 0.8);"><span id="reward-balance">$0</span></h1>
+      <p style="font-size:14px; color:#d4d4d4; margin-bottom: 30px; line-height:1.6;">累積滿 $100 即可兌換 LINE Points<br>推薦無上限，獎金無上限！</p>
+      <button class="btn-main shine-btn" style="padding:18px; font-size:18px;" onclick="redeemPoints()">申請提領點數</button>
     </div>
-    <div class="card" style="text-align: center; border: 2px solid var(--accent-color); background: var(--input-bg);">
-       <h3 style="margin-top: 5px; color: var(--text-primary);">🚀 邀請車友加入座艙</h3>
-       <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">分享專屬連結，好友成功啟用濾網，<br>您將立即獲得高額推薦獎金！</p>
-       <button class="btn-main" style="box-shadow: 0 8px 20px var(--accent-glow); font-size: 18px;" onclick="generateMGM()">🔗 點擊複製專屬連結 🔗</button>
+    
+    <div class="card" style="text-align: center; border: 2px solid var(--accent-color); background: var(--input-bg); margin-top:20px;">
+       <h3 style="margin-top: 10px; color: var(--text-primary); font-size:20px;">🚀 邀請車友加入座艙</h3>
+       <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">分享您的專屬連結，好友成功啟用濾網後<br>您將立即獲得高額推薦獎金！</p>
+       <button class="btn-main" style="box-shadow: 0 8px 25px var(--accent-glow); font-size: 18px; padding:18px;" onclick="generateMGM()">🔗 點擊複製專屬連結</button>
     </div>
   </div>
 
   <div id="page-settings" class="page">
-    <h3 style="color:var(--accent-color);">⚙️ 設定與紀錄</h3>
-    <div style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;">
+    <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">⚙️ 設定與紀錄</h3>
+    <div style="display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none;">
       <div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')">👤 基本資料</div>
       <div class="tab-btn inactive" id="tab-set-theme" onclick="switchSetTab('theme')">🎨 畫面設定</div>
       <div class="tab-btn inactive" id="tab-set-b" onclick="switchSetTab('b')">📜 歷史紀錄</div>
@@ -265,41 +271,34 @@
 
     <div id="set-content-a" style="display:block;">
       <div class="card">
-        <label>姓名</label><input type="text" id="edit-name">
+        <label>車主姓名</label><input type="text" id="edit-name">
         <label>聯絡電話</label><input type="tel" id="edit-phone">
         <label>電子郵件</label><input type="email" id="edit-email">
         <label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
-        <label>居住縣市</label>
-        <select id="edit-city">
-          <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
-        </select>
-        <label>車輛品牌</label>
-        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
-          <option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Lexus">Lexus</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="Other">其他品牌</option>
-        </select>
+        <label>居住縣市</label><select id="edit-city"><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="台中市">台中市</option><option value="高雄市">高雄市</option><option value="其他">其他</option></select>
+        <label>車輛品牌</label><select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Tesla">Tesla</option><option value="Other">其他品牌</option></select>
         <label>車輛型號</label><select id="edit-model"></select>
         <label>出廠年份</label><input type="number" id="edit-year">
         <label>車牌號碼</label><input type="text" id="edit-plate">
-        <label>年平均行駛里程</label>
-        <select id="edit-mileage"><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option><option value="40000">40,000 公里</option><option value="50000">50,000 公里以上</option></select>
-        <button class="btn-main" onclick="updateProfile()">儲存修正資料</button>
+        <label>年平均行駛里程</label><select id="edit-mileage"><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
+        <button class="btn-main" onclick="updateProfile()" style="margin-top:10px;">儲存變更</button>
       </div>
     </div>
     
     <div id="set-content-theme" style="display:none;">
-      <div class="card" style="text-align: center; padding: 30px 20px;">
-        <h3 style="margin-top:0; color:var(--text-primary); margin-bottom: 25px;">座艙顯示模式</h3>
+      <div class="card" style="text-align: center; padding: 40px 20px;">
+        <h3 style="margin-top:0; color:var(--text-primary); margin-bottom: 30px; font-size:20px;">選擇座艙顯示模式</h3>
         <div style="display:flex; flex-direction: column; gap:16px;">
-          <button class="btn-main" id="btn-theme-dark" style="background:#0b0c10; color:#00e676; border:1px solid #23262f; box-shadow: 0 8px 20px rgba(0,0,0,0.4);" onclick="setTheme('dark')">🌙 曜石黑 (深空科技)</button>
-          <button class="btn-main" id="btn-theme-light" style="background:#f8fafc; color:#198754; border:1px solid #e2e8f0; box-shadow: 0 8px 20px rgba(148, 163, 184, 0.2);" onclick="setTheme('light')">☀️ 珍珠白 (優雅奢華)</button>
-          <button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2a2d32 0%, #1e2024 100%); color:#00e5ff; border:1px solid #3f4348; box-shadow: 0 8px 20px rgba(0,0,0,0.5);" onclick="setTheme('metal')">⚙️ 鈦金屬 (重裝機甲)</button>
+          <button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#30d158; border:1px solid #2c2c2e; box-shadow: 0 8px 25px rgba(0,0,0,0.4);" onclick="setTheme('dark')">🌙 曜石黑 (深空科技)</button>
+          <button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #e5e5ea; box-shadow: 0 8px 25px rgba(0,0,0,0.06);" onclick="setTheme('light')">☀️ 珍珠白 (優雅奢華)</button>
+          <button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); color:#06b6d4; border:1px solid #3a3a3c; box-shadow: 0 8px 25px rgba(0,0,0,0.6);" onclick="setTheme('metal')">⚙️ 鈦金屬 (重裝機甲)</button>
         </div>
       </div>
     </div>
 
     <div id="set-content-b" style="display:none;">
       <div class="card">
-        <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:20px; border-color:var(--accent-color); color:var(--accent-color); font-weight:700;">
+        <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:20px; font-weight:700;">
           <option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 保修廠預約紀錄</option>
           <option value="shop">🛒 商城購買紀錄</option>
         </select>
@@ -308,16 +307,16 @@
     </div>
     
     <div id="set-content-c" style="display:none;">
-      <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary);">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:5px 0;">認證車牌：<span id="contract-plate" style="color:var(--accent-color); font-weight:bold; font-size:16px;"></span></p></div>
+      <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--accent-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.1-無刪減完整版</div>
+    <div class="version-tag">System Ver. V4.2-國際頂配版</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
     <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span>座艙</div>
     <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span>商城</div>
     <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span>預約</div>
-    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span>獎勵</div>
+    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span>任務</div>
     <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span>設定</div>
   </div>
 
@@ -327,32 +326,23 @@
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
     
-    const carData = { 
-      "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "其他"], "Honda": ["CR-V", "HR-V", "Civic", "Fit", "其他"],
-      "Nissan": ["Kicks", "Sentra", "X-Trail", "其他"], "Ford": ["Focus", "Kuga", "其他"], "Mazda": ["Mazda 3", "CX-5", "其他"],
-      "Mitsubishi": ["Outlander", "Eclipse Cross", "Colt Plus", "其他"], "Hyundai": ["Tucson", "Custin", "Venue", "其他"],
-      "Kia": ["Sportage", "Sorento", "EV6", "其他"], "Volkswagen": ["Golf", "Tiguan", "其他"], "Skoda": ["Kodiaq", "Kamiq", "其他"],
-      "Lexus": ["NX", "RX", "UX", "ES", "其他"], "Benz": ["C-Class", "E-Class", "GLC", "GLE", "其他"],
-      "BMW": ["3-Series", "5-Series", "X3", "X5", "其他"], "Audi": ["A3", "A4", "Q3", "Q5", "其他"],
-      "Volvo": ["XC60", "XC40", "其他"], "Porsche": ["Macan", "Cayenne", "其他"], "Tesla": ["Model Y", "Model 3", "Model X", "Model S"],
-      "Subaru": ["Forester", "XV", "其他"], "Suzuki": ["Swift", "Jimny", "其他"], "Luxgen": ["URX", "n7", "其他"], "Other": ["其他品牌"] 
-    };
+    const carData = { "Toyota": ["Model Y", "RAV4", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他"] };
 
-    // 🌟 台北時區格式化工具
     function formatTaipeiTime(dateString) {
       if (!dateString) return '-';
       const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
       return new Date(dateString).toLocaleString('zh-TW', options);
     }
 
+    // 🌟 主題切換 (包含邊框顏色動態改變)
     function setTheme(theme) {
       document.body.classList.remove('light-mode', 'metal-mode');
       document.getElementById('btn-theme-dark').style.borderColor = 'transparent';
       document.getElementById('btn-theme-light').style.borderColor = 'transparent';
       document.getElementById('btn-theme-metal').style.borderColor = 'transparent';
-      if (theme === 'light') { document.body.classList.add('light-mode'); document.getElementById('btn-theme-light').style.borderColor = '#198754'; } 
-      else if (theme === 'metal') { document.body.classList.add('metal-mode'); document.getElementById('btn-theme-metal').style.borderColor = '#00e5ff'; } 
-      else { theme = 'dark'; document.getElementById('btn-theme-dark').style.borderColor = '#00e676'; }
+      if (theme === 'light') { document.body.classList.add('light-mode'); document.getElementById('btn-theme-light').style.borderColor = '#10b981'; } 
+      else if (theme === 'metal') { document.body.classList.add('metal-mode'); document.getElementById('btn-theme-metal').style.borderColor = '#06b6d4'; } 
+      else { theme = 'dark'; document.getElementById('btn-theme-dark').style.borderColor = '#30d158'; }
       localStorage.setItem('hypass_theme', theme);
     }
     setTheme(localStorage.getItem('hypass_theme') || 'dark');
@@ -400,20 +390,19 @@
       if (error) alert("更新失敗：" + error.message); else { alert('✅ 您的座艙資料已成功更新！'); location.reload(); }
     }
 
-    // 🌟 套用台北時區的歷史紀錄
     async function loadHistory(type) {
       const container = document.getElementById('history-container'); container.innerHTML = '讀取中...'; let html = '';
       if (type === 'filter') {
         const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
-        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary);">🔄 [${d.activation_type}] 啟用</span><br><span style="font-size:11px;">${formatTaipeiTime(d.activated_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">🔄 [${d.activation_type}] 啟用新濾網</span><br><span style="font-size:11px;">${formatTaipeiTime(d.activated_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
       } else if (type === 'book') {
         const { data } = await supabaseClient.from('appointments').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('appointment_time', { ascending: false });
-        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary);">📍 ${d.garages.name} [${d.status}]</span><br><span style="font-size:11px;">預約時間: ${formatTaipeiTime(d.appointment_time)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📍 預約：${d.garages.name} [${d.status}]</span><br><span style="font-size:11px;">預約時間: ${formatTaipeiTime(d.appointment_time)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
       } else if (type === 'shop' || type === 'logs') {
         let query = supabaseClient.from('user_logs').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
         if (type === 'shop') query = query.eq('action', '🛒 商城購買');
         const { data } = await query;
-        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary);">📝 ${d.action}: ${d.details}</span><br><span style="font-size:11px;">${formatTaipeiTime(d.created_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📝 ${d.action}</span><br><span style="color:var(--text-secondary);">${d.details}</span><br><span style="font-size:11px;">${formatTaipeiTime(d.created_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
       }
       container.innerHTML = html;
     }
@@ -424,7 +413,7 @@
       const { error } = await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand, installed_location: currentLocName }).eq('uid', res.value);
       if (error) return alert("啟用失敗，可能為無效的 QR Code。");
       await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '濾網重置', details: `DIY 啟用了新濾網 UID: ${res.value}` }]);
-      alert("✅ 啟用成功！"); location.reload();
+      alert("✅ 啟用成功！座艙防護已滿血復活。"); location.reload();
     }
 
     async function book(gId, prefix = '') {
