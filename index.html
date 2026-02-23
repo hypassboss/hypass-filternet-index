@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.9 Tesla 極簡中控設計系統 (細節淬鍊版)
+       💎 V4.10 Tesla 極簡中控設計系統 (AQI標示版)
        ========================================= */
        
     :root {
@@ -88,11 +88,15 @@
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
+    /* 🌟 修復一：AQI 文字精準標示與排版 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 100px; }
+    .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 105px; }
     .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
     .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
-    .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; display: flex; align-items: center; justify-content: center; flex: 1;}
+    
+    .aqi-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
+    .aqi-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 2px; }
+    .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; }
 
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;}
     .esg-box { text-align: center; padding: 16px 6px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
@@ -200,11 +204,17 @@
     <div class="grid-2">
       <div class="env-box">
         <div class="env-title">📍 即時所在地<br><span id="ui-loc-name" class="env-subtitle">定位中...</span></div>
-        <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
+        <div class="aqi-container">
+          <div class="aqi-label">AQI</div>
+          <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
+        </div>
       </div>
       <div class="env-box" style="border-color:#554400;">
         <div class="env-title">🏠 近7日居住地<br><span id="ui-home-city" class="env-subtitle">讀取中...</span></div>
-        <div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div>
+        <div class="aqi-container">
+          <div class="aqi-label">AQI</div>
+          <div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div>
+        </div>
       </div>
     </div>
 
@@ -341,7 +351,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">4.9</div>
+    <div class="version-tag">4.10</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -377,7 +387,7 @@
       "新竹市": ["東區", "北區", "香山區"],
       "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
       "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"],
-      "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "丰原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
+      "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
       "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"],
       "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"],
       "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"],
@@ -536,7 +546,6 @@
       const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
       
       if (filter && filter.activated_at) {
-        // 🌟 寫入啟用日期
         const actDate = new Date(filter.activated_at);
         document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
 
