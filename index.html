@@ -8,11 +8,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       🎨 國際精品級 UI 設計系統 (V4.0)
+       🎨 國際精品級 UI 設計系統 (V4.1)
        ========================================= */
        
     /* 🌙 曜石黑 (深空灰黑 + 霓虹薄荷綠 - 頂級純電跑車風) */
     :root {
+      --bg-image: none;
       --bg-color: #0d0f12;
       --surface-color: #171920;
       --border-color: #262933;
@@ -28,6 +29,7 @@
 
     /* ☀️ 珍珠白 (象牙暖白 + 英國賽車綠 - 頂級奢華房車風) */
     body.light-mode {
+      --bg-image: none;
       --bg-color: #f5f7fa;
       --surface-color: #ffffff;
       --border-color: #e2e8f0;
@@ -43,7 +45,8 @@
 
     /* ⚙️ 鈦金屬 (拉絲槍灰 + 冰晶青藍 - 賽博龐克機甲風) */
     body.metal-mode {
-      --bg-color: #1a1c1e;
+      --bg-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px), linear-gradient(145deg, #3a3c42 0%, #1e2024 100%);
+      --bg-color: #2b2d31; 
       --surface-color: linear-gradient(145deg, #2a2d32 0%, #1e2024 100%);
       --border-color: #3f4348;
       --text-primary: #edf2f7;
@@ -56,7 +59,7 @@
       --input-bg: #111214;
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: var(--bg-color); color: var(--text-primary); padding-bottom: 90px; transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.3px;}
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: 90px; transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.3px;}
     .page { display: none; padding: 16px; animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
     .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -135,15 +138,15 @@
       <input type="email" id="c-email" placeholder="* 電子郵件">
       <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
       <select id="c-city">
-        <option value="">* 居住縣市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="其他">其他縣市</option>
+        <option value="">* 居住縣市</option><option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
       </select>
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
-        <option value="">* 選擇車輛品牌</option><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Tesla">Tesla</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Other">其他品牌</option>
+        <option value="">* 選擇車輛品牌</option><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Lexus">Lexus</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="Other">其他品牌</option>
       </select>
       <select id="c-model"><option value="">* 請先選擇品牌</option></select>
       <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
       <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
-      <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
+      <select id="c-mileage"><option value="">* 年平均里程習慣</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option><option value="40000">40,000 公里</option><option value="50000">50,000 公里以上</option></select>
       <button class="btn-main" onclick="submitRegister('customer')">完成註冊</button>
     </div>
   </div>
@@ -180,7 +183,7 @@
         <div style="font-size:12px; color:var(--text-secondary);">📍 <span id="ui-loc-name">定位中</span> (即時)</div>
         <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
       </div>
-      <div class="env-box">
+      <div class="env-box" style="border-color:#554400;">
         <div style="font-size:12px; color:var(--text-secondary);">🏠 <span id="ui-home-city">讀取中</span> (近7日)</div>
         <div class="env-val" id="env-home-aqi" style="color:#f59e0b;">--</div>
       </div>
@@ -266,12 +269,19 @@
         <label>聯絡電話</label><input type="tel" id="edit-phone">
         <label>電子郵件</label><input type="email" id="edit-email">
         <label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
-        <label>居住縣市</label><select id="edit-city"><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="台中市">台中市</option><option value="高雄市">高雄市</option><option value="其他">其他</option></select>
-        <label>車輛品牌</label><select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Tesla">Tesla</option><option value="Other">其他品牌</option></select>
+        <label>居住縣市</label>
+        <select id="edit-city">
+          <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+        </select>
+        <label>車輛品牌</label>
+        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
+          <option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Lexus">Lexus</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="Other">其他品牌</option>
+        </select>
         <label>車輛型號</label><select id="edit-model"></select>
         <label>出廠年份</label><input type="number" id="edit-year">
         <label>車牌號碼</label><input type="text" id="edit-plate">
-        <label>年平均行駛里程</label><select id="edit-mileage"><option value="10000">10,000</option><option value="20000">20,000</option><option value="30000">30,000</option></select>
+        <label>年平均行駛里程</label>
+        <select id="edit-mileage"><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option><option value="40000">40,000 公里</option><option value="50000">50,000 公里以上</option></select>
         <button class="btn-main" onclick="updateProfile()">儲存修正資料</button>
       </div>
     </div>
@@ -300,7 +310,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary);">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:5px 0;">認證車牌：<span id="contract-plate" style="color:var(--accent-color); font-weight:bold; font-size:16px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.0-國際精品版</div>
+    <div class="version-tag">System Ver. V4.1-無刪減完整版</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -316,9 +326,19 @@
 
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
-    const carData = { "Toyota": ["Model Y", "RAV4", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他"] };
+    
+    const carData = { 
+      "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "其他"], "Honda": ["CR-V", "HR-V", "Civic", "Fit", "其他"],
+      "Nissan": ["Kicks", "Sentra", "X-Trail", "其他"], "Ford": ["Focus", "Kuga", "其他"], "Mazda": ["Mazda 3", "CX-5", "其他"],
+      "Mitsubishi": ["Outlander", "Eclipse Cross", "Colt Plus", "其他"], "Hyundai": ["Tucson", "Custin", "Venue", "其他"],
+      "Kia": ["Sportage", "Sorento", "EV6", "其他"], "Volkswagen": ["Golf", "Tiguan", "其他"], "Skoda": ["Kodiaq", "Kamiq", "其他"],
+      "Lexus": ["NX", "RX", "UX", "ES", "其他"], "Benz": ["C-Class", "E-Class", "GLC", "GLE", "其他"],
+      "BMW": ["3-Series", "5-Series", "X3", "X5", "其他"], "Audi": ["A3", "A4", "Q3", "Q5", "其他"],
+      "Volvo": ["XC60", "XC40", "其他"], "Porsche": ["Macan", "Cayenne", "其他"], "Tesla": ["Model Y", "Model 3", "Model X", "Model S"],
+      "Subaru": ["Forester", "XV", "其他"], "Suzuki": ["Swift", "Jimny", "其他"], "Luxgen": ["URX", "n7", "其他"], "Other": ["其他品牌"] 
+    };
 
-    // 🌟 修正台北時區格式化工具
+    // 🌟 台北時區格式化工具
     function formatTaipeiTime(dateString) {
       if (!dateString) return '-';
       const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
@@ -441,7 +461,7 @@
         let baseWear = parseFloat(algoParams.baseWear || 0.27);
         let health = 100 - (days * baseWear * mileageRate * aqiRate);
         document.getElementById('ui-health').innerText = `${Math.max(0, Math.round(health))}%`;
-        if (health < 30) document.getElementById('ui-health').style.color = '#ff0000';
+        if (health < 30) document.getElementById('ui-health').style.color = '#ef4444';
         
         let basePm25 = parseFloat(algoParams.basePm25 || 1250);
         document.getElementById('ui-pm25').innerText = Math.round(days * basePm25 * mileageRate * aqiRate).toLocaleString();
