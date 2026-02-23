@@ -21,7 +21,6 @@
     .tech-tag-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
     .tech-tag { display: inline-block; background: #1a2a1a; color: #00D100; padding: 5px 10px; border-radius: 6px; font-size: 11px; border: 1px solid #005500; font-weight: bold; }
     
-    /* 🌟 防護中光點動畫 */
     .shield-badge { background: rgba(0, 209, 0, 0.1); border: 1px solid #00D100; color: #00D100; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 6px; height: fit-content; white-space: nowrap; }
     .pulse-dot { display: inline-block; width: 8px; height: 8px; background: #00D100; border-radius: 50%; box-shadow: 0 0 5px #00D100; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 209, 0, 0.7); } 70% { opacity: 0.5; box-shadow: 0 0 0 6px rgba(0, 209, 0, 0); } 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 209, 0, 0); } }
@@ -112,10 +111,7 @@
           <p id="ui-owner" style="font-size:18px; font-weight:bold; margin:0;">讀取中...</p>
           <p id="ui-car-info" style="font-size:13px; color:#888; margin:5px 0 0 0;">讀取中...</p>
         </div>
-        
-        <div class="shield-badge">
-          <span class="pulse-dot"></span> 防護中 開啟
-        </div>
+        <div class="shield-badge"><span class="pulse-dot"></span> 防護中 開啟</div>
       </div>
       
       <div class="tech-tag-container">
@@ -234,7 +230,7 @@
       <div class="card"><h4 style="margin:0 0 10px 0; color:#fff;">📄 HYPASS 數位保固卡</h4><p style="font-size:13px; color:#aaa; margin:5px 0;">認證車牌：<span id="contract-plate" style="color:#00D100; font-weight:bold;"></span></p></div>
     </div>
     
-    <div class="version-tag">System Ver. V2.7-FULL</div>
+    <div class="version-tag">System Ver. V2.8-FULL</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -249,7 +245,9 @@
     window.onerror = function(msg, url, line) { console.log("Error:", msg, "at line:", line); return false; };
 
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
-    let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+    let currentUser = null; 
+    let currentLocName = '台灣'; 
+    let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
     const carData = { 
       "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "其他"], "Honda": ["CR-V", "HR-V", "Civic", "Fit", "其他"],
@@ -342,20 +340,22 @@
       }
     };
 
-    // 🌟 提速關鍵：平行處理氣象與空汙 API
-    async function fetchEnvironmentalData(lat, lon) {
+    // 🌟 全新極速架構：直接向自家 Supabase env_cache 索取資料
+    async function fetchEnvironmentalData(city, district) {
       try {
-        const [weatherRes, aqiRes] = await Promise.all([
-          fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m`),
-          fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,aqi`)
-        ]);
+        // 第一秒：向自家的快取池要資料
+        let { data, error } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
         
-        const weatherJson = await weatherRes.json(); 
-        const aqiJson = await aqiRes.json(); 
+        // 萬一客人所在鄉鎮還沒被建檔，拿全台第一筆當作兜底
+        if (!data) {
+           const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).single();
+           data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+        }
         
-        envData.temp = weatherJson.current.temperature_2m; 
-        envData.hum = weatherJson.current.relative_humidity_2m;
-        envData.aqi = aqiJson.current.aqi;
+        envData.temp = data.temp; 
+        envData.hum = data.hum;
+        envData.aqi = data.aqi;
+        envData.pm25 = data.pm25;
         
         document.getElementById('env-aqi').innerText = envData.aqi;
         let sevenDayAvg = Math.round(envData.aqi * (0.8 + Math.random() * 0.4));
@@ -368,34 +368,34 @@
 
         calculateDashboardStats();
       } catch (e) { 
-        console.log("氣象API連線失敗", e); calculateDashboardStats(); 
+        console.log("快取連線失敗", e); calculateDashboardStats(); 
       }
     }
 
-    // 🌟 提速關鍵：允許低精確度快速定位 + API平行發送
     function getGPS() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
           const lat = pos.coords.latitude; 
           const lon = pos.coords.longitude;
           
-          // 1. 立即啟動氣象抓取 (不等待地名解析)
-          fetchEnvironmentalData(lat, lon);
-          
-          // 2. 平行發送地名解析請求
           fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=zh-TW`)
             .then(res => res.json())
             .then(d => {
-              currentLocName = `${d.address.city || ''}${d.address.suburb || d.address.town || ''}`;
+              let city = d.address.city || d.address.county || '';
+              let district = d.address.suburb || d.address.town || '';
+              currentLocName = `${city}${district}`;
               document.getElementById('ui-loc-name').innerText = currentLocName;
+              
+              // 取得地名後，一秒向自家資料庫抓取最新天氣
+              fetchEnvironmentalData(city, district);
             })
             .catch(e => {
               document.getElementById('ui-loc-name').innerText = "定位完成";
             });
             
         }, () => { 
-          calculateDashboardStats(); // 拒絕定位時直接計算預設值
-        }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); // 允許使用基站快速定位
+          calculateDashboardStats(); 
+        }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); 
       }
     }
 
