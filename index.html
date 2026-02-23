@@ -7,10 +7,6 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* =========================================
-       💎 V4.6 Tesla 極簡中控設計系統 (導覽列像素對齊版)
-       ========================================= */
-       
     :root {
       --bg-image: none; --bg-color: #000000; --surface-color: #111111; --border-color: #222222;
       --text-primary: #ffffff; --text-secondary: #888888;
@@ -42,7 +38,7 @@
       --input-bg: #111112;
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(100px + env(safe-area-inset-bottom, 15px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .page.active { display: block; }
@@ -56,32 +52,12 @@
     input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    /* =========================================
-       🌟 修復：導覽列像素級對齊與貼底設計
-       ========================================= */
-    .bottom-nav { 
-      position: fixed; bottom: 0; left: 0; right: 0; 
-      background: var(--glass-bg); 
-      display: flex; justify-content: space-between; align-items: center; 
-      /* 減小 padding 讓導覽列更貼近螢幕底部，同時保留 iPhone 橫條防護區 */
-      padding: 8px 5px calc(8px + env(safe-area-inset-bottom, 0px)) 5px; 
-      border-top: 1px solid var(--border-color); z-index: 999; 
-      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.1); 
-    }
-    .nav-item { 
-      color: var(--text-secondary); font-size: 11px; cursor: pointer; 
-      display: flex; flex-direction: column; align-items: center; justify-content: center; 
-      flex: 1; gap: 4px; /* 統一使用 gap 控制圖文間距 */
-      transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; 
-    }
-    .nav-item:active { transform: scale(0.9); }
-    /* 移除 translateY，讓所有按鈕絕對水平對齊 */
-    .nav-item.active { color: var(--accent-color); font-weight: 700; } 
-    /* 移除多餘的 margin，確保垂直居中無偏差 */
-    .nav-icon { font-size: 22px; display: block; line-height: 1; margin: 0; } 
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: center; padding: 12px 5px calc(12px + env(safe-area-inset-bottom, 15px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
+    .nav-item { color: var(--text-secondary); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 5px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); -webkit-tap-highlight-color: transparent; }
+    .nav-item:active { transform: scale(0.85); }
+    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: translateY(-4px); }
+    .nav-icon { font-size: 22px; display: block; line-height: 1; }
     
-    /* 標題與防護呼吸燈 */
     .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -91,56 +67,40 @@
     .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
     @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
-    /* 巨大中央儀表板 */
     .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 30px 0; }
     .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     .pm25-badge { color: var(--gold-color); font-size: 13px; margin-top: -20px; font-weight: 700; background: var(--surface-color); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--gold-color); box-shadow: 0 5px 15px var(--gold-glow); z-index: 3; position: relative;}
 
-    /* 6大特點 3x2 微縮網格 */
     .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
-    .tech-tag { 
-      background: var(--input-bg); color: var(--text-primary); 
-      padding: 10px 4px; border-radius: 12px; font-size: 11px; 
-      border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 4px; 
-      font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 10px 4px; border-radius: 12px; font-size: 11px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     
-    /* 跑馬燈 */
     .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 14px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; }
     .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
-    /* 雙卡片數據 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .env-box { 
-      background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; 
-      border: 1px solid var(--border-color); 
-      display: flex; flex-direction: column; justify-content: space-between; align-items: center;
-      min-height: 100px; 
-    }
+    .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 100px; }
     .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
     .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
     .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; display: flex; align-items: center; justify-content: center; flex: 1;}
 
-    /* ESG 物理數據 */
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;}
     .esg-box { text-align: center; padding: 16px 6px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
     .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
     
-    /* 設定頁面 Tab */
-    .tab-btn { padding: 14px; margin: 0; font-size: 13px; flex: 1; text-align: center; border-radius: 12px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
+    .tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .tab-btn { padding: 14px 10px; margin: 0; font-size: 13px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
     .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 6px 15px var(--accent-glow);}
     
     .log-item { border-bottom: 1px solid var(--border-color); padding: 16px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
     .log-item:last-child { border-bottom: none; }
-    .version-tag { text-align: center; color: var(--text-secondary); font-size: 11px; margin-top: 40px; font-family: monospace; letter-spacing: 1px; opacity: 0.6;}
+    .version-tag { text-align: center; color: var(--text-secondary); font-size: 13px; margin-top: 40px; font-family: -apple-system, sans-serif; font-weight: bold; opacity: 0.5;}
     label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block; padding-left: 4px;}
 
-    /* VIP 黑金任務卡 */
     .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
     .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: var(--gold-glow); filter: blur(50px); border-radius: 50%; }
     .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; box-shadow: 0 8px 25px var(--gold-glow); border-radius: 16px;}
@@ -161,13 +121,37 @@
       <input type="tel" id="c-phone" placeholder="* 手機號碼">
       <input type="email" id="c-email" placeholder="* 電子郵件">
       <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
-      <select id="c-city">
-        <option value="">* 居住縣市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="其他">其他縣市</option>
+      
+      <select id="c-city" onchange="updateDistricts('c-city', 'c-district')">
+        <option value="">* 居住縣市</option>
+        <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option>
+        <option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option>
+        <option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option>
+        <option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option>
+        <option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+        <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option>
+        <option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+        <option value="連江縣">連江縣</option>
       </select>
+      <select id="c-district"><option value="">* 鄉鎮市區</option></select>
+      <input type="text" id="c-address" placeholder="* 詳細通訊地址 (街道/巷弄/樓層)">
+
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
-        <option value="">* 選擇車輛品牌</option><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Tesla">Tesla</option><option value="Benz">Benz</option><option value="BMW">BMW</option><option value="Other">其他品牌</option>
+        <option value="">* 選擇車輛品牌</option>
+        <option value="Toyota">Toyota (豐田)</option><option value="Honda">Honda (本田)</option>
+        <option value="Nissan">Nissan (日產)</option><option value="Ford">Ford (福特)</option>
+        <option value="Mazda">Mazda (馬自達)</option><option value="Mitsubishi">Mitsubishi (三菱)</option>
+        <option value="Hyundai">Hyundai (現代)</option><option value="Kia">Kia (起亞)</option>
+        <option value="Volkswagen">Volkswagen (福斯)</option><option value="Skoda">Skoda (司科達)</option>
+        <option value="Lexus">Lexus (凌志)</option><option value="Benz">Mercedes-Benz (賓士)</option>
+        <option value="BMW">BMW (寶馬)</option><option value="Audi">Audi (奧迪)</option>
+        <option value="Volvo">Volvo (富豪)</option><option value="Porsche">Porsche (保時捷)</option>
+        <option value="Tesla">Tesla (特斯拉)</option><option value="Subaru">Subaru (速霸陸)</option>
+        <option value="Suzuki">Suzuki (鈴木)</option><option value="Luxgen">Luxgen (納智捷)</option>
+        <option value="Other">其他品牌</option>
       </select>
       <select id="c-model"><option value="">* 請先選擇品牌</option></select>
+      
       <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
       <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
       <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
@@ -176,7 +160,6 @@
   </div>
 
   <div id="page-home" class="page">
-    
     <div class="header-flex">
       <div class="header-title-box">
         <p id="ui-owner">讀取中...</p>
@@ -190,25 +173,17 @@
         <div style="font-size:64px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">100%</div>
         <div style="font-size:14px; color:var(--text-secondary); font-weight:700; margin-top:8px;">動態壽命推估</div>
       </div>
-      <div class="pm25-badge">
-        🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg
-      </div>
+      <div class="pm25-badge">🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
     </div>
     
     <div class="tech-tag-container">
-      <div class="tech-tag">🇹🇼 台灣製造</div>
-      <div class="tech-tag">⚡ 靜電淨化</div>
-      <div class="tech-tag">🥥 椰殼除臭</div>
-      <div class="tech-tag">📡 空污雷達</div>
-      <div class="tech-tag">🧠 AI 演算</div>
-      <div class="tech-tag">🌱 ESG 環保</div>
+      <div class="tech-tag">🇹🇼 台灣製造</div><div class="tech-tag">⚡ 靜電淨化</div><div class="tech-tag">🥥 椰殼除臭</div>
+      <div class="tech-tag">📡 空污雷達</div><div class="tech-tag">🧠 AI 演算</div><div class="tech-tag">🌱 ESG 環保</div>
     </div>
 
     <div class="dynamic-msg-bar">
       <span class="dynamic-msg-icon">💬</span>
-      <div class="marquee-container">
-        <span class="marquee-content" id="ui-dynamic-msg">系統連線中，正在由總部大數據中心調取資料...</span>
-      </div>
+      <div class="marquee-container"><span class="marquee-content" id="ui-dynamic-msg">系統連線中，正在由總部大數據中心調取資料...</span></div>
     </div>
 
     <div class="grid-2">
@@ -224,16 +199,13 @@
 
     <div class="grid-3">
       <div class="esg-box">
-        <div class="esg-badge">極致低風阻</div>
-        <div style="font-size:24px; margin-top:15px;">🌱</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:11px; color:var(--text-secondary);">kg</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
+        <div class="esg-badge">極致低風阻</div><div style="font-size:24px; margin-top:15px;">🌱</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:11px; color:var(--text-secondary);">kg</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
       </div>
       <div class="esg-box">
-        <div class="esg-badge">冷氣輕負載</div>
-        <div style="font-size:24px; margin-top:15px;">⚡️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:11px; color:var(--text-secondary);">kWh</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省電效能</div>
+        <div class="esg-badge">冷氣輕負載</div><div style="font-size:24px; margin-top:15px;">⚡️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:11px; color:var(--text-secondary);">kWh</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省電效能</div>
       </div>
       <div class="esg-box">
-        <div class="esg-badge">強效大風量</div>
-        <div style="font-size:24px; margin-top:15px;">⛽️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:11px; color:var(--text-secondary);">%</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">空調節能</div>
+        <div class="esg-badge">強效大風量</div><div style="font-size:24px; margin-top:15px;">⛽️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:11px; color:var(--text-secondary);">%</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">空調節能</div>
       </div>
     </div>
     
@@ -279,7 +251,8 @@
 
   <div id="page-settings" class="page">
     <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">⚙️ 設定與紀錄</h3>
-    <div style="display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none;">
+    
+    <div class="tab-grid">
       <div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')">👤 基本資料</div>
       <div class="tab-btn inactive" id="tab-set-theme" onclick="switchSetTab('theme')">🎨 畫面設定</div>
       <div class="tab-btn inactive" id="tab-set-b" onclick="switchSetTab('b')">📜 歷史紀錄</div>
@@ -292,8 +265,39 @@
         <label>聯絡電話</label><input type="tel" id="edit-phone">
         <label>電子郵件</label><input type="email" id="edit-email">
         <label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
-        <label>居住縣市</label><select id="edit-city"><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="其他">其他</option></select>
-        <label>車輛品牌</label><select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Tesla">Tesla</option><option value="Other">其他品牌</option></select>
+        
+        <label>居住縣市</label>
+        <select id="edit-city" onchange="updateDistricts('edit-city', 'edit-district')">
+          <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option>
+          <option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option>
+          <option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option>
+          <option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option>
+          <option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+          <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option>
+          <option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+          <option value="連江縣">連江縣</option>
+        </select>
+        
+        <label>鄉鎮市區</label>
+        <select id="edit-district"></select>
+        
+        <label>詳細通訊地址</label>
+        <input type="text" id="edit-address">
+
+        <label>車輛品牌</label>
+        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
+          <option value="Toyota">Toyota (豐田)</option><option value="Honda">Honda (本田)</option>
+          <option value="Nissan">Nissan (日產)</option><option value="Ford">Ford (福特)</option>
+          <option value="Mazda">Mazda (馬自達)</option><option value="Mitsubishi">Mitsubishi (三菱)</option>
+          <option value="Hyundai">Hyundai (現代)</option><option value="Kia">Kia (起亞)</option>
+          <option value="Volkswagen">Volkswagen (福斯)</option><option value="Skoda">Skoda (司科達)</option>
+          <option value="Lexus">Lexus (凌志)</option><option value="Benz">Mercedes-Benz (賓士)</option>
+          <option value="BMW">BMW (寶馬)</option><option value="Audi">Audi (奧迪)</option>
+          <option value="Volvo">Volvo (富豪)</option><option value="Porsche">Porsche (保時捷)</option>
+          <option value="Tesla">Tesla (特斯拉)</option><option value="Subaru">Subaru (速霸陸)</option>
+          <option value="Suzuki">Suzuki (鈴木)</option><option value="Luxgen">Luxgen (納智捷)</option>
+          <option value="Other">其他品牌</option>
+        </select>
         <label>車輛型號</label><select id="edit-model"></select>
         <label>出廠年份</label><input type="number" id="edit-year">
         <label>車牌號碼</label><input type="text" id="edit-plate">
@@ -326,7 +330,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.6-導覽列像素對齊版</div>
+    <div class="version-tag">4.7</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -343,7 +347,41 @@
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
     
-    const carData = { "Toyota": ["Model Y", "RAV4", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他"] };
+    const carData = { 
+      "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "其他"], "Honda": ["CR-V", "HR-V", "Civic", "Fit", "其他"],
+      "Nissan": ["Kicks", "Sentra", "X-Trail", "其他"], "Ford": ["Focus", "Kuga", "其他"], "Mazda": ["Mazda 3", "CX-5", "其他"],
+      "Mitsubishi": ["Outlander", "Eclipse Cross", "Colt Plus", "其他"], "Hyundai": ["Tucson", "Custin", "Venue", "其他"],
+      "Kia": ["Sportage", "Sorento", "EV6", "其他"], "Volkswagen": ["Golf", "Tiguan", "其他"], "Skoda": ["Kodiaq", "Kamiq", "其他"],
+      "Lexus": ["NX", "RX", "UX", "ES", "其他"], "Benz": ["C-Class", "E-Class", "GLC", "GLE", "其他"],
+      "BMW": ["3-Series", "5-Series", "X3", "X5", "其他"], "Audi": ["A3", "A4", "Q3", "Q5", "其他"],
+      "Volvo": ["XC60", "XC40", "其他"], "Porsche": ["Macan", "Cayenne", "其他"], "Tesla": ["Model Y", "Model 3", "Model X", "Model S"],
+      "Subaru": ["Forester", "XV", "其他"], "Suzuki": ["Swift", "Jimny", "其他"], "Luxgen": ["URX", "n7", "其他"], "Other": ["其他品牌"] 
+    };
+
+    const taiwanDistricts = {
+      "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
+      "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
+      "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"],
+      "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"],
+      "新竹市": ["東區", "北區", "香山區"],
+      "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
+      "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"],
+      "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
+      "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"],
+      "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"],
+      "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"],
+      "嘉義市": ["東區", "西區"],
+      "嘉義縣": ["太保市", "朴子市", "布袋鎮", "大林鎮", "民雄鄉", "溪口鄉", "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉", "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"],
+      "台南市": ["新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區", "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區", "七股區", "將軍區", "北門區", "新化區", "善化區", "新市區", "安定區", "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區", "關廟區", "龍崎區", "永康區", "東區", "南區", "北區", "安南區", "安平區", "中西區"],
+      "高雄市": ["鹽埕區", "鼓山區", "左營區", "楠梓區", "三民區", "新興區", "前金區", "苓雅區", "前鎮區", "旗津區", "小港區", "鳳山區", "林園區", "大寮區", "大樹區", "大社區", "仁武區", "鳥松區", "岡山區", "橋頭區", "燕巢區", "田寮區", "阿蓮區", "路竹區", "湖內區", "茄萣區", "永安區", "彌陀區", "梓官區", "旗山區", "美濃區", "六龜區", "甲仙區", "杉林區", "內門區", "茂林區", "桃源區", "那瑪夏區"],
+      "屏東縣": ["屏東市", "潮州鎮", "東港鎮", "恆春鎮", "萬丹鄉", "長治鄉", "麟洛鄉", "九如鄉", "里港鄉", "鹽埔鄉", "高樹鄉", "萬巒鄉", "內埔鄉", "竹田鄉", "新埤鄉", "枋寮鄉", "新園鄉", "崁頂鄉", "林邊鄉", "南州鄉", "佳冬鄉", "琉球鄉", "車城鄉", "滿州鄉", "枋山鄉", "三地門鄉", "霧臺鄉", "瑪家鄉", "泰武鄉", "來義鄉", "春日鄉", "獅子鄉", "牡丹鄉"],
+      "宜蘭縣": ["宜蘭市", "羅東鎮", "蘇澳鎮", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "冬山鄉", "五結鄉", "三星鄉", "大同鄉", "南澳鄉"],
+      "花蓮縣": ["花蓮市", "鳳林鎮", "玉里鎮", "新城鄉", "吉安鄉", "壽豐鄉", "光復鄉", "豐濱鄉", "瑞穗鄉", "富里鄉", "秀林鄉", "萬榮鄉", "卓溪鄉"],
+      "台東縣": ["台東市", "成功鎮", "關山鎮", "卑南鄉", "鹿野鄉", "池上鄉", "東河鄉", "長濱鄉", "太麻里鄉", "大武鄉", "綠島鄉", "海端鄉", "延平鄉", "金峰鄉", "達仁鄉", "蘭嶼鄉"],
+      "澎湖縣": ["馬公市", "湖西鄉", "白沙鄉", "西嶼鄉", "望安鄉", "七美鄉"],
+      "金門縣": ["金城鎮", "金湖鎮", "金沙鎮", "金寧鄉", "烈嶼鄉", "烏坵鄉"],
+      "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
+    };
 
     function normalizeCityName(cityStr) {
       if (!cityStr) return '';
@@ -373,7 +411,17 @@
       if (carData[bSelect]) carData[bSelect].forEach(item => { mSelect.innerHTML += `<option value="${item}">${item}</option>`; });
     }
 
+    function updateDistricts(cityId, districtId) {
+      const city = document.getElementById(cityId).value;
+      const distSelect = document.getElementById(districtId);
+      distSelect.innerHTML = '<option value="">* 鄉鎮市區</option>';
+      if (taiwanDistricts[city]) {
+          taiwanDistricts[city].forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
+      }
+    }
+
     function showForm(role) { document.getElementById('form-customer').style.display = (role === 'customer') ? 'block' : 'none'; document.getElementById('form-garage').style.display = (role === 'garage') ? 'block' : 'none'; }
+    
     function switchPage(id, el) { 
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
@@ -388,6 +436,7 @@
         document.getElementById(`tab-set-${tab}`).className = `tab-btn ${t === tab ? 'active' : 'inactive'}`;
       });
     }
+    
     function switchBookingTab(t) { document.getElementById('booking-smart').style.display = (t === 'smart') ? 'block' : 'none'; document.getElementById('booking-manual').style.display = (t === 'manual') ? 'block' : 'none'; document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : 'inactive'}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : 'inactive'}`; }
 
     async function submitRegister(role) {
@@ -395,10 +444,15 @@
         const p = await liff.getProfile(); let referrerId = new URLSearchParams(window.location.search).get('ref');
         if (role === 'customer') {
           const n = document.getElementById('c-name').value; const ph = document.getElementById('c-phone').value; const e = document.getElementById('c-email').value;
-          const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; const b = document.getElementById('c-brand').value;
-          const m = document.getElementById('c-model').value; const y = document.getElementById('c-year').value; const pl = document.getElementById('c-plate').value; const mil = document.getElementById('c-mileage').value;
-          if (!n || !ph || !e || !c || !b || !m || !pl || !mil) return alert("請完整填寫所有 * 必填欄位！");
-          const { error } = await supabaseClient.from('users').upsert({ line_uid: p.userId, role: role, referrer_uid: referrerId, name: n, phone: ph, email: e, gender: g, city: c, car_brand: b, car_model: m, license_plate: pl, yearly_mileage: parseInt(mil), car_year: parseInt(y) || null });
+          const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; 
+          const dist = document.getElementById('c-district').value; const addr = document.getElementById('c-address').value;
+          const b = document.getElementById('c-brand').value; const m = document.getElementById('c-model').value; const y = document.getElementById('c-year').value; const pl = document.getElementById('c-plate').value; const mil = document.getElementById('c-mileage').value;
+          
+          if (!n || !ph || !e || !c || !dist || !b || !m || !pl || !mil) return alert("請完整填寫所有 * 必填欄位！");
+          
+          const payload = { line_uid: p.userId, role: role, referrer_uid: referrerId, name: n, phone: ph, email: e, gender: g, city: c, district: dist, address: addr, car_brand: b, car_model: m, license_plate: pl, yearly_mileage: parseInt(mil), car_year: parseInt(y) || null };
+          
+          const { error } = await supabaseClient.from('users').upsert(payload);
           if (error) alert("註冊失敗：" + error.message); else { alert("✅ 註冊成功！"); location.reload(); }
         }
       } catch (err) { alert("系統錯誤，請稍後再試。"); }
@@ -408,6 +462,7 @@
       const payload = {
         name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, email: document.getElementById('edit-email').value,
         gender: document.getElementById('edit-gender').value, city: document.getElementById('edit-city').value,
+        district: document.getElementById('edit-district').value, address: document.getElementById('edit-address').value,
         car_brand: document.getElementById('edit-brand').value, car_model: document.getElementById('edit-model').value,
         car_year: parseInt(document.getElementById('edit-year').value) || null, license_plate: document.getElementById('edit-plate').value, 
         yearly_mileage: parseInt(document.getElementById('edit-mileage').value)
@@ -548,10 +603,24 @@
             document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
             document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model}`;
             
-            document.getElementById('edit-name').value = data.name; document.getElementById('edit-phone').value = data.phone; document.getElementById('edit-email').value = data.email; 
+            document.getElementById('edit-name').value = data.name; 
+            document.getElementById('edit-phone').value = data.phone; 
+            document.getElementById('edit-email').value = data.email; 
             if(data.gender) document.getElementById('edit-gender').value = data.gender;
-            if(data.city) document.getElementById('edit-city').value = data.city;
-            if(data.car_brand) { document.getElementById('edit-brand').value = data.car_brand; updateCarModels('edit-brand', 'edit-model'); if(data.car_model) document.getElementById('edit-model').value = data.car_model; }
+            
+            if(data.city) { 
+              document.getElementById('edit-city').value = data.city; 
+              updateDistricts('edit-city', 'edit-district');
+              if(data.district) document.getElementById('edit-district').value = data.district;
+            }
+            if(data.address) document.getElementById('edit-address').value = data.address;
+
+            if(data.car_brand) { 
+              document.getElementById('edit-brand').value = data.car_brand; 
+              updateCarModels('edit-brand', 'edit-model'); 
+              if(data.car_model) document.getElementById('edit-model').value = data.car_model; 
+            }
+            
             if(data.car_year) document.getElementById('edit-year').value = data.car_year;
             document.getElementById('edit-plate').value = data.license_plate; document.getElementById('contract-plate').innerText = data.license_plate;
             if(data.yearly_mileage) document.getElementById('edit-mileage').value = data.yearly_mileage;
