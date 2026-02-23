@@ -2,116 +2,101 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>HYPASS Air+ 智能座艙</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 國際級 UI 設計系統 (V4.2 頂配減法設計)
+       💎 國際級 UI 設計系統 (V4.4 RWD完美對齊版)
        ========================================= */
        
-    /* 🌙 曜石黑 (純粹黑 + 薄荷綠 - Apple CarPlay 風格) */
     :root {
-      --bg-image: none;
-      --bg-color: #000000;
-      --surface-color: #121212;
-      --border-color: #2c2c2e;
-      --text-primary: #f5f5f7;
-      --text-secondary: #86868b;
-      --accent-color: #30d158; 
+      --bg-image: none; --bg-color: #000000; --surface-color: #121212; --border-color: #2c2c2e;
+      --text-primary: #f5f5f7; --text-secondary: #86868b; --accent-color: #30d158; 
       --accent-gradient: linear-gradient(135deg, #30d158 0%, #28a745 100%);
-      --accent-glow: rgba(48, 209, 88, 0.2);
-      --glass-bg: rgba(18, 18, 18, 0.85);
-      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-      --input-bg: #1c1c1e;
+      --accent-glow: rgba(48, 209, 88, 0.2); --glass-bg: rgba(18, 18, 18, 0.85);
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); --input-bg: #1c1c1e;
     }
 
-    /* ☀️ 珍珠白 (象牙白 + 祖母綠 - Porsche 奢華內裝風格) */
     body.light-mode {
-      --bg-image: none;
-      --bg-color: #f5f5f7;
-      --surface-color: #ffffff;
-      --border-color: #e5e5ea;
-      --text-primary: #1d1d1f;
-      --text-secondary: #86868b;
-      --accent-color: #10b981; 
+      --bg-image: none; --bg-color: #f5f5f7; --surface-color: #ffffff; --border-color: #e5e5ea;
+      --text-primary: #1d1d1f; --text-secondary: #86868b; --accent-color: #10b981; 
       --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      --accent-glow: rgba(16, 185, 129, 0.15);
-      --glass-bg: rgba(255, 255, 255, 0.9);
-      --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-      --input-bg: #f5f5f7;
+      --accent-glow: rgba(16, 185, 129, 0.15); --glass-bg: rgba(255, 255, 255, 0.9);
+      --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.06); --input-bg: #f5f5f7;
     }
 
-    /* ⚙️ 鈦金屬 (拉絲金屬灰 + 冰晶青 - Cyberpunk 未來機甲風格) */
     body.metal-mode {
       --bg-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px);
-      --bg-color: #151515; 
-      --surface-color: linear-gradient(145deg, #262628 0%, #1c1c1e 100%);
-      --border-color: #3a3a3c;
-      --text-primary: #e5e5ea;
-      --text-secondary: #98989d;
-      --accent-color: #06b6d4; 
-      --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-      --accent-glow: rgba(6, 182, 212, 0.25);
-      --glass-bg: rgba(28, 28, 30, 0.9);
+      --bg-color: #151515; --surface-color: linear-gradient(145deg, #262628 0%, #1c1c1e 100%);
+      --border-color: #3a3a3c; --text-primary: #e5e5ea; --text-secondary: #98989d;
+      --accent-color: #06b6d4; --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      --accent-glow: rgba(6, 182, 212, 0.25); --glass-bg: rgba(28, 28, 30, 0.9);
       --card-shadow: inset 0 1px 1px rgba(255,255,255,0.05), 0 8px 25px rgba(0,0,0,0.5);
       --input-bg: #111112;
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: 90px; transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(100px + env(safe-area-inset-bottom, 15px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     .card { background: var(--surface-color); padding: 20px; border-radius: 24px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: all 0.4s ease; }
-    
     .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 4px 15px var(--accent-glow); letter-spacing: 1px;}
     .btn-main:active { transform: scale(0.96); box-shadow: 0 2px 8px var(--accent-glow); }
-    
     input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--glass-bg); display: flex; justify-content: space-around; padding: 12px 0 28px 0; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); transition: background 0.4s; }
-    .nav-item { color: var(--text-secondary); font-size: 11px; cursor: pointer; text-align: center; width: 20%; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: center; padding: 12px 5px calc(12px + env(safe-area-inset-bottom, 15px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
+    .nav-item { color: var(--text-secondary); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 5px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); -webkit-tap-highlight-color: transparent; }
     .nav-item:active { transform: scale(0.85); }
     .nav-item.active { color: var(--accent-color); font-weight: 700; transform: translateY(-4px); }
-    .nav-icon { font-size: 22px; margin-bottom: 5px; display: block; }
+    .nav-icon { font-size: 22px; display: block; line-height: 1; }
     
-    /* 🌟 動態呼吸燈 (依照主題變換光暈顏色) */
-    .shield-badge { background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 10px; animation: badgePulse 2.5s infinite alternate ease-in-out; }
+    /* 🌟 修復一：防護中標籤不被擠壓，標題不會換行 */
+    .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .header-title-box { flex: 1; min-width: 0; } /* min-width:0 讓 flex 子元素可以縮小而不撐斷版面 */
+    #ui-owner { font-size: 19px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .shield-badge { flex-shrink: 0; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 14px; border-radius: 30px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; animation: badgePulse 2.5s infinite alternate ease-in-out; }
+    
     @keyframes badgePulse { 0% { box-shadow: 0 0 5px var(--accent-glow); border-color: transparent; } 100% { box-shadow: 0 0 20px var(--accent-color); border-color: var(--accent-color); } }
     .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
     @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
-    /* 🌟 優化版：科技儀表板網格 (減法設計，極簡膠囊風) */
-    .tech-tag-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
-    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 12px 14px; border-radius: 12px; font-size: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; font-weight: 600; transition: all 0.3s; position: relative; overflow: hidden; }
-    .tech-tag::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent-color); border-radius: 4px 0 0 4px; }
-    .tech-tag-icon { font-size: 16px; opacity: 0.9; }
+    /* 🌟 修復二：6大特點 完美單行不截斷 */
+    .tech-tag-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+    .tech-tag { 
+      background: var(--input-bg); color: var(--text-primary); 
+      padding: 10px 6px; /* 縮小內距釋放空間 */
+      border-radius: 10px; font-size: 11.5px; /* 字體微調最完美比例 */
+      border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 6px; 
+      font-weight: 600; position: relative; overflow: hidden; 
+      white-space: nowrap; /* 絕對不換行 */
+    }
+    .tech-tag::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent-color); border-radius: 4px 0 0 4px; }
+    .tech-tag-icon { font-size: 14px; opacity: 0.9; flex-shrink:0; }
 
-    /* 60fps 跑馬燈 */
-    .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 16px 20px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
-    .dynamic-msg-icon { margin-right: 14px; font-size: 18px; flex-shrink: 0; }
-    .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; }
-    .marquee-content { display: inline-block; min-width: 100%; animation: scrollText 14s linear infinite; }
+    /* 🌟 修復三：60fps 跑馬燈垂直對齊修正 */
+    .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 14px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
+    .dynamic-msg-icon { margin-right: 12px; font-size: 16px; flex-shrink: 0; display:flex; align-items:center; }
+    .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
+    .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} /* padding-top 微調字體視覺重心 */
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
     .env-box { background: var(--input-bg); border-radius: 16px; padding: 18px 12px; text-align: center; border: 1px solid var(--border-color); }
     .env-val { font-size: 32px; font-weight: 700; color: var(--text-primary); margin: 8px 0 0 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 
-    .ring-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0 20px 0; }
-    .ring { width: 180px; height: 180px; border-radius: 50%; border: 8px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 40px var(--accent-glow); position: relative; }
+    .ring-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px 0 20px 0; }
+    .ring { width: 170px; height: 170px; border-radius: 50%; border: 8px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 40px var(--accent-glow); position: relative; }
     .ring::after { content: ''; position: absolute; top: -14px; left: -14px; right: -14px; bottom: -14px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 20s linear infinite; opacity: 0.3;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    .esg-box { text-align: center; padding: 18px 8px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
-    
-    /* 🌟 大白話標籤設計 */
-    .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 10px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .esg-box { text-align: center; padding: 18px 6px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
+    .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
     
     .tab-btn { padding: 14px; margin: 0; font-size: 13px; flex: 1; text-align: center; border-radius: 12px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
     .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 6px 15px var(--accent-glow);}
@@ -121,7 +106,6 @@
     .version-tag { text-align: center; color: var(--text-secondary); font-size: 11px; margin-top: 40px; font-family: monospace; letter-spacing: 1px; opacity: 0.6;}
     label { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block; padding-left: 4px;}
 
-    /* 🌟 VIP 黑金任務卡 (極致尊榮) */
     .vip-card { border: 1px solid #c5a059; background: linear-gradient(135deg, #141108 0%, #050402 100%); box-shadow: 0 15px 40px rgba(197, 160, 89, 0.15); position: relative; overflow: hidden; }
     .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: rgba(197, 160, 89, 0.15); filter: blur(50px); border-radius: 50%; }
     .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #e6c27a 0%, #c5a059 100%); color: #000; box-shadow: 0 8px 25px rgba(197, 160, 89, 0.3); border-radius: 16px;}
@@ -157,11 +141,11 @@
   </div>
 
   <div id="page-home" class="page">
-    <div class="card" style="padding-top: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <p id="ui-owner" style="font-size:22px; font-weight:800; margin:0; color:var(--text-primary);">讀取中...</p>
-          <p id="ui-car-info" style="font-size:14px; color:var(--text-secondary); margin:6px 0 0 0;">讀取中...</p>
+    <div class="card" style="padding-top: 24px; border-left: 4px solid var(--accent-color);">
+      <div class="header-flex">
+        <div class="header-title-box">
+          <p id="ui-owner">讀取中...</p>
+          <p id="ui-car-info" style="font-size:13px; color:var(--text-secondary); margin:4px 0 0 0;">讀取中...</p>
         </div>
         <div class="shield-badge"><span class="pulse-dot"></span> 防護中 開啟</div>
       </div>
@@ -188,7 +172,7 @@
         <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">📍 <span id="ui-loc-name">定位中</span> (即時)</div>
         <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
       </div>
-      <div class="env-box">
+      <div class="env-box" style="border-color:#554400;">
         <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">🏠 <span id="ui-home-city">讀取中</span> (近7日)</div>
         <div class="env-val" id="env-home-aqi" style="color:#f59e0b;">--</div>
       </div>
@@ -197,7 +181,7 @@
     <div class="card" style="text-align: center; padding: 30px 15px;">
       <div class="ring-container">
         <div class="ring">
-          <div style="font-size:60px; font-weight:800; color:var(--accent-color); letter-spacing:-2px;" id="ui-health">100%</div>
+          <div style="font-size:56px; font-weight:800; color:var(--accent-color); letter-spacing:-2px;" id="ui-health">100%</div>
           <div style="font-size:13px; color:var(--text-secondary); font-weight:600; margin-top:4px;">動態壽命推估</div>
         </div>
         <div style="color:#f59e0b; font-size:14px; margin-top:35px; font-weight:700; background:rgba(245, 158, 11, 0.1); padding:10px 20px; border-radius:24px; border: 1px solid rgba(245, 158, 11, 0.3);">
@@ -210,15 +194,15 @@
     <div class="grid-3">
       <div class="esg-box">
         <div class="esg-badge">極致低風阻</div>
-        <div style="font-size:24px; margin-top:15px;">🌱</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:12px; color:var(--text-secondary);">kg</span></div><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
+        <div style="font-size:24px; margin-top:15px;">🌱</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:11px; color:var(--text-secondary);">kg</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
       </div>
       <div class="esg-box">
         <div class="esg-badge">冷氣輕負載</div>
-        <div style="font-size:24px; margin-top:15px;">⚡️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:12px; color:var(--text-secondary);">kWh</span></div><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">省電效能</div>
+        <div style="font-size:24px; margin-top:15px;">⚡️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:11px; color:var(--text-secondary);">kWh</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省電效能</div>
       </div>
       <div class="esg-box">
         <div class="esg-badge">強效大風量</div>
-        <div style="font-size:24px; margin-top:15px;">⛽️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:12px; color:var(--text-secondary);">%</span></div><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">空調節能</div>
+        <div style="font-size:24px; margin-top:15px;">⛽️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:11px; color:var(--text-secondary);">%</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">空調節能</div>
       </div>
     </div>
   </div>
@@ -309,7 +293,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--accent-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.2-國際頂配版</div>
+    <div class="version-tag">System Ver. V4.4-RWD完美對齊版</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -334,7 +318,6 @@
       return new Date(dateString).toLocaleString('zh-TW', options);
     }
 
-    // 🌟 主題切換 (包含邊框顏色動態改變)
     function setTheme(theme) {
       document.body.classList.remove('light-mode', 'metal-mode');
       document.getElementById('btn-theme-dark').style.borderColor = 'transparent';
