@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.10 Tesla 極簡中控設計系統 (AQI標示版)
+       💎 V4.11 Tesla 極簡中控設計系統 (動態生命徵象版)
        ========================================= */
        
     :root {
@@ -66,10 +66,12 @@
     .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .shield-badge { flex-shrink: 0; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 14px; border-radius: 30px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; animation: badgePulse 2.5s infinite alternate ease-in-out; }
+    
+    /* 🌟 修復：支援動態變色的防護徽章 */
+    .shield-badge { flex-shrink: 0; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 14px; border-radius: 30px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; animation: badgePulse 2.5s infinite alternate ease-in-out; transition: all 0.5s ease;}
     
     @keyframes badgePulse { 0% { box-shadow: 0 0 5px var(--accent-glow); border-color: transparent; } 100% { box-shadow: 0 0 20px var(--accent-color); border-color: var(--accent-color); } }
-    .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
+    .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); transition: background 0.5s ease;}
     @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
     .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 30px 0; }
@@ -88,7 +90,6 @@
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
-    /* 🌟 修復一：AQI 文字精準標示與排版 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 105px; }
     .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
@@ -175,7 +176,7 @@
         <p id="ui-owner">讀取中...</p>
         <p id="ui-car-info" style="font-size:13px; color:var(--text-secondary); margin:4px 0 0 0;">讀取中...</p>
       </div>
-      <div class="shield-badge"><span class="pulse-dot"></span> 防護中 開啟</div>
+      <div class="shield-badge" id="ui-shield-badge"><span class="pulse-dot"></span> <span id="ui-shield-text">系統連線中</span></div>
     </div>
 
     <div class="main-visual-container">
@@ -351,7 +352,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">4.10</div>
+    <div class="version-tag">4.11</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -541,8 +542,13 @@
       }
     };
 
+    // 🌟 修復：動態生命徵象引擎 (連動文字、顏色、呼吸頻率)
     async function calculateDashboardStats() {
       if (!currentUser) return;
+      const badge = document.getElementById('ui-shield-badge');
+      const badgeText = document.getElementById('ui-shield-text');
+      const pulseDot = document.getElementById('ui-pulse-dot');
+      
       const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
       
       if (filter && filter.activated_at) {
@@ -554,21 +560,36 @@
         let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
         let aqiRate = (envData.aqi > 150) ? parseFloat(algoParams.weightRed || 1.8) : (envData.aqi > 100 ? parseFloat(algoParams.weightOrange || 1.4) : 1.0);
         let baseWear = parseFloat(algoParams.baseWear || 0.27);
-        let health = 100 - (days * baseWear * mileageRate * aqiRate);
-        document.getElementById('ui-health').innerText = `${Math.max(0, Math.round(health))}%`;
-        if (health < 30) document.getElementById('ui-health').style.color = '#ef4444';
+        let health = Math.max(0, Math.round(100 - (days * baseWear * mileageRate * aqiRate)));
+        
+        document.getElementById('ui-health').innerText = `${health}%`;
+        
+        // --- 核心動態邏輯 ---
+        if (health >= 60) {
+            badge.style.removeProperty('--accent-color'); badge.style.removeProperty('--accent-glow');
+            badgeText.innerText = '極效防護中'; pulseDot.style.animationDuration = '1.8s'; document.getElementById('ui-health').style.color = 'var(--accent-color)';
+        } else if (health >= 30) {
+            badge.style.removeProperty('--accent-color'); badge.style.removeProperty('--accent-glow');
+            badgeText.innerText = '穩定監控中'; pulseDot.style.animationDuration = '2.5s'; document.getElementById('ui-health').style.color = 'var(--accent-color)';
+        } else if (health > 0) {
+            badge.style.setProperty('--accent-color', '#f59e0b'); badge.style.setProperty('--accent-glow', 'rgba(245, 158, 11, 0.2)');
+            badgeText.innerText = '效能衰退中'; pulseDot.style.animationDuration = '1s'; document.getElementById('ui-health').style.color = '#f59e0b';
+        } else {
+            badge.style.setProperty('--accent-color', '#ef4444'); badge.style.setProperty('--accent-glow', 'rgba(239, 68, 68, 0.2)');
+            badgeText.innerText = '請即刻更換'; pulseDot.style.animationDuration = '0.4s'; document.getElementById('ui-health').style.color = '#ef4444';
+        }
         
         let basePm25 = parseFloat(algoParams.basePm25 || 1250);
         document.getElementById('ui-pm25').innerText = Math.round(days * basePm25 * mileageRate * aqiRate).toLocaleString();
-        
         let paHypass = parseFloat(algoParams.paHypass || 4); let paOther = parseFloat(algoParams.paOther || 8);
         document.getElementById('ui-esg-ac').innerText = Math.round(((paOther - paHypass) / paOther) * 30);
-
         let totalKwhSaved = (days * parseFloat(algoParams.kwhPerDay || 0.25) * mileageRate).toFixed(1);
         document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
         document.getElementById('ui-esg-co2').innerText = (totalKwhSaved * parseFloat(algoParams.co2Factor || 0.5)).toFixed(1);
       } else {
         document.getElementById('ui-filter-date').innerText = '尚未啟用';
+        badge.style.setProperty('--accent-color', '#888888'); badge.style.setProperty('--accent-glow', 'rgba(136, 136, 136, 0.2)');
+        badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
       }
     }
 
