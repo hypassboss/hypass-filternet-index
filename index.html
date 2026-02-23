@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.5 Tesla 極簡中控設計系統 (精準對齊版)
+       💎 V4.6 Tesla 極簡中控設計系統 (導覽列像素對齊版)
        ========================================= */
        
     :root {
@@ -42,7 +42,7 @@
       --input-bg: #111112;
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(100px + env(safe-area-inset-bottom, 15px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .page.active { display: block; }
@@ -56,12 +56,30 @@
     input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    /* 底部導覽列 */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: center; padding: 12px 5px calc(12px + env(safe-area-inset-bottom, 15px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
-    .nav-item { color: var(--text-secondary); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 5px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); -webkit-tap-highlight-color: transparent; }
-    .nav-item:active { transform: scale(0.85); }
-    .nav-item.active { color: var(--accent-color); font-weight: 700; transform: translateY(-4px); }
-    .nav-icon { font-size: 22px; display: block; line-height: 1; }
+    /* =========================================
+       🌟 修復：導覽列像素級對齊與貼底設計
+       ========================================= */
+    .bottom-nav { 
+      position: fixed; bottom: 0; left: 0; right: 0; 
+      background: var(--glass-bg); 
+      display: flex; justify-content: space-between; align-items: center; 
+      /* 減小 padding 讓導覽列更貼近螢幕底部，同時保留 iPhone 橫條防護區 */
+      padding: 8px 5px calc(8px + env(safe-area-inset-bottom, 0px)) 5px; 
+      border-top: 1px solid var(--border-color); z-index: 999; 
+      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.1); 
+    }
+    .nav-item { 
+      color: var(--text-secondary); font-size: 11px; cursor: pointer; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      flex: 1; gap: 4px; /* 統一使用 gap 控制圖文間距 */
+      transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; 
+    }
+    .nav-item:active { transform: scale(0.9); }
+    /* 移除 translateY，讓所有按鈕絕對水平對齊 */
+    .nav-item.active { color: var(--accent-color); font-weight: 700; } 
+    /* 移除多餘的 margin，確保垂直居中無偏差 */
+    .nav-icon { font-size: 22px; display: block; line-height: 1; margin: 0; } 
     
     /* 標題與防護呼吸燈 */
     .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; }
@@ -80,7 +98,7 @@
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     .pm25-badge { color: var(--gold-color); font-size: 13px; margin-top: -20px; font-weight: 700; background: var(--surface-color); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--gold-color); box-shadow: 0 5px 15px var(--gold-glow); z-index: 3; position: relative;}
 
-    /* 🌟 修復一：6大特點 改為 3x2 微縮網格 (不滑動) */
+    /* 6大特點 3x2 微縮網格 */
     .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
     .tech-tag { 
       background: var(--input-bg); color: var(--text-primary); 
@@ -96,13 +114,13 @@
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
-    /* 🌟 修復二：雙卡片標題文案與「數字絕對水平對齊」 */
+    /* 雙卡片數據 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .env-box { 
       background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; 
       border: 1px solid var(--border-color); 
       display: flex; flex-direction: column; justify-content: space-between; align-items: center;
-      min-height: 100px; /* 確保高度一致 */
+      min-height: 100px; 
     }
     .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
     .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
@@ -308,7 +326,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.5-精準對齊與資料對接版</div>
+    <div class="version-tag">System Ver. V4.6-導覽列像素對齊版</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -327,7 +345,6 @@
     
     const carData = { "Toyota": ["Model Y", "RAV4", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他"] };
 
-    // 🌟 修正台灣縣市文字 (防呆處理，確保能跟後台對上)
     function normalizeCityName(cityStr) {
       if (!cityStr) return '';
       return cityStr.replace(/臺/g, '台');
@@ -357,7 +374,13 @@
     }
 
     function showForm(role) { document.getElementById('form-customer').style.display = (role === 'customer') ? 'block' : 'none'; document.getElementById('form-garage').style.display = (role === 'garage') ? 'block' : 'none'; }
-    function switchPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('page-' + id).classList.add('active'); if (el) el.classList.add('active'); if (id === 'book') loadGarages(); }
+    function switchPage(id, el) { 
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+      document.getElementById('page-' + id).classList.add('active'); 
+      if (el) el.classList.add('active'); 
+      if (id === 'book') loadGarages(); 
+    }
     
     function switchSetTab(t) { 
       ['a','theme','b','c'].forEach(tab => {
@@ -468,38 +491,22 @@
       }
     }
 
-    // 🌟 修復 368 鄉鎮資料庫精準對接 
     async function fetchEnvironmentalData(city, district) {
       try {
         let searchCity = normalizeCityName(city);
-        
-        // 1. 嘗試精準配對 (縣市 + 鄉鎮)
         let { data } = await supabaseClient.from('env_cache').select('*').eq('city', searchCity).eq('district', district).maybeSingle();
-        
-        // 2. 如果鄉鎮找不到，退而求其次抓同一個縣市的任何一筆資料
-        if (!data) { 
-            const { data: cityData } = await supabaseClient.from('env_cache').select('*').eq('city', searchCity).limit(1).maybeSingle();
-            data = cityData;
-        }
-        
-        // 3. 全局備用機制 (避免畫面掛掉)
-        if (!data) { 
-            const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); 
-            data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; 
-        }
+        if (!data) { const { data: cityData } = await supabaseClient.from('env_cache').select('*').eq('city', searchCity).limit(1).maybeSingle(); data = cityData; }
+        if (!data) { const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; }
 
         envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
         document.getElementById('env-aqi').innerText = envData.aqi;
 
-        // 🌟 正確獲取並顯示使用者的「近7日居住地」資料
         let homeCityRaw = currentUser.city || '台北市';
         document.getElementById('ui-home-city').innerText = homeCityRaw;
         
         let searchHomeCity = normalizeCityName(homeCityRaw);
         let { data: homeData } = await supabaseClient.from('env_cache').select('aqi').eq('city', searchHomeCity).limit(1).maybeSingle();
         let homeAqi = homeData ? homeData.aqi : envData.aqi;
-        
-        // 模擬 7 日平均邏輯
         document.getElementById('env-home-aqi').innerText = Math.round(homeAqi * (0.9 + Math.random() * 0.2));
 
         let msg = `系統連線正常，目前室外 AQI: ${envData.aqi}，濾網持續防護中！`;
