@@ -2,13 +2,12 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>HYPASS Air+ 智能座艙</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.26 Tesla 極簡座艙 (防彈容錯版)
+       💎 V4.27 Tesla 極簡 6D 矩陣版 (經典回歸)
        ========================================= */
     :root {
       --bg-color: #000000; --surface-color: #111111; --border-color: #333333;
@@ -46,30 +45,32 @@
     .nav-item.active { color: var(--accent-color); font-weight: bold; }
     .nav-item div { font-size: 24px; margin-bottom: 4px; }
     
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .header h2 { margin: 0; font-size: 22px; font-weight: 800; }
-    .badge { background: var(--accent-glow); color: var(--accent-color); border: 1px solid var(--accent-color); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
-    .pulse { width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; animation: pulse 2s infinite; }
+    /* 🌟 經典頭部版面 */
+    .header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .header-title-box { flex: 1; }
+    #ui-owner { font-size: 24px; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: 1px;}
+    #ui-car-model { font-size: 15px; color: var(--text-secondary); margin-top: 5px; font-family: sans-serif;}
+    
+    .shield-badge { display:inline-flex; background: rgba(0, 230, 118, 0.1); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 14px; border-radius: 30px; font-size: 12px; font-weight: 700; align-items: center; gap: 8px; }
+    .pulse-dot { width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--accent-glow); } 70% { box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
 
-    .main-visual-container { display: flex; flex-direction: column; align-items: center; margin: 40px 0 30px 0; }
+    /* 🌟 經典大圓環與 PM2.5 徽章 */
+    .main-visual-container { display: flex; flex-direction: column; align-items: center; margin: 30px 0 25px 0; }
     .ring { width: 240px; height: 240px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index:2;}
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.3; z-index:1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
+    
+    .pm25-badge { background: rgba(255,255,255,0.05); border: 1px solid var(--gold-color); color: var(--gold-color); padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 25px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.15); letter-spacing: 0.5px;}
+
+    /* 🌟 6D 功能矩陣 */
+    .tech-tag-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+    .tech-tag { background: rgba(255,255,255,0.05); color: var(--text-secondary); padding: 12px 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 13px; font-weight: 600; white-space: nowrap;}
     
     .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 12px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 20px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: bold; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; }
     .marquee-content { display: inline-block; animation: scrollText 12s linear infinite; }
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .env-box { background: var(--surface-color); border-radius: 12px; padding: 15px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center;}
-    .env-box h4 { margin: 0 0 8px 0; color: var(--text-secondary); font-size: 12px; }
-    .env-box .val { font-size: 28px; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -1px;}
-    
-    .esg-card { background: var(--surface-color); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); text-align: center; }
-    .esg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-    .esg-item { background: var(--input-bg); padding: 15px; border-radius: 8px; }
 
     .vip-card { background: linear-gradient(135deg, #2a2000 0%, #000000 100%); border: 1px solid var(--gold-color); box-shadow: 0 4px 25px var(--gold-glow); padding: 30px 20px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;}
     .vip-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--gold-glow); filter: blur(40px); border-radius: 50%; }
@@ -117,61 +118,47 @@
   </div>
 
   <div id="page-home" class="page">
-    <div class="header">
-      <h2 id="ui-owner">讀取中...</h2>
-      <div class="badge" id="ui-shield-badge"><div class="pulse" id="ui-pulse-dot"></div> <span id="ui-shield-text">連線中</span></div>
-    </div>
     
-    <div style="font-family:monospace; color:var(--text-secondary); font-size:14px; text-align:center;">車牌綁定：<span id="ui-plate-tag" style="color:var(--text-primary); font-weight:bold;">讀取中</span></div>
+    <div class="header-flex">
+      <div class="header-title-box">
+        <h2 id="ui-owner">讀取中...</h2>
+        <p id="ui-car-model">讀取中...</p>
+      </div>
+      <div class="shield-badge" id="ui-shield-badge">
+        <div class="pulse-dot" id="ui-pulse-dot"></div> <span id="ui-shield-text">連線中</span>
+      </div>
+    </div>
 
     <div class="main-visual-container">
       <div class="ring">
         <div style="font-size:72px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1; text-shadow: 0 0 20px var(--accent-glow);" id="ui-health">100%</div>
         <div style="font-size:14px; color:var(--text-secondary); font-weight:bold; margin-top:8px;">動態壽命推估</div>
       </div>
-      <div style="font-size:12px; color:var(--text-secondary); margin-top:25px; letter-spacing:1px;">保固啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
+      
+      <div class="pm25-badge">
+        🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg
+      </div>
+
+      <div style="font-size:13px; color:var(--text-secondary); margin-top:15px; letter-spacing:1px;">
+        濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span>
+      </div>
     </div>
     
+    <div class="tech-tag-container">
+      <div class="tech-tag"><span style="font-size:16px;">🇹🇼</span> 台灣製汽車冷氣濾網</div>
+      <div class="tech-tag"><span style="font-size:16px;">⚡</span> 高效靜電過濾</div>
+      <div class="tech-tag"><span style="font-size:16px;">🟤</span> 高效活性碳除臭</div>
+      <div class="tech-tag"><span style="font-size:16px;">📡</span> 空汙雷達警示</div>
+      <div class="tech-tag"><span style="font-size:16px;">🧠</span> AI智能演算推播</div>
+      <div class="tech-tag"><span style="font-size:16px;">🌱</span> ESG降低碳足跡</div>
+    </div>
+
     <div class="dynamic-msg-bar" id="dynamic-msg-box">
       <span style="margin-right: 12px; font-size: 18px;">💬</span>
-      <div class="marquee-container"><span class="marquee-content" id="ui-dynamic-msg">系統連線正常，持續為您監控座艙空氣品質...</span></div>
-    </div>
-
-    <div class="grid-2">
-      <div class="env-box">
-        <h4>📍 即時所在地<br><span id="ui-loc-name" style="color:var(--text-primary); font-size:14px;">定位中...</span></h4>
-        <div style="display:flex; align-items:baseline; justify-content:center; gap:4px;">
-           <span style="font-size:12px; color:var(--text-secondary); font-weight:bold;">AQI</span>
-           <p class="val" id="env-aqi" style="color:var(--accent-color);">--</p>
-        </div>
-      </div>
-      <div class="env-box">
-        <h4>🏠 預設居住地 (7日均值)<br><span id="ui-home-city" style="color:var(--text-primary); font-size:14px;">讀取中...</span></h4>
-        <div style="display:flex; align-items:baseline; justify-content:center; gap:4px;">
-           <span style="font-size:12px; color:var(--text-secondary); font-weight:bold;">AQI</span>
-           <p class="val" id="env-home-aqi" style="color:var(--gold-color);">--</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="esg-card">
-      <h3 style="margin:0 0 10px 0; font-size:16px;">🌱 綠能減碳成就</h3>
-      <p style="font-size:13px; color:var(--text-secondary); margin:0;">搭載冷氣輕負載技術，為地球盡一份心力</p>
-      <div class="esg-grid">
-        <div class="esg-item">
-          <div style="font-size:24px; margin-bottom:5px;">⚡️</div>
-          <div style="font-size:20px; font-weight:bold; color:var(--accent-color);"><span id="ui-esg-kwh">0</span> <span style="font-size:12px; color:var(--text-secondary);">kWh</span></div>
-          <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">節省電力</div>
-        </div>
-        <div class="esg-item">
-          <div style="font-size:24px; margin-bottom:5px;">🌲</div>
-          <div style="font-size:20px; font-weight:bold; color:var(--accent-color);"><span id="ui-esg-co2">0</span> <span style="font-size:12px; color:var(--text-secondary);">kg</span></div>
-          <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">減少碳排</div>
-        </div>
-      </div>
+      <div class="marquee-container"><span class="marquee-content" id="ui-dynamic-msg">歡迎加入 HYPASS，持續為您監控座艙空氣品質...</span></div>
     </div>
     
-    <button class="btn-main" onclick="scanFilter()" style="margin-top:20px; font-size:18px; padding:18px;">📷 掃描一維條碼 (UID) 啟用濾網</button>
+    <button class="btn-main" onclick="scanFilter()" style="margin-top:10px; font-size:16px; padding:18px;">📷 掃描一維條碼 (UID) 啟用新濾網</button>
   </div>
 
   <div id="page-shop" class="page">
@@ -241,7 +228,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--accent-color); font-size:18px;">📄 HYPASS 數位保固</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--text-primary); font-weight:bold; font-size:16px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.26 (防護升級版)</div>
+    <div class="version-tag">System Ver. V4.27</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -266,7 +253,7 @@
     const carData = { "Toyota": ["RAV4", "Corolla Cross", "Altis", "其他"], "Honda": ["CR-V", "HR-V", "Fit", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他品牌"] };
 
     function normalizeCityName(cityStr) { return cityStr ? cityStr.replace(/臺/g, '台') : ''; }
-    function formatTaipeiTime(dateString) { try { if (!dateString) return '-'; const d = new Date(dateString); if (isNaN(d.getTime())) return '-'; return d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }); } catch(e){ return '-';} }
+    function formatTaipeiTime(dateString) { try { if (!dateString) return '-'; const d = new Date(dateString); if (isNaN(d.getTime())) return '-'; return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0'); } catch(e){ return '-';} }
     function getCarSizeRate(model) { if (!model) return 1.0; const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V']; const sModels = ['Yaris', 'Fit', 'Swift']; if (lModels.includes(model)) return 1.3; if (sModels.includes(model)) return 0.8; return 1.0; }
 
     function updateCarModels(brandId, modelId) { 
@@ -401,16 +388,19 @@
       }
     }
 
+    // 🌟 經典版面：演算法與狀態更新
     async function calculateDashboardStats() {
       try {
           if (!currentUser) return;
-          const badge = document.getElementById('ui-shield-badge'); const badgeText = document.getElementById('ui-shield-text'); const pulseDot = document.getElementById('ui-pulse-dot');
+          const badge = document.getElementById('ui-shield-badge'); 
+          const badgeText = document.getElementById('ui-shield-text'); 
+          const pulseDot = document.getElementById('ui-pulse-dot');
           
           const { data: filter, error } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).maybeSingle();
           if (error) throw error;
           
           if (filter && filter.activated_at) {
-            const actDate = new Date(filter.activated_at); document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
+            document.getElementById('ui-filter-date').innerText = formatTaipeiTime(filter.activated_at);
             const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
             const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
             
@@ -424,23 +414,39 @@
             let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
             document.getElementById('ui-health').innerText = `${health}%`;
             
-            if (health >= 60) { badgeText.innerText = '極效防護中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
-            else if (health >= 30) { badgeText.innerText = '穩定監控中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
-            else if (health > 0) { badge.style.setProperty('--accent-color', '#f59e0b'); badgeText.innerText = '效能衰退中'; document.getElementById('ui-health').style.color = '#f59e0b';} 
-            else { badge.style.setProperty('--accent-color', '#ef4444'); badgeText.innerText = '請即刻更換'; document.getElementById('ui-health').style.color = '#ef4444'; pulseDot.style.animation = 'none';}
+            if (health >= 60) { 
+                badgeText.innerText = '極效防護中'; 
+                document.getElementById('ui-health').style.color = 'var(--accent-color)';
+                badge.style.borderColor = 'var(--accent-color)'; badge.style.color = 'var(--accent-color)'; pulseDot.style.background = 'var(--accent-color)'; pulseDot.style.animation = 'pulse 2s infinite';
+            } else if (health >= 30) { 
+                badgeText.innerText = '穩定監控中'; 
+                document.getElementById('ui-health').style.color = 'var(--accent-color)';
+                badge.style.borderColor = 'var(--accent-color)'; badge.style.color = 'var(--accent-color)'; pulseDot.style.background = 'var(--accent-color)'; pulseDot.style.animation = 'pulse 2s infinite';
+            } else if (health > 0) { 
+                badgeText.innerText = '效能衰退中'; 
+                document.getElementById('ui-health').style.color = '#f59e0b';
+                badge.style.borderColor = '#f59e0b'; badge.style.color = '#f59e0b'; pulseDot.style.background = '#f59e0b'; pulseDot.style.animation = 'pulse 2s infinite';
+            } else { 
+                badgeText.innerText = '請即刻更換'; 
+                document.getElementById('ui-health').style.color = '#ef4444';
+                badge.style.borderColor = '#ef4444'; badge.style.color = '#ef4444'; pulseDot.style.background = '#ef4444'; pulseDot.style.animation = 'none';
+            }
             
-            let totalKwhSaved = (days * parseFloat(algoParams.kwhPerDay || 0.25) * mileageRate).toFixed(1);
-            document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
-            let totalCo2 = (totalKwhSaved * parseFloat(algoParams.co2Factor || 0.5)).toFixed(1);
-            document.getElementById('ui-esg-co2').innerText = totalCo2;
+            // 寫入 PM2.5 徽章數據
+            let totalPm25 = Math.round(days * parseFloat(algoParams.basePm25 || 1250) * totalMultiplier);
+            document.getElementById('ui-pm25').innerText = totalPm25.toLocaleString();
+
           } else {
             document.getElementById('ui-filter-date').innerText = '尚未啟用';
             document.getElementById('ui-health').innerText = '--%';
-            badge.style.setProperty('--accent-color', '#555555'); badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
+            document.getElementById('ui-pm25').innerText = '0';
+            badgeText.innerText = '系統待命'; 
+            badge.style.borderColor = '#555555'; badge.style.color = '#555555'; pulseDot.style.background = '#555555'; pulseDot.style.animation = 'none';
           }
       } catch(e) { console.error(e); }
     }
 
+    // 🌟 背景抓取環境數據 (維持運算，不顯示 AQI 區塊)
     async function fetchEnvironmentalData(city, district) {
       try {
         let searchCity = normalizeCityName(city);
@@ -448,14 +454,10 @@
         if (!data) { const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; }
 
         envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
-        document.getElementById('env-aqi').innerText = envData.aqi;
         
-        let homeCityRaw = currentUser.city || '台北市'; document.getElementById('ui-home-city').innerText = homeCityRaw;
-        
-        // 🌟 讀取 7日均值 (若為空則用當下 AQI 代替防空白)
         let aqi7d = (data.aqi_7d_avg !== undefined && data.aqi_7d_avg !== null) ? data.aqi_7d_avg : data.aqi;
-        document.getElementById('env-home-aqi').innerText = Math.round(aqi7d);
-
+        
+        // 觸發演算法更新
         calculateDashboardStats();
       } catch (e) { calculateDashboardStats(); }
     }
@@ -467,9 +469,9 @@
             .then(res => res.json())
             .then(d => {
               let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
-              currentLocName = `${city}${district}`; document.getElementById('ui-loc-name').innerText = currentLocName;
+              currentLocName = `${city}${district}`;
               fetchEnvironmentalData(city, district);
-            }).catch(e => { document.getElementById('ui-loc-name').innerText = "定位完成"; fetchEnvironmentalData('', '');});
+            }).catch(e => { fetchEnvironmentalData('', '');});
         }, () => { fetchEnvironmentalData('', ''); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); 
       }
     }
@@ -489,7 +491,11 @@
           
           if (data.role === 'customer') {
             document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
-            document.getElementById('ui-plate-tag').innerText = data.license_plate || '未綁定車牌';
+            
+            // 寫入經典版的車型顯示
+            let carDisplay = (data.car_brand || '未填寫品牌') + ' ' + (data.car_model || '');
+            document.getElementById('ui-car-model').innerText = carDisplay;
+
             document.getElementById('edit-name').value = data.name; 
             document.getElementById('edit-phone').value = data.phone; 
             document.getElementById('edit-plate').value = data.license_plate; 
