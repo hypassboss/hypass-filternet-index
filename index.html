@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.24 Tesla 極簡座艙 (完整無刪減版)
+       💎 V4.25 Tesla 極簡座艙 (真實大數據均值版)
        ========================================= */
     :root {
       --bg-color: #000000; --surface-color: #111111; --border-color: #333333;
@@ -18,10 +18,8 @@
       --glass-bg: rgba(10, 10, 10, 0.85); --input-bg: #1a1a1a;
     }
 
-    /* 電腦版高級劇院背景 */
     html { background-color: #0a0a0c; }
     
-    /* 強制鎖定手機比例與置中浮起 */
     body { 
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
       margin: 0 auto; width: 100%; max-width: 450px; 
@@ -43,7 +41,6 @@
     input, select { width: 100%; padding: 15px; margin-bottom: 15px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; -webkit-appearance: none; }
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-glow); }
     
-    /* 底部導覽列同步鎖定寬度 */
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 450px; background: var(--glass-bg); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)) 0; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
     .nav-item { color: var(--text-secondary); cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 11px; flex: 1; transition: all 0.2s; -webkit-tap-highlight-color: transparent;}
     .nav-item.active { color: var(--accent-color); font-weight: bold; }
@@ -149,7 +146,7 @@
         </div>
       </div>
       <div class="env-box">
-        <h4>🏠 預設居住地<br><span id="ui-home-city" style="color:var(--text-primary); font-size:14px;">讀取中...</span></h4>
+        <h4>🏠 預設居住地 (7日均值)<br><span id="ui-home-city" style="color:var(--text-primary); font-size:14px;">讀取中...</span></h4>
         <div style="display:flex; align-items:baseline; justify-content:center; gap:4px;">
            <span style="font-size:12px; color:var(--text-secondary); font-weight:bold;">AQI</span>
            <p class="val" id="env-home-aqi" style="color:var(--gold-color);">--</p>
@@ -244,7 +241,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--accent-color); font-size:18px;">📄 HYPASS 數位保固</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--text-primary); font-weight:bold; font-size:16px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.24</div>
+    <div class="version-tag">System Ver. V4.25</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -256,16 +253,13 @@
   </div>
 
   <script>
-    // 捕捉全域錯誤
     window.onerror = function(msg, url, line) { console.log("Error:", msg, "at line:", line); return false; };
 
-    // Supabase 初始化
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
     
     const carData = { "Toyota": ["RAV4", "Corolla Cross", "Altis", "其他"], "Honda": ["CR-V", "HR-V", "Fit", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他品牌"] };
 
-    // 工具函數
     function normalizeCityName(cityStr) { return cityStr ? cityStr.replace(/臺/g, '台') : ''; }
     function formatTaipeiTime(dateString) { return dateString ? new Date(dateString).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }) : '-'; }
     function getCarSizeRate(model) {
@@ -274,7 +268,6 @@
         if (lModels.includes(model)) return 1.3; if (sModels.includes(model)) return 0.8; return 1.0;
     }
 
-    // UI 切換邏輯
     function updateCarModels(brandId, modelId) { 
       const bSelect = document.getElementById(brandId).value; const mSelect = document.getElementById(modelId); mSelect.innerHTML = '<option value="">* 選擇車型</option>'; 
       if (carData[bSelect]) carData[bSelect].forEach(item => { mSelect.innerHTML += `<option value="${item}">${item}</option>`; });
@@ -291,7 +284,6 @@
     function switchSetTab(t) { ['a','b','c'].forEach(tab => { document.getElementById(`set-content-${tab}`).style.display = (t === tab) ? 'block' : 'none'; document.getElementById(`tab-set-${tab}`).className = `tab-btn ${t === tab ? 'active' : ''}`; }); }
     function switchBookingTab(t) { document.getElementById('booking-smart').style.display = (t === 'smart') ? 'block' : 'none'; document.getElementById('booking-manual').style.display = (t === 'manual') ? 'block' : 'none'; document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : ''}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : ''}`; }
 
-    // 核心邏輯恢復 1：更新個人資料
     async function updateProfile() {
       const payload = { name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, license_plate: document.getElementById('edit-plate').value, yearly_mileage: parseInt(document.getElementById('edit-mileage').value) };
       if (!payload.name || !payload.phone || !payload.license_plate) return alert("姓名、電話、車牌不可為空！");
@@ -299,7 +291,6 @@
       if (error) alert("更新失敗：" + error.message); else { alert('✅ 成功更新！'); location.reload(); }
     }
 
-    // 核心邏輯恢復 2：歷史紀錄載入
     async function loadHistory(type) {
       const container = document.getElementById('history-container'); container.innerHTML = '讀取中...';
       if (type === 'filter') {
@@ -321,7 +312,6 @@
       }
     }
 
-    // 核心邏輯恢復 3：載入保修廠清單與預約
     async function loadGarages() {
       const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
       let html = '';
@@ -348,7 +338,6 @@
       } catch(e) { alert("系統暫未開放預約功能"); }
     }
 
-    // 核心邏輯恢復 4：MGM 推薦獎勵
     function generateMGM() {
         if(!currentUser) return;
         const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
@@ -359,21 +348,16 @@
         alert("提領申請已送出！總部審核後將會派發 LINE Points 給您。");
     }
 
-    // ==========================================
-    // 🌟 一維條碼掃描與雲端防呆系統
-    // ==========================================
     async function scanFilter() {
       try {
           const res = await liff.scanCodeV2(); 
           if (!res || !res.value) return;
           const scannedUid = res.value.trim();
 
-          // 🛡️ 防呆 1：嚴格驗證一維碼格式
           if (!scannedUid.match(/^HP-\d+$/)) {
               return alert("❌ 條碼格式錯誤！\n請對準濾網包裝上「HP-」開頭的一維條碼進行掃描。");
           }
 
-          // 🛡️ 防呆 2：連線雲端檢查濾網狀態
           const { data: filterData, error: checkErr } = await supabaseClient.from('filters_uid').select('status, activated_by_uid').eq('uid', scannedUid).maybeSingle();
           
           if (checkErr || !filterData) {
@@ -384,7 +368,6 @@
               return alert("❌ 攔截！此濾網已經被啟用過了，無法重複綁定！");
           }
 
-          // ✅ 驗證通過，執行綁定與啟用程序
           await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
           
           const { error } = await supabaseClient.from('filters_uid').update({ 
@@ -402,13 +385,10 @@
           location.reload();
           
       } catch (err) {
-          if(err.message !== "scanCode:fail cancel") {
-             alert("掃描發生異常：" + err.message);
-          }
+          if(err.message !== "scanCode:fail cancel") { alert("掃描發生異常：" + err.message); }
       }
     }
 
-    // 儀表板計算與 GPS 邏輯
     async function calculateDashboardStats() {
       if (!currentUser) return;
       const badge = document.getElementById('ui-shield-badge'); const badgeText = document.getElementById('ui-shield-text'); const pulseDot = document.getElementById('ui-pulse-dot');
@@ -457,7 +437,11 @@
         document.getElementById('env-aqi').innerText = envData.aqi;
         
         let homeCityRaw = currentUser.city || '台北市'; document.getElementById('ui-home-city').innerText = homeCityRaw;
-        document.getElementById('env-home-aqi').innerText = Math.round(envData.aqi * (0.9 + Math.random() * 0.2));
+        
+        // 🌟 核心：直接讀取資料庫已算好的 aqi_7d_avg，若尚無則 fallback 到當前 AQI
+        let aqi7d = (data.aqi_7d_avg !== undefined && data.aqi_7d_avg !== null) ? data.aqi_7d_avg : data.aqi;
+        document.getElementById('env-home-aqi').innerText = Math.round(aqi7d);
+
         calculateDashboardStats();
       } catch (e) { calculateDashboardStats(); }
     }
@@ -498,7 +482,6 @@
       } catch (err) { console.log("LIFF 啟動失敗"); }
     }
     
-    // 系統啟動
     initApp();
   </script>
 </body>
