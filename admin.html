@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>HYPASS V4.15 總部戰情室</title>
+  <title>HYPASS V4.16 總部戰情室</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -38,6 +38,7 @@
     .param-group { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 6px;}
     .param-group label { font-size: 13px; color: #555; font-weight: bold; }
     .param-group input { width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: right; font-family: monospace; font-size: 14px;}
+    .param-group select { width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight:bold; cursor:pointer;}
 
     /* 出貨掃描站樣式 */
     .scan-container { display: flex; gap: 20px; background: #1e1e1e; padding: 20px; border-radius: 8px; border-left: 5px solid #00D100; align-items: flex-start; flex-wrap: wrap;}
@@ -70,10 +71,10 @@
   <div class="sidebar">
     <div style="padding-top: 10px;">
       <h2 style="color:#00D100; padding: 0 20px; border:none; margin-bottom: 10px; font-size:18px;">HYPASS 戰情室</h2>
-      <button class="nav-btn active" onclick="switchTab('dispatch', this)">📦 倉儲出貨站</button>
+      <button class="nav-btn" onclick="switchTab('dispatch', this)">📦 倉儲出貨站</button>
       <button class="nav-btn" onclick="switchTab('esg', this)">🌍 綠能總覽</button>
       <button class="nav-btn" onclick="switchTab('stats', this)">📊 營運分佈</button>
-      <button class="nav-btn" onclick="switchTab('monitor', this)">⚙️ 演算法監控</button>
+      <button class="nav-btn active" onclick="switchTab('monitor', this)">⚙️ 演算法監控</button>
       <button class="nav-btn" onclick="switchTab('push', this)">💬 智慧推播</button>
       <button class="nav-btn" onclick="switchTab('uid', this)">🏷️ UID 庫存</button>
       <button class="nav-btn" onclick="switchTab('crm', this)">👥 客戶管理</button>
@@ -84,7 +85,7 @@
 
   <div class="main-content">
     
-    <div id="panel-dispatch" class="panel active">
+    <div id="panel-dispatch" class="panel">
       <h2>📦 B2C 倉儲無間斷掃描出貨站</h2>
       <p style="color:#666; font-size:13px;">支援「實體條碼槍」與「手機相機」。必須先掃描濾網 UID，再掃描訂單。</p>
       
@@ -148,23 +149,39 @@
       </div>
     </div>
 
-    <div id="panel-monitor" class="panel">
+    <div id="panel-monitor" class="panel active">
       <h2>⚙️ 演算法參數與全台空汙大數據</h2>
       <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap:wrap;">
         <div style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #fafafa; min-width:300px;">
-          <h3 style="margin-top: 0; color: #1976d2; display:flex; align-items:center; gap:8px;">🧠 濾網動態演算法 & ESG 參數</h3>
+          <h3 style="margin-top: 0; color: #1976d2; display:flex; align-items:center; gap:8px;">🧠 濾網動態演算法 & 自動化參數</h3>
+          
           <h4 style="margin: 15px 0 5px 0; color:#333; font-size:14px;">▍動態壽命與空氣權重</h4>
           <div class="param-group"><label>基準每日耗損率 (%)</label><input type="number" step="0.01" id="param-base-wear" value="0.27"></div>
           <div class="param-group"><label>基準 PM2.5 攔截量 (µg)</label><input type="number" id="param-base-pm25" value="1250"></div>
-          <div class="param-group"><label>🔴 紫爆加權係數</label><input type="number" step="0.1" id="param-weight-red" value="1.8"></div>
-          <div class="param-group"><label>🟠 橘害加權係數</label><input type="number" step="0.1" id="param-weight-orange" value="1.4"></div>
+          <div class="param-group"><label>🔴 紫爆加權係數 (AQI>150)</label><input type="number" step="0.1" id="param-weight-red" value="1.8"></div>
+          <div class="param-group"><label>🟠 橘害加權係數 (AQI>100)</label><input type="number" step="0.1" id="param-weight-orange" value="1.4"></div>
+          
+          <div class="param-group"><label>🌡️ 極端溫濕度加權係數</label><input type="number" step="0.1" id="param-weight-temp" value="1.2"></div>
+
+          <h4 style="margin: 20px 0 5px 0; color:#d32f2f; font-size:14px;">▍系統自動化與預警推播</h4>
+          <div class="param-group"><label>🔄 數據強制更新頻率 (小時)</label><input type="number" id="param-update-interval" value="2"></div>
+          <div class="param-group">
+             <label>🚨 紫爆時主動發送 LINE 提醒</label>
+             <select id="param-auto-push-red">
+                <option value="true">🟢 開啟</option>
+                <option value="false">🔴 關閉</option>
+             </select>
+          </div>
+
           <h4 style="margin: 20px 0 5px 0; color:#2e7d32; font-size:14px;">▍ESG 與材料物理特性</h4>
           <div class="param-group"><label>HYPASS 濾材風阻 (Pa)</label><input type="number" id="param-pa-hypass" value="4"></div>
           <div class="param-group"><label>他牌濾材風阻 (Pa)</label><input type="number" id="param-pa-other" value="8"></div>
           <div class="param-group"><label>每日基準省電 (kWh)</label><input type="number" step="0.01" id="param-kwh-day" value="0.25"></div>
           <div class="param-group"><label>碳排轉換係數 (kg/kWh)</label><input type="number" step="0.1" id="param-co2-factor" value="0.5"></div>
-          <button class="btn" style="width:100%; margin-top:15px; background:#1976d2; color:#fff;" onclick="saveAlgorithmParams()">💾 儲存並同步發布至前台</button>
+          
+          <button class="btn" style="width:100%; margin-top:15px; background:#1976d2; color:#fff;" onclick="saveAlgorithmParams()">💾 儲存並同步發布至伺服器</button>
         </div>
+        
         <div style="flex: 1.2; border: 1px solid #ffcdd2; border-radius: 8px; padding: 20px; background: #fffafb; min-width:300px;">
           <h3 style="margin-top: 0; color: #d32f2f;">🚨 全台即時 10 大空汙重災區</h3>
           <p style="font-size:12px; color:#d32f2f; margin-bottom:10px;">強烈建議針對以下區域加強「紫爆防護」推播與廣告投放。</p>
@@ -267,24 +284,23 @@
       if (id === 'rewards') loadRewards();
       if (id === 'dispatch') { 
           setTimeout(() => document.getElementById('scan-uid-input').focus(), 100);
-          stopCamera(); // 切換頁面時關閉相機
+          stopCamera();
       }
     }
 
     // ----------------------------------------------------
-    // 🌟 相機掃描引擎邏輯 (html5-qrcode)
+    // 🌟 相機掃描引擎邏輯
     // ----------------------------------------------------
     let html5QrcodeScanner = null;
-    let cameraTarget = ''; // 'uid' 或是 'order'
+    let cameraTarget = ''; 
 
     function startCamera(target) {
       cameraTarget = target;
       document.getElementById('reader-container').style.display = 'block';
       document.getElementById('camera-target-hint').innerText = target === 'uid' ? '正在掃描：第一步 濾網 UID' : '正在掃描：第二步 訂單條碼';
       
-      if(html5QrcodeScanner) { stopCamera(); } // 如果原本有開，先關掉
+      if(html5QrcodeScanner) { stopCamera(); } 
 
-      // 初始化相機
       html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
       html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     }
@@ -299,7 +315,7 @@
 
     function onScanSuccess(decodedText, decodedResult) {
       playSuccessBeep();
-      stopCamera(); // 掃描成功後自動關閉相機
+      stopCamera(); 
       
       if (cameraTarget === 'uid') {
          document.getElementById('scan-uid-input').value = decodedText;
@@ -308,11 +324,10 @@
          document.getElementById('scan-order-input').focus();
       } else if (cameraTarget === 'order') {
          document.getElementById('scan-order-input').value = decodedText;
-         processOrder(decodedText); // 呼叫共用的處理邏輯
+         processOrder(decodedText);
       }
     }
-
-    function onScanFailure(error) { /* 掃描中會持續觸發錯誤，此處忽略不印出 */ }
+    function onScanFailure(error) { }
 
     // ----------------------------------------------------
     // 🌟 實體條碼槍邏輯與防呆
@@ -343,7 +358,6 @@
       }
     }
 
-    // 🌟 共用的資料庫寫入邏輯 (條碼槍與相機共用)
     async function processOrder(orderPhone) {
         if (!currentScanUid) {
            alert("⚠️ 請先掃描「第 1 步」的濾網 UID 條碼！");
@@ -351,7 +365,6 @@
            return;
         }
 
-        // 鎖定輸入框防呆
         document.getElementById('scan-uid-input').disabled = true;
         document.getElementById('scan-order-input').disabled = true;
         document.getElementById('scan-status-msg').innerHTML = "<span style='color:#FF9800;'>🔄 雙條碼比對並寫入雲端中...</span>";
@@ -385,7 +398,6 @@
           document.getElementById('scan-status-msg').innerHTML = `<span style="color:red;">❌ 寫入失敗：${error.message}</span>`; 
         }
         
-        // 釋放輸入框並自動跳回第一步
         currentScanUid = ''; 
         document.getElementById('scan-uid-input').value = ''; 
         document.getElementById('scan-order-input').value = ''; 
@@ -394,7 +406,6 @@
         document.getElementById('scan-uid-input').focus();
     }
 
-    // 🌟 手動修改單筆出貨資料
     async function editDispatchRecord(uid, oldOrder) {
       const newOrder = prompt(`修改濾網 UID [${uid}] 的綁定單號：\n請輸入新的訂單或手機號碼：`, oldOrder);
       if (newOrder !== null && newOrder.trim() !== '' && newOrder !== oldOrder) {
@@ -411,9 +422,8 @@
       }
     }
 
-
     // ----------------------------------------------------
-    // 其餘後台功能 (參數、快取、CRM 等) 保持不變
+    // 🌟 參數存取邏輯 (加入溫濕度、更新頻率與推播設定)
     // ----------------------------------------------------
     function loadAlgorithmParams() {
       const params = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
@@ -421,27 +431,43 @@
       if (params.basePm25) document.getElementById('param-base-pm25').value = params.basePm25;
       if (params.weightRed) document.getElementById('param-weight-red').value = params.weightRed;
       if (params.weightOrange) document.getElementById('param-weight-orange').value = params.weightOrange;
+      if (params.weightTemp) document.getElementById('param-weight-temp').value = params.weightTemp;
+      
       if (params.paHypass) document.getElementById('param-pa-hypass').value = params.paHypass;
       if (params.paOther) document.getElementById('param-pa-other').value = params.paOther;
       if (params.kwhPerDay) document.getElementById('param-kwh-day').value = params.kwhPerDay;
       if (params.co2Factor) document.getElementById('param-co2-factor').value = params.co2Factor;
+
+      if (params.updateInterval) document.getElementById('param-update-interval').value = params.updateInterval;
+      if (params.autoPushRed !== undefined) document.getElementById('param-auto-push-red').value = params.autoPushRed;
     }
+
     function saveAlgorithmParams() {
       const params = {
-        baseWear: document.getElementById('param-base-wear').value, basePm25: document.getElementById('param-base-pm25').value,
-        weightRed: document.getElementById('param-weight-red').value, weightOrange: document.getElementById('param-weight-orange').value,
-        paHypass: document.getElementById('param-pa-hypass').value, paOther: document.getElementById('param-pa-other').value,
-        kwhPerDay: document.getElementById('param-kwh-day').value, co2Factor: document.getElementById('param-co2-factor').value
+        baseWear: document.getElementById('param-base-wear').value, 
+        basePm25: document.getElementById('param-base-pm25').value,
+        weightRed: document.getElementById('param-weight-red').value, 
+        weightOrange: document.getElementById('param-weight-orange').value,
+        weightTemp: document.getElementById('param-weight-temp').value,
+        
+        paHypass: document.getElementById('param-pa-hypass').value, 
+        paOther: document.getElementById('param-pa-other').value,
+        kwhPerDay: document.getElementById('param-kwh-day').value, 
+        co2Factor: document.getElementById('param-co2-factor').value,
+        
+        updateInterval: document.getElementById('param-update-interval').value,
+        autoPushRed: document.getElementById('param-auto-push-red').value
       };
       localStorage.setItem('hypass_algo_params', JSON.stringify(params));
-      alert(`✅ 演算法核心參數已成功更新並同步至前台！`);
+      alert(`✅ 演算法核心與自動化參數已成功更新並發布！`);
       renderMonitorTable(fullMonitorData);
     }
 
     async function loadMonitor() {
       const { data } = await supabaseClient.from('env_cache').select('*').limit(400).order('aqi', { ascending: false });
-      if (data) { fullMonitorData = data; renderTop10(fullMonitorData); renderMonitorTable(fullMonitorData); }
+      if (data) { fullMonitorData = data; renderTop10(fullMonitorData); renderMonitorTable(fullMonitorData); loadAlgorithmParams(); }
     }
+    
     function renderTop10(data) {
       if (!data || data.length === 0) return;
       const top10 = [...data].sort((a, b) => b.aqi - a.aqi).slice(0, 10);
@@ -511,7 +537,7 @@
       try {
         const res = await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/webhook?action=update_cache', { method: 'POST' });
         if (res.ok) { alert('✅ 全台 368 鄉鎮快取池更新成功！'); loadMonitor(); } else { alert('⚠️ 氣象局連線逾時，但已抓取部分資料，請重整畫面。'); loadMonitor(); }
-      } catch (e) { alert('呼叫失敗：' + e.message); } finally { btn.innerText = '⚡ 強制重新抓取 368 鄉鎮'; btn.disabled = false; }
+      } catch (e) { alert('呼叫失敗：' + e.message); } finally { btn.innerText = '⚡ 強制重新抓取 (約40秒)'; btn.disabled = false; }
     }
 
     async function generateSequentialUIDs() {
