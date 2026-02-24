@@ -71,7 +71,7 @@
       <button class="nav-btn" onclick="switchTab('rewards', this)">🎁 獎勵金</button>
     </div>
     <div style="margin-top: auto; padding: 20px; color: #666; font-size: 12px; font-family: monospace; border-top: 1px solid #222;">
-      System Ver.<br><strong style="color: #00D100; font-size: 14px;">V4.31 穩定防護版</strong>
+      System Ver.<br><strong style="color: #00D100; font-size: 14px;">V4.32 防快取穩定版</strong>
     </div>
   </div>
 
@@ -131,7 +131,7 @@
              <th style="text-align:center;">狀態與操作</th>
           </tr>
         </thead>
-        <tbody><tr><td colspan="5" style="text-align:center;">🚀 系統並行加速讀取中...</td></tr></tbody>
+        <tbody><tr><td colspan="5" style="text-align:center; font-weight:bold; padding:30px; color:#1976d2;">🚀 系統並行加速讀取大數據中...</td></tr></tbody>
       </table>
     </div>
 
@@ -258,7 +258,7 @@
   </div>
 
   <script>
-    // 放入您的 Supabase 金鑰
+    // 您的 Supabase 金鑰
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k';
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', ANON_KEY);
 
@@ -294,9 +294,6 @@
       } else { stopCamera(); }
     }
 
-    // ==========================================
-    // 🌟 全新極速優化：頂級 CRM (防彈解析版)
-    // ==========================================
     let fullCrmUsers = [];
 
     async function loadCRM() {
@@ -318,7 +315,6 @@
           fullCrmUsers = users;
 
           let pCounts = {};
-          // 🛡️ 防呆陣列驗證，避免 .forEach() is not a function 錯誤
           if (Array.isArray(resFilters.data)) { 
               resFilters.data.forEach(f => { if (f.activated_by_uid) pCounts[f.activated_by_uid] = (pCounts[f.activated_by_uid] || 0) + 1; }); 
           }
@@ -545,14 +541,15 @@
       localStorage.setItem('hypass_algo_params', JSON.stringify(params)); alert(`✅ 演算法核心與自動化參數已成功更新並發布！`); renderMonitorTable(fullMonitorData);
     }
 
-    // 🌟 解決 Failed to Fetch 的核心修復：強制夾帶 Authorization Header
+    // 🌟 修復核心：強制夾帶 API 金鑰通行證與防止快取的亂數
     async function forceUpdateCache() { 
         const btn = document.getElementById('btn-force-update'); 
         btn.innerText = '⏳ 368鄉鎮大數據抓取中 (約 40 秒)...'; 
         btn.disabled = true; 
         
         try { 
-            const res = await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/webhook?action=update_cache', { 
+            const cacheBuster = new Date().getTime(); // 刺穿快取機制
+            const res = await fetch(`https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/webhook?action=update_cache&t=${cacheBuster}`, { 
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${ANON_KEY}`,
