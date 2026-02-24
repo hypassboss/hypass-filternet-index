@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V5.4 Tesla x Gogoro (內建專屬掃描引擎)
+       💎 V5.5 Tesla x Gogoro (雙引擎推薦獎勵版)
        ========================================= */
        
     :root {
@@ -124,8 +124,10 @@
 
     .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
     .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: var(--gold-glow); filter: blur(50px); border-radius: 50%; }
-    
-    /* 🌟 前台專屬 Scanner Modal */
+    .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; box-shadow: 0 8px 25px var(--gold-glow); border-radius: 16px;}
+    .shine-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%); transform: skewX(-25deg); animation: shine 3s infinite; }
+    @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
     .scanner-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; align-items: center; justify-content: center;
@@ -138,6 +140,7 @@
     }
     #frontend-reader { width: 100%; border-radius: 12px; overflow: hidden; }
     .scanner-hint { color: var(--accent-color); font-weight: 800; font-size: 18px; margin-bottom: 15px; }
+
   </style>
 </head>
 <body>
@@ -252,7 +255,7 @@
       </div>
     </div>
     
-    <button class="btn-main" onclick="openFrontendScanner()" style="margin-top:15px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描一維條碼 (UID) 啟用新濾網</button>
+    <button class="btn-main" onclick="openFrontendScanner()" style="margin-top:15px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描條碼 (UID) 啟用新濾網</button>
   </div>
 
   <div id="page-shop" class="page">
@@ -280,14 +283,17 @@
     <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🎁 任務與獎勵</h3>
     <div class="card vip-card" style="text-align: center; padding: 40px 20px; border-radius:24px;">
       <h4 style="margin:0; color:var(--gold-color); font-size: 18px; letter-spacing: 2px;">VIP 專屬獎勵金</h4>
-      <h1 style="margin:20px 0; font-size: 64px; color: #FFF; text-shadow: 0 4px 25px rgba(255, 215, 0, 0.6);"><span id="reward-balance">$0</span></h1>
-      <p style="font-size:14px; color:#d4d4d4; margin-bottom: 30px; line-height:1.6;">累積滿 $100 即可兌換 LINE Points<br>推薦無上限，獎金無上限！</p>
+      <h1 style="margin:20px 0; font-size: 64px; color: #FFF; text-shadow: 0 4px 25px rgba(255, 215, 0, 0.6);"><span id="reward-balance">讀取中</span></h1>
+      <p style="font-size:14px; color:#d4d4d4; margin-bottom: 30px; line-height:1.6;">累積滿 100 點即可兌換 LINE Points<br>推薦無上限，獎金無上限！</p>
       <button class="btn-main shine-btn" style="padding:18px; font-size:18px; font-weight:800;" onclick="redeemPoints()">申請提領點數</button>
     </div>
     
     <div class="card" style="text-align: center; border: 2px solid var(--accent-color); background: var(--input-bg); margin-top:20px;">
        <h3 style="margin-top: 10px; color: var(--text-primary); font-size:20px;">🚀 邀請車友加入座艙</h3>
-       <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">分享您的專屬連結，好友成功啟用濾網後<br>您將立即獲得高額推薦獎金！</p>
+       <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">
+           朋友點擊連結完成授權，您賺 <strong style="color:var(--accent-color);">10</strong> 點<br>
+           朋友成功啟用首片濾網，您再賺 <strong style="color:var(--gold-color);">100</strong> 點！
+       </p>
        <button class="btn-main" style="box-shadow: 0 8px 25px var(--accent-glow); font-size: 18px; padding:18px;" onclick="generateMGM()">🔗 點擊複製專屬連結</button>
     </div>
   </div>
@@ -320,9 +326,10 @@
           <option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
           <option value="連江縣">連江縣</option>
         </select>
-        <label>鄉鎮市區</label><select id="edit-district"></select>
+        
+        <label>鄉鎮市區</label>
+        <select id="edit-district"></select>
         <label>詳細通訊地址</label><input type="text" id="edit-address">
-
         <label>車輛品牌</label>
         <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
           <option value="Toyota">Toyota (豐田)</option><option value="Honda">Honda (本田)</option>
@@ -360,7 +367,6 @@
       <div class="card">
         <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:20px; font-weight:700;">
           <option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 保修廠預約紀錄</option>
-          <option value="shop">🛒 商城購買紀錄</option>
         </select>
         <div id="history-container" style="max-height: 400px; overflow-y: auto;">載入中...</div>
       </div>
@@ -369,7 +375,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V5.4 (專業掃描引擎升級版)</div>
+    <div class="version-tag">System Ver. V5.5 (雙引擎推薦獎勵版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -389,10 +395,8 @@
   </div>
 
   <script>
-    // 🛡️ 安全 DOM 操作函數，防止找不到元素而當機
     function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
     function setElVal(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
-
     window.onerror = function(msg, url, line) { console.error("System Error:", msg, "at line:", line); return false; };
 
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
@@ -446,14 +450,9 @@
         if (sModels.includes(model)) return 0.8;
         return 1.0;
     }
-
     function formatTaipeiTime(dateString) {
       if (!dateString) return '-';
-      try {
-          const d = new Date(dateString);
-          if (isNaN(d.getTime())) return '-';
-          return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
-      } catch(e) { return '-'; }
+      try { const d = new Date(dateString); if (isNaN(d.getTime())) return '-'; return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0'); } catch(e) { return '-'; }
     }
 
     function setTheme(theme) {
@@ -503,9 +502,14 @@
         document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : 'inactive'}`; 
     }
 
+    // ==============================================
+    // 🌟 核心一：登入送 10 點獎勵金機制
+    // ==============================================
     async function submitRegister(role) {
       try {
-        const p = await liff.getProfile(); let referrerId = new URLSearchParams(window.location.search).get('ref');
+        const p = await liff.getProfile(); 
+        let referrerId = new URLSearchParams(window.location.search).get('ref');
+        
         if (role === 'customer') {
           const n = document.getElementById('c-name').value; const ph = document.getElementById('c-phone').value; const e = document.getElementById('c-email').value;
           const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; 
@@ -517,7 +521,21 @@
           const payload = { line_uid: p.userId, role: role, referrer_uid: referrerId, name: n, phone: ph, email: e, gender: g, city: c, district: dist, address: addr, car_brand: b, car_model: m, license_plate: pl, yearly_mileage: parseInt(mil), car_year: parseInt(y) || null };
           
           const { error } = await supabaseClient.from('users').upsert(payload);
-          if (error) alert("註冊失敗：" + error.message); else { alert("✅ 註冊成功！"); location.reload(); }
+          if (error) {
+              alert("註冊失敗：" + error.message);
+          } else {
+              // 🎁 觸發 10 點註冊獎勵金給推薦人
+              if (referrerId && referrerId !== p.userId) {
+                 await supabaseClient.from('rewards').insert([{
+                    user_uid: referrerId,
+                    type: 'referral_register',
+                    points: 10,
+                    status: 'completed'
+                 }]);
+              }
+              alert("✅ 註冊成功！"); 
+              location.reload(); 
+          }
         }
       } catch (err) { alert("系統錯誤，請稍後再試。"); }
     }
@@ -543,18 +561,18 @@
       try {
           if (type === 'filter') {
             const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
-            if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📦 [${d.uid}] 啟用新濾網</span><br><span style="font-size:11px;">${formatTaipeiTime(d.activated_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+            if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">🔄 [${d.activation_type}] 啟用新濾網 (${d.uid})</span><br><span style="font-size:11px;">${formatTaipeiTime(d.activated_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
           } else if (type === 'book') {
             const { data } = await supabaseClient.from('bookings').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
-            if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📍 預約：${d.garages?.name || ''} [${d.status}]</span><br><span style="font-size:11px;">預約時間: ${d.book_date}</span></div>`; }); else html = '<p>尚無紀錄</p>';
-          } else if (type === 'shop') {
-            html = '<p>商城紀錄開發中</p>';
+            if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📍 預約：${d.garages.name} [${d.status}]</span><br><span style="font-size:11px;">預約時間: ${d.book_date}</span></div>`; }); else html = '<p>尚無紀錄</p>';
           }
           container.innerHTML = html;
       } catch(e) { container.innerHTML = '<p style="color:red;">讀取失敗</p>'; }
     }
 
-    // 🌟 工業級 html5-qrcode 前台掃描引擎
+    // ==============================================
+    // 🌟 工業級相機引擎 (一維條碼優化版)
+    // ==============================================
     let html5QrCodeFront = null;
 
     function openFrontendScanner() {
@@ -571,7 +589,7 @@
                     processScannedUID(decodedText.trim());
                 });
             },
-            (errorMessage) => {}
+            (errorMessage) => { }
         ).catch((err) => {
             alert("相機啟動失敗，請確認已允許瀏覽器或 LINE 存取相機權限！");
             document.getElementById('frontend-scanner-modal').style.display = 'none';
@@ -580,30 +598,46 @@
 
     function closeFrontendScanner() {
         if (html5QrCodeFront && html5QrCodeFront.isScanning) {
-            html5QrCodeFront.stop().then(() => {
-                document.getElementById('frontend-scanner-modal').style.display = 'none';
-            }).catch(e => console.error(e));
-        } else {
-            document.getElementById('frontend-scanner-modal').style.display = 'none';
-        }
+            html5QrCodeFront.stop().then(() => { document.getElementById('frontend-scanner-modal').style.display = 'none'; });
+        } else { document.getElementById('frontend-scanner-modal').style.display = 'none'; }
     }
 
+    // ==============================================
+    // 🌟 核心二：首掃送 100 點獎勵金機制
+    // ==============================================
     async function processScannedUID(scannedUid) {
         try {
-            if (!scannedUid.match(/^HP-\d+$/)) {
-                return alert("❌ 條碼格式錯誤！\n請對準濾網包裝上「HP-」開頭的條碼進行掃描。");
-            }
+            if (!scannedUid.match(/^HP-\d+$/)) return alert("❌ 條碼格式錯誤！\n請對準濾網包裝上「HP-」開頭的條碼進行掃描。");
+
             const { data: filterData, error: checkErr } = await supabaseClient.from('filters_uid').select('status, activated_by_uid').eq('uid', scannedUid).maybeSingle();
             
             if (checkErr || !filterData) return alert("❌ 查無此濾網條碼，請確認是否為 HYPASS 原廠正品！");
             if (filterData.status === 'activated' || filterData.status === 'replaced') return alert("❌ 攔截！此濾網已經被啟用過了，無法重複綁定！");
 
+            // 啟用程序
             await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
+            
             const { error } = await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand, installed_location: currentLocName }).eq('uid', scannedUid);
+            
             if (error) throw error;
+            
+            // 🎁 觸發 100 點首掃獎勵金給推薦人
+            if (currentUser.referrer_uid) {
+                const { count } = await supabaseClient.from('filters_uid').select('*', { count: 'exact', head: true }).eq('activated_by_uid', currentUser.line_uid);
+                // 確定這是他啟用的第一片濾網
+                if (count === 1) { 
+                    await supabaseClient.from('rewards').insert([{
+                        user_uid: currentUser.referrer_uid,
+                        type: 'referral_scan',
+                        points: 100,
+                        status: 'completed'
+                    }]);
+                }
+            }
             
             alert(`✅ 恭喜！新濾網 [${scannedUid}] 已成功綁定並啟用！`); 
             location.reload();
+            
         } catch (err) { alert("掃描驗證發生異常：" + err.message); }
     }
 
@@ -617,13 +651,7 @@
           const manualBox = document.getElementById('garage-list');
           
           if (data && data.length > 0) {
-            let targetCity = currentUser.city ? currentUser.city.replace(/臺/g, '台') : '';
-            let currentLoc = currentLocName ? currentLocName.replace(/臺/g, '台') : '';
-            let matchedGarage = data.find(g => g.city && g.city.includes(targetCity));
-            if (!matchedGarage) matchedGarage = data.find(g => g.city && currentLoc.includes(g.city));
-            if (!matchedGarage) matchedGarage = data[0];
-
-            if(smartBox) smartBox.innerHTML = `為您配對到最適合的保修廠：<br><h3 style="color:var(--accent-color);">${matchedGarage.name}</h3><p style="font-size:13px; color:var(--text-secondary);">${matchedGarage.city}${matchedGarage.address}</p><button class="btn-main" onclick="bookGarage(${matchedGarage.id})">立即預約</button>`;
+            if(smartBox) smartBox.innerHTML = `為您配對到最近的保修廠：<br><h3 style="color:var(--accent-color);">${data[0].name}</h3><p>${data[0].city}${data[0].address}</p><button class="btn-main" onclick="bookGarage(${data[0].id})">立即預約</button>`;
             data.forEach(g => { html += `<div class="card" style="margin-bottom:10px;"><h4 style="margin:0 0 5px 0; color:var(--text-primary);">${g.name}</h4><p style="font-size:13px; color:var(--text-secondary); margin:0 0 10px 0;">${g.city}${g.address}</p><button class="btn-main" style="padding:10px; font-size:14px;" onclick="bookGarage(${g.id})">預約此廠</button></div>`; });
           } else { 
             html = '目前尚無合作保修廠'; 
@@ -646,6 +674,25 @@
       } catch(e) { alert("系統異常：" + e.message); }
     }
 
+    // ==============================================
+    // 🌟 點數計算與提領功能
+    // ==============================================
+    async function calculateUserPoints() {
+        if (!currentUser) return;
+        const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid);
+        let total = 0;
+        if (data) {
+            data.forEach(r => {
+                if (r.status === 'completed' && (r.type === 'referral_register' || r.type === 'referral_scan' || r.type === 'referral')) {
+                    total += r.points;
+                } else if (r.type === 'redeem') {
+                    total -= r.points; // 申請提領不管是否完成，都先從可用餘額扣除
+                }
+            });
+        }
+        setElText('reward-balance', `$${total}`);
+    }
+
     function generateMGM() {
       if (!currentUser) return alert("請先登入");
       const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
@@ -655,10 +702,11 @@
 
     async function redeemPoints() {
       const balText = document.getElementById('reward-balance').innerText.replace('$','');
-      if (parseInt(balText) < 100) return alert('餘額不足 $100，快去邀請好友吧！');
-      if (confirm('確定申請兌換 LINE Points 嗎？')) {
+      if (parseInt(balText) < 100) return alert('餘額不足 100 點，快去邀請好友吧！');
+      if (confirm('確定申請兌換 100 點 LINE Points 嗎？')) {
         await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', points: 100, status: 'pending' }]);
         alert('✅ 提領申請已送出！總部將盡快為您審核派發。');
+        calculateUserPoints(); // 重新計算餘額
       }
     }
 
@@ -724,6 +772,7 @@
           else aqiRate = 0.8 + (aqi / 50) * 0.2;
           
           let carSizeRate = getCarSizeRate(currentUser.car_model);
+
           let currentTemp = envData.temp !== null ? parseFloat(envData.temp) : 25;
           let tempRate = 1.0;
           if (currentTemp > 28) tempRate = 1.2; 
@@ -789,6 +838,7 @@
         if (!data) { const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; }
 
         envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
+        
         setElText('env-aqi', envData.aqi);
 
         let homeCityRaw = currentUser.city || '台北市';
@@ -827,11 +877,8 @@
         const profile = await liff.getProfile();
         const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
         
-        if (error) throw error;
-
         if (data && data.name) {
           currentUser = data; 
-          
           const navBar = document.getElementById('nav-bar');
           if (navBar) navBar.style.display = 'flex';
           
@@ -864,13 +911,7 @@
 
             switchPage('home', document.querySelector('.nav-item'));
             getGPS(); 
-            
-            // 抓取獎勵金餘額
-            const { data: rw } = await supabaseClient.from('rewards').select('points').eq('user_uid', profile.userId);
-            if(rw) {
-                let total = rw.reduce((sum, r) => sum + r.points, 0);
-                setElText('reward-balance', `$${total}`);
-            }
+            calculateUserPoints(); // 計算並顯示 VIP 獎勵金餘額
           }
         } else { switchPage('register', null); }
       } catch (err) { console.log("LIFF 啟動失敗"); }
