@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.12 Tesla 極簡中控設計系統 (推播連動版)
+       💎 V4.13 Tesla 極簡中控設計系統 (6D智能演算版)
        ========================================= */
        
     :root {
@@ -82,7 +82,6 @@
     .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 3px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .t-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0;}
     
-    /* 跑馬燈容器（加入色彩過渡動畫） */
     .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 14px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
     .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
@@ -93,7 +92,6 @@
     .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 105px; }
     .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
     .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
-    
     .aqi-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
     .aqi-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 2px; }
     .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; }
@@ -351,7 +349,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">4.12</div>
+    <div class="version-tag">4.13</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -407,6 +405,20 @@
     function normalizeCityName(cityStr) {
       if (!cityStr) return '';
       return cityStr.replace(/臺/g, '台');
+    }
+
+    // 🌟 新增：6D 演算法 - 判斷車型大小權重
+    function getCarSizeRate(model) {
+        if (!model) return 1.0; // 預設 M 級
+        
+        // L 級大型車輛 (1.3倍鼓風機換氣量)
+        const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V', 'X-Trail', 'Kuga', 'CX-5', 'Outlander', 'Tucson', 'Sportage', 'Sorento', 'Tiguan', 'Kodiaq', 'NX', 'RX', 'GLC', 'GLE', 'X3', 'X5', 'Q5', 'XC60', 'XC90', 'Cayenne', 'Macan', 'URX', 'n7'];
+        // S 級小型車輛 (0.8倍鼓風機換氣量)
+        const sModels = ['Yaris', 'Fit', 'Swift', 'Colt Plus', 'Venue', 'Kamiq', 'UX'];
+        
+        if (lModels.includes(model)) return 1.3;
+        if (sModels.includes(model)) return 0.8;
+        return 1.0; // M 級中型車輛
     }
 
     function formatTaipeiTime(dateString) {
@@ -541,7 +553,6 @@
       }
     };
 
-    // 🌟 核心：連動推播引擎 (動態解譯器)
     async function updateDynamicMarquee(aqi, health, status) {
       try {
         const { data: rules } = await supabaseClient.from('notification_rules').select('*').eq('is_active', true);
@@ -550,7 +561,6 @@
         if (rules && rules.length > 0) {
           rules.forEach(rule => {
             try {
-              // 建立一個安全沙盒來比對總部的推播邏輯
               const context = { aqi: aqi, health: health, status: status };
               const isTriggered = new Function(...Object.keys(context), `return ${rule.trigger_condition};`)(...Object.values(context));
               if (isTriggered) messages.push(rule.message_template);
@@ -578,6 +588,7 @@
       } catch (e) { console.log("推播載入錯誤", e); }
     }
 
+    // 🌟 核心升級：6D AI 動態演算引擎 (寫入車型與溫度權重)
     async function calculateDashboardStats() {
       if (!currentUser) return;
       const badge = document.getElementById('ui-shield-badge');
@@ -592,11 +603,34 @@
 
         const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
         const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
-        let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
-        let aqiRate = (envData.aqi > 150) ? parseFloat(algoParams.weightRed || 1.8) : (envData.aqi > 100 ? parseFloat(algoParams.weightOrange || 1.4) : 1.0);
-        let baseWear = parseFloat(algoParams.baseWear || 0.27);
-        let health = Math.max(0, Math.round(100 - (days * baseWear * mileageRate * aqiRate)));
         
+        // 變數 2：里程權重
+        let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
+        
+        // 變數 3：空汙權重 (線性動態)
+        let aqi = envData.aqi || 50;
+        let wRed = parseFloat(algoParams.weightRed || 1.8); let wOrange = parseFloat(algoParams.weightOrange || 1.4);
+        let aqiRate = 1.0;
+        if (aqi > 150) aqiRate = wRed + ((aqi - 150) / 50) * 0.5;
+        else if (aqi > 100) aqiRate = wOrange + ((aqi - 100) / 50) * (wRed - wOrange);
+        else if (aqi > 50) aqiRate = 1.0 + ((aqi - 50) / 50) * (wOrange - 1.0);
+        else aqiRate = 0.8 + (aqi / 50) * 0.2;
+        
+        // 變數 5：車型大小與鼓風機功率權重
+        let carSizeRate = getCarSizeRate(currentUser.car_model);
+
+        // 變數 6：季節氣候與空調負載權重
+        let currentTemp = envData.temp !== null ? parseFloat(envData.temp) : 25;
+        let tempRate = 1.0;
+        if (currentTemp > 28) tempRate = 1.2; // 炎熱重載
+        else if (currentTemp < 20) tempRate = 0.8; // 寒冷低載
+
+        // 🔥 6D 總乘數
+        let totalMultiplier = mileageRate * aqiRate * carSizeRate * tempRate;
+
+        // 計算健康度
+        let baseWear = parseFloat(algoParams.baseWear || 0.27);
+        let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
         document.getElementById('ui-health').innerText = `${health}%`;
         
         if (health >= 60) {
@@ -613,15 +647,17 @@
             badgeText.innerText = '請即刻更換'; pulseDot.style.animationDuration = '0.4s'; document.getElementById('ui-health').style.color = '#ef4444';
         }
         
+        // 計算累計攔截量
         let basePm25 = parseFloat(algoParams.basePm25 || 1250);
-        document.getElementById('ui-pm25').innerText = Math.round(days * basePm25 * mileageRate * aqiRate).toLocaleString();
+        document.getElementById('ui-pm25').innerText = Math.round(days * basePm25 * totalMultiplier).toLocaleString();
+        
+        // 物理計算 (維持不變)
         let paHypass = parseFloat(algoParams.paHypass || 4); let paOther = parseFloat(algoParams.paOther || 8);
         document.getElementById('ui-esg-ac').innerText = Math.round(((paOther - paHypass) / paOther) * 30);
         let totalKwhSaved = (days * parseFloat(algoParams.kwhPerDay || 0.25) * mileageRate).toFixed(1);
         document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
         document.getElementById('ui-esg-co2').innerText = (totalKwhSaved * parseFloat(algoParams.co2Factor || 0.5)).toFixed(1);
         
-        // 觸發推播引擎
         updateDynamicMarquee(envData.aqi, health, 'activated');
 
       } else {
@@ -629,7 +665,6 @@
         badge.style.setProperty('--accent-color', '#888888'); badge.style.setProperty('--accent-glow', 'rgba(136, 136, 136, 0.2)');
         badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
         
-        // 觸發推播引擎 (未啟用狀態)
         updateDynamicMarquee(envData.aqi, 100, 'unactivated');
       }
     }
@@ -652,7 +687,6 @@
         let homeAqi = homeData ? homeData.aqi : envData.aqi;
         document.getElementById('env-home-aqi').innerText = Math.round(homeAqi * (0.9 + Math.random() * 0.2));
 
-        // 將後續交由 calculateDashboardStats 呼叫 updateDynamicMarquee 處理
         calculateDashboardStats();
       } catch (e) { console.log("AQI fetch error", e); calculateDashboardStats(); }
     }
