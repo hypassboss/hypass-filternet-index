@@ -2,11 +2,11 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>HYPASS V4.20 總部戰情室</title>
+  <title>HYPASS V4.21 總部戰情室</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
+    /* 🌟 已徹底刪除 @media 手機變形語法，保證純桌面版排版 */
     body { font-family: sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
     .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; overflow-y: auto; flex-shrink:0; }
     .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; border-left: 4px solid transparent; }
@@ -40,7 +40,6 @@
     .param-group input { width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: right; font-family: monospace; font-size: 14px;}
     .param-group select { width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight:bold; cursor:pointer;}
 
-    /* 🌟 無間斷出貨掃描站專屬樣式 */
     .scan-container { display: flex; gap: 20px; background: #1e1e1e; padding: 20px; border-radius: 8px; border-left: 5px solid #00D100; align-items: flex-start; flex-wrap: wrap; position: relative;}
     .scan-input-group { flex: 1; min-width: 250px; }
     .scan-input { width: 100%; padding: 18px; font-size: 22px; border-radius: 5px; border: 3px solid #555; background: #000; color: #00D100; font-weight: bold; margin-bottom: 10px; box-sizing: border-box; transition: all 0.3s; text-align: center; font-family: monospace;}
@@ -73,7 +72,7 @@
       <button class="nav-btn" onclick="switchTab('rewards', this)">🎁 獎勵金</button>
     </div>
     <div style="margin-top: auto; padding: 20px; color: #666; font-size: 12px; font-family: monospace; border-top: 1px solid #222;">
-      System Ver.<br><strong style="color: #00D100; font-size: 14px;">V4.20</strong>
+      System Ver.<br><strong style="color: #00D100; font-size: 14px;">V4.21</strong>
     </div>
   </div>
 
@@ -283,7 +282,7 @@
     }
 
     // ----------------------------------------------------
-    // 🌟 全新 AI 無間斷相機引擎 + 雲端三級防呆 (V4.20)
+    // 🌟 全新 AI 無間斷相機引擎 + 雲端三級防呆 (V4.21)
     // ----------------------------------------------------
     let html5QrCode = null;
     let scanState = 'WAITING_UID'; 
