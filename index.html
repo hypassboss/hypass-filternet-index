@@ -8,28 +8,26 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V5.1 Tesla x Gogoro (桌面版手機比例限制)
+       💎 V4.14 Tesla 極簡中控設計系統 (特點文案優化版)
        ========================================= */
        
     :root {
-      --bg-image: none; --bg-color: #000000; --surface-color: #161618; --border-color: #2c2c2e;
-      --text-primary: #ffffff; --text-secondary: #8e8e93;
+      --bg-image: none; --bg-color: #000000; --surface-color: #111111; --border-color: #222222;
+      --text-primary: #ffffff; --text-secondary: #888888;
       --accent-color: #00e676; --accent-gradient: linear-gradient(135deg, #00e676 0%, #00b85c 100%);
       --accent-glow: rgba(0, 230, 118, 0.2);
-      --chart-bar: #333333; --chart-active: #00e676;
       --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
-      --glass-bg: rgba(10, 10, 10, 0.85); --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      --input-bg: #1c1c1e;
+      --glass-bg: rgba(10, 10, 10, 0.85); --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+      --input-bg: #1a1a1a;
     }
 
     body.light-mode {
-      --bg-color: #f2f2f7; --surface-color: #ffffff; --border-color: #e5e5ea;
-      --text-primary: #1c1c1e; --text-secondary: #8e8e93;
+      --bg-color: #f5f5f7; --surface-color: #ffffff; --border-color: #e5e5ea;
+      --text-primary: #1a1a1a; --text-secondary: #777777;
       --accent-color: #10b981; --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
       --accent-glow: rgba(16, 185, 129, 0.15);
-      --chart-bar: #e5e5ea; --chart-active: #34c759;
       --gold-color: #d4af37; --gold-glow: rgba(212, 175, 55, 0.15);
-      --glass-bg: rgba(255, 255, 255, 0.9); --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      --glass-bg: rgba(255, 255, 255, 0.9); --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
       --input-bg: #f9f9f9;
     }
 
@@ -39,111 +37,74 @@
       --border-color: #3a3a3c; --text-primary: #e5e5ea; --text-secondary: #98989d;
       --accent-color: #06b6d4; --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       --accent-glow: rgba(6, 182, 212, 0.25);
-      --chart-bar: #333; --chart-active: #06b6d4;
       --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
       --glass-bg: rgba(28, 28, 30, 0.9); --card-shadow: inset 0 1px 1px rgba(255,255,255,0.05), 0 8px 25px rgba(0,0,0,0.5);
       --input-bg: #111112;
     }
 
-    /* 🌟 修復：電腦版背景設定 */
-    html { background-color: #0a0a0c; }
-    
-    /* 🌟 修復：強制限縮 App 最大寬度，並置中顯示立體陰影 */
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-      margin: 0 auto; /* 水平置中 */
-      width: 100%; 
-      max-width: 450px; /* 鎖定在最大 iPhone Pro Max 寬度 */
-      background-color: var(--bg-color); 
-      background-image: var(--bg-image); 
-      color: var(--text-primary); 
-      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); 
-      transition: background 0.4s ease, color 0.4s ease; 
-      min-height: 100vh; 
-      letter-spacing: 0.5px; 
-      -webkit-font-smoothing: antialiased;
-      box-shadow: 0 0 50px rgba(0,0,0,0.8); /* 讓 App 在電腦上浮起 */
-      position: relative;
-      overflow-x: hidden;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .g-card { background: var(--surface-color); border-radius: 20px; padding: 18px; box-shadow: var(--card-shadow); margin-bottom: 16px; border: 1px solid var(--border-color); }
+    .card { background: var(--surface-color); padding: 20px; border-radius: 24px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: all 0.4s ease; }
     
     .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 4px 15px var(--accent-glow); letter-spacing: 1px;}
     .btn-main:active { transform: scale(0.96); box-shadow: 0 2px 8px var(--accent-glow); }
     
-    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none; box-sizing: border-box;}
+    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    /* 🌟 修復：底部導覽列跟隨 max-width 置中 */
-    .bottom-nav { 
-      position: fixed; bottom: 0; 
-      left: 50%; transform: translateX(-50%); /* 置中對齊 */
-      width: 100%; max-width: 450px; /* 同步限制寬度 */
-      background: var(--glass-bg); display: flex; justify-content: space-between; align-items: flex-end; 
-      padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; border-top: 1px solid var(--border-color); 
-      z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); 
-    }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); }
     .nav-item { color: var(--text-secondary); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex: 1; height: 42px; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
     .nav-item:active { transform: scale(0.9); }
     .nav-item.active { color: var(--accent-color); font-weight: 700; transform: none; }
     .nav-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; height: 24px; margin: 0; line-height: 1; }
     .nav-text { font-size: 11px; line-height: 1; display: block; margin-top: 2px;}
 
-    .header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 25px; }
+    .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .shield-badge { flex-shrink: 0; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 14px; border-radius: 30px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; animation: badgePulse 2.5s infinite alternate ease-in-out; transition: all 0.5s ease;}
     
-    .plate-tag { background: var(--input-bg); color: var(--text-secondary); padding: 6px 12px; border-radius: 16px; font-family: monospace; font-size: 13px; font-weight: 700; border: 1px solid var(--border-color); letter-spacing: 1px;}
-    
-    .shield-badge { display:inline-flex; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; align-items: center; gap: 6px; animation: badgePulse 2.5s infinite alternate ease-in-out; transition: all 0.5s ease; margin-top:6px;}
     @keyframes badgePulse { 0% { box-shadow: 0 0 5px var(--accent-glow); border-color: transparent; } 100% { box-shadow: 0 0 20px var(--accent-color); border-color: var(--accent-color); } }
-    .pulse-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); transition: background 0.5s ease;}
-    @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 8px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+    .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); transition: background 0.5s ease;}
+    @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
-    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 20px 0; }
+    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 30px 0; }
     .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
-    
-    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .chart-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
-    .chart-content { display: flex; justify-content: space-between; align-items: flex-end; }
-    .chart-number-box { display:flex; align-items:baseline; gap:4px; }
-    .chart-number { font-size: 42px; font-weight: 900; letter-spacing: -2px; color: var(--text-primary); line-height: 1;}
-    .chart-unit { font-size: 12px; font-weight: 600; color: var(--text-secondary); padding-bottom: 6px;}
-    
-    .bars-container { display: flex; align-items: flex-end; gap: 6px; height: 45px; }
-    .bar { width: 10px; border-radius: 5px; background: var(--chart-bar); transition: height 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
-    .bar.active { background: var(--accent-gradient); }
+    .pm25-badge { color: var(--gold-color); font-size: 13px; margin-top: -20px; font-weight: 700; background: var(--surface-color); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--gold-color); box-shadow: 0 5px 15px var(--gold-glow); z-index: 3; position: relative;}
 
-    .level-row { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-color); margin-top: 15px; }
-    .level-badge { background: var(--input-bg); color: var(--accent-color); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 16px; border: 1px solid var(--border-color); display:flex; align-items:center; gap:6px;}
-    
-    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
-    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    /* 🌟 修復：6大特點 獨立字體微縮排版 */
+    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 20px; }
+    .tech-tag { 
+      background: var(--input-bg); color: var(--text-primary); 
+      padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); 
+      display: flex; align-items: center; justify-content: center; gap: 2px; 
+      font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    }
     .t-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0;}
     
-    .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: var(--card-shadow); }
+    .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 14px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
     .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .env-box { background: var(--input-bg); border-radius: 14px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 90px; }
-    .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; line-height: 1.4;}
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 105px; }
+    .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
+    .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
     .aqi-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
     .aqi-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 2px; }
-    .env-val { font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; }
+    .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; }
 
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px;}
-    .esg-box { text-align: center; padding: 12px 6px; background: var(--input-bg); border-radius: 14px; border: 1px solid var(--border-color); position: relative; }
-    .esg-badge { position: absolute; top: -8px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 9px; padding: 3px 6px; border-radius: 10px; font-weight: 700; white-space: nowrap;}
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;}
+    .esg-box { text-align: center; padding: 16px 6px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
+    .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
     
     .tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
     .tab-btn { padding: 14px 10px; margin: 0; font-size: 13px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
@@ -174,6 +135,7 @@
       <input type="tel" id="c-phone" placeholder="* 手機號碼">
       <input type="email" id="c-email" placeholder="* 電子郵件">
       <select id="c-gender"><option value="">* 性別</option><option value="M">男</option><option value="F">女</option></select>
+      
       <select id="c-city" onchange="updateDistricts('c-city', 'c-district')">
         <option value="">* 居住縣市</option>
         <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option>
@@ -187,6 +149,7 @@
       </select>
       <select id="c-district"><option value="">* 鄉鎮市區</option></select>
       <input type="text" id="c-address" placeholder="* 詳細通訊地址 (街道/巷弄/樓層)">
+
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
         <option value="">* 選擇車輛品牌</option>
         <option value="Toyota">Toyota (豐田)</option><option value="Honda">Honda (本田)</option>
@@ -202,6 +165,7 @@
         <option value="Other">其他品牌</option>
       </select>
       <select id="c-model"><option value="">* 請先選擇品牌</option></select>
+      
       <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
       <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
       <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
@@ -210,13 +174,12 @@
   </div>
 
   <div id="page-home" class="page">
-    
     <div class="header-flex">
       <div class="header-title-box">
         <p id="ui-owner">讀取中...</p>
-        <div class="shield-badge" id="ui-shield-badge"><span class="pulse-dot" id="ui-pulse-dot"></span> <span id="ui-shield-text">系統連線中</span></div>
+        <p id="ui-car-info" style="font-size:13px; color:var(--text-secondary); margin:4px 0 0 0;">讀取中...</p>
       </div>
-      <div class="plate-tag" id="ui-plate-tag">讀取中</div>
+      <div class="shield-badge" id="ui-shield-badge"><span class="pulse-dot" id="ui-pulse-dot"></span> <span id="ui-shield-text">系統連線中</span></div>
     </div>
 
     <div class="main-visual-container">
@@ -224,87 +187,62 @@
         <div style="font-size:64px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">100%</div>
         <div style="font-size:14px; color:var(--text-secondary); font-weight:700; margin-top:8px;">動態壽命推估</div>
       </div>
-      <div style="font-size:11px; color:var(--text-secondary); margin-top:20px; z-index:3; letter-spacing:0.5px;">保固啟用: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
+      <div class="pm25-badge">🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:8px; z-index:3; position:relative; letter-spacing:0.5px;">濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
     </div>
     
+    <div class="tech-tag-container">
+      <div class="tech-tag"><span class="t-icon">🇹🇼</span><span style="font-size:9.5px; letter-spacing:-1px; line-height:1;">台灣製汽車冷氣濾網</span></div>
+      <div class="tech-tag"><span class="t-icon">⚡</span><span style="font-size:10px; letter-spacing:-0.5px; line-height:1;">高效靜電過濾</span></div>
+      <div class="tech-tag"><span class="t-icon">🥥</span><span style="font-size:9.5px; letter-spacing:-0.5px; line-height:1;">高效活性碳除臭</span></div>
+      <div class="tech-tag"><span class="t-icon">📡</span><span style="font-size:10px; letter-spacing:-0.5px; line-height:1;">空汙雷達警示</span></div>
+      <div class="tech-tag"><span class="t-icon">🧠</span><span style="font-size:9.5px; letter-spacing:-0.5px; line-height:1;">Ai智能演算推播</span></div>
+      <div class="tech-tag"><span class="t-icon">🌱</span><span style="font-size:9.5px; letter-spacing:-0.5px; line-height:1;">ESG降低碳足跡</span></div>
+    </div>
+
     <div class="dynamic-msg-bar" id="dynamic-msg-box">
-      <span style="margin-right: 12px; font-size: 18px;">💬</span>
+      <span class="dynamic-msg-icon">💬</span>
       <div class="marquee-container"><span class="marquee-content" id="ui-dynamic-msg">系統連線中，同步總部大數據...</span></div>
     </div>
 
-    <div class="g-card">
-      <div class="chart-header">
-        <span class="chart-title">累計淨化量 (PM2.5)</span>
-        <span class="plate-tag" style="font-size:10px; padding:2px 8px;">近 7 日趨勢</span>
-      </div>
-      <div class="chart-content">
-        <div class="chart-number-box">
-          <div class="chart-number" id="ui-pm25-w">0</div>
-          <div class="chart-unit">萬 µg</div>
-        </div>
-        <div class="bars-container">
-          <div class="bar" style="height: 30%;"></div>
-          <div class="bar" style="height: 50%;"></div>
-          <div class="bar" style="height: 40%;"></div>
-          <div class="bar" style="height: 70%;"></div>
-          <div class="bar" style="height: 60%;"></div>
-          <div class="bar" style="height: 90%;"></div>
-          <div class="bar active" style="height: 100%; position:relative;">
-             <div style="position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); width:3px; height:3px; background:var(--accent-color); border-radius:50%;"></div>
-          </div>
+    <div class="grid-2">
+      <div class="env-box">
+        <div class="env-title">📍 即時所在地<br><span id="ui-loc-name" class="env-subtitle">定位中...</span></div>
+        <div class="aqi-container">
+          <div class="aqi-label">AQI</div>
+          <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
         </div>
       </div>
-      <div class="level-row">
-        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">
-          已減少碳排放 <span id="ui-esg-co2" style="color:var(--text-primary); font-weight:800; font-size:14px;">0</span> kg
+      <div class="env-box" style="border-color:#554400;">
+        <div class="env-title">🏠 近7日居住地<br><span id="ui-home-city" class="env-subtitle">讀取中...</span></div>
+        <div class="aqi-container">
+          <div class="aqi-label">AQI</div>
+          <div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div>
         </div>
-        <div class="level-badge" id="ui-level-badge"><span>👤</span> <span id="ui-level-title">讀取中</span></div>
       </div>
     </div>
 
-    <div class="g-card">
-      <div class="chart-title" style="margin-bottom: 12px;">空汙雷達與材料規格</div>
-      <div class="grid-2">
-        <div class="env-box">
-          <div class="env-title">📍 即時所在地<br><span id="ui-loc-name" class="env-subtitle" style="color:var(--text-primary);">定位中...</span></div>
-          <div class="aqi-container">
-            <div class="aqi-label">AQI</div>
-            <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
-          </div>
-        </div>
-        <div class="env-box">
-          <div class="env-title">🏠 近7日居住地<br><span id="ui-home-city" class="env-subtitle" style="color:var(--text-primary);">讀取中...</span></div>
-          <div class="aqi-container">
-            <div class="aqi-label">AQI</div>
-            <div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div>
-          </div>
-        </div>
+    <div class="grid-3">
+      <div class="esg-box">
+        <div class="esg-badge">極致低風阻</div><div style="font-size:24px; margin-top:15px;">🌱</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:11px; color:var(--text-secondary);">kg</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
       </div>
-
-      <div class="grid-3">
-        <div class="esg-box">
-          <div class="esg-badge">冷氣輕負載</div><div style="font-size:18px; margin-top:8px;">⚡️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0;"><span id="ui-esg-kwh">0</span><span style="font-size:9px; color:var(--text-secondary);">kWh</span></div><div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省電效能</div>
-        </div>
-        <div class="esg-box">
-          <div class="esg-badge">強效大風量</div><div style="font-size:18px; margin-top:8px;">⛽️</div><div style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0;"><span id="ui-esg-ac">0</span><span style="font-size:9px; color:var(--text-secondary);">%</span></div><div style="font-size:10px; color:var(--text-secondary); font-weight:600;">空調節能</div>
-        </div>
-        <div class="esg-box" style="display:flex; flex-direction:column; justify-content:center; gap:4px; padding:8px 4px;">
-           <div style="font-size:9px; background:var(--border-color); border-radius:4px; padding:2px; font-weight:bold;">🇹🇼 台灣製造</div>
-           <div style="font-size:9px; background:var(--border-color); border-radius:4px; padding:2px; font-weight:bold;">椰殼除臭</div>
-           <div style="font-size:9px; background:var(--border-color); border-radius:4px; padding:2px; font-weight:bold;">靜電過濾</div>
-        </div>
+      <div class="esg-box">
+        <div class="esg-badge">冷氣輕負載</div><div style="font-size:24px; margin-top:15px;">⚡️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:11px; color:var(--text-secondary);">kWh</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省電效能</div>
+      </div>
+      <div class="esg-box">
+        <div class="esg-badge">強效大風量</div><div style="font-size:24px; margin-top:15px;">⛽️</div><div style="font-size:20px; font-weight:700; color:var(--text-primary); margin:6px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:11px; color:var(--text-secondary);">%</span></div><div style="font-size:11px; color:var(--text-secondary); font-weight:600;">空調節能</div>
       </div>
     </div>
     
-    <button class="btn-main" onclick="scanFilter()" style="margin-top:5px; background:var(--surface-color); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:var(--card-shadow);">📷 DIY 掃描啟用新濾網</button>
+    <button class="btn-main" onclick="scanFilter()" style="margin-top:5px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 DIY 掃描啟用新濾網</button>
   </div>
 
   <div id="page-shop" class="page">
     <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🛒 官方商城</h3>
-    <div class="g-card" style="text-align:center; padding: 40px 20px;">
+    <div class="card" style="text-align:center; padding: 40px 20px;">
       <p style="color:var(--text-secondary); font-size:15px; margin-bottom:15px;">您的專屬隱藏優惠碼：</p>
       <h2 style="color:var(--accent-color); letter-spacing: 4px; border: 2px dashed var(--accent-color); padding: 18px; border-radius: 16px; margin-bottom:30px; font-size:28px;">AIRPLUS2026</h2>
-      <button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw/categories/replace-filters-all'">前往商城選購專屬濾網</button>
+      <button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw/categories/replace-filters-all?srsltid=AfmBOooj2xVe0YRRhwwtUs-DXWufMvnWl7NJlD-nrNwE96Wxw1jVUxr6'">前往商城選購專屬濾網</button>
     </div>
   </div>
 
@@ -315,21 +253,21 @@
         <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
         <div class="tab-btn inactive" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 附近保修廠</div>
       </div>
-      <div id="booking-smart"><div id="smart-match-result" class="g-card" style="text-align:center;">定位配對中...</div></div>
+      <div id="booking-smart"><div id="smart-match-result" class="card" style="text-align:center;">定位配對中...</div></div>
       <div id="booking-manual" style="display: none;"><div id="garage-list">讀取清單中...</div></div>
     </div>
   </div>
 
   <div id="page-rewards" class="page">
     <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🎁 任務與獎勵</h3>
-    <div class="g-card vip-card" style="text-align: center; padding: 40px 20px; border-radius:24px;">
+    <div class="card vip-card" style="text-align: center; padding: 40px 20px; border-radius:24px;">
       <h4 style="margin:0; color:var(--gold-color); font-size: 18px; letter-spacing: 2px;">VIP 專屬獎勵金</h4>
       <h1 style="margin:20px 0; font-size: 64px; color: #FFF; text-shadow: 0 4px 25px rgba(255, 215, 0, 0.6);"><span id="reward-balance">$0</span></h1>
       <p style="font-size:14px; color:#d4d4d4; margin-bottom: 30px; line-height:1.6;">累積滿 $100 即可兌換 LINE Points<br>推薦無上限，獎金無上限！</p>
       <button class="btn-main shine-btn" style="padding:18px; font-size:18px; font-weight:800;" onclick="redeemPoints()">申請提領點數</button>
     </div>
     
-    <div class="g-card" style="text-align: center; border: 2px solid var(--accent-color);">
+    <div class="card" style="text-align: center; border: 2px solid var(--accent-color); background: var(--input-bg); margin-top:20px;">
        <h3 style="margin-top: 10px; color: var(--text-primary); font-size:20px;">🚀 邀請車友加入座艙</h3>
        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6;">分享您的專屬連結，好友成功啟用濾網後<br>您將立即獲得高額推薦獎金！</p>
        <button class="btn-main" style="box-shadow: 0 8px 25px var(--accent-glow); font-size: 18px; padding:18px;" onclick="generateMGM()">🔗 點擊複製專屬連結</button>
@@ -347,31 +285,65 @@
     </div>
 
     <div id="set-content-a" style="display:block;">
-      <div class="g-card">
+      <div class="card">
         <label>車主姓名</label><input type="text" id="edit-name">
         <label>聯絡電話</label><input type="tel" id="edit-phone">
-        <label>車牌號碼</label><input type="text" id="edit-plate">
+        <label>電子郵件</label><input type="email" id="edit-email">
+        <label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
+        
+        <label>居住縣市</label>
+        <select id="edit-city" onchange="updateDistricts('edit-city', 'edit-district')">
+          <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option>
+          <option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option>
+          <option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option><option value="彰化縣">彰化縣</option>
+          <option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option>
+          <option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+          <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option>
+          <option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option>
+          <option value="連江縣">連江縣</option>
+        </select>
+        
+        <label>鄉鎮市區</label>
+        <select id="edit-district"></select>
+        
+        <label>詳細通訊地址</label>
+        <input type="text" id="edit-address">
+
         <label>車輛品牌</label>
-        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Tesla">Tesla</option><option value="Other">其他品牌</option></select>
+        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
+          <option value="Toyota">Toyota (豐田)</option><option value="Honda">Honda (本田)</option>
+          <option value="Nissan">Nissan (日產)</option><option value="Ford">Ford (福特)</option>
+          <option value="Mazda">Mazda (馬自達)</option><option value="Mitsubishi">Mitsubishi (三菱)</option>
+          <option value="Hyundai">Hyundai (現代)</option><option value="Kia">Kia (起亞)</option>
+          <option value="Volkswagen">Volkswagen (福斯)</option><option value="Skoda">Skoda (司科達)</option>
+          <option value="Lexus">Lexus (凌志)</option><option value="Benz">Mercedes-Benz (賓士)</option>
+          <option value="BMW">BMW (寶馬)</option><option value="Audi">Audi (奧迪)</option>
+          <option value="Volvo">Volvo (富豪)</option><option value="Porsche">Porsche (保時捷)</option>
+          <option value="Tesla">Tesla (特斯拉)</option><option value="Subaru">Subaru (速霸陸)</option>
+          <option value="Suzuki">Suzuki (鈴木)</option><option value="Luxgen">Luxgen (納智捷)</option>
+          <option value="Other">其他品牌</option>
+        </select>
         <label>車輛型號</label><select id="edit-model"></select>
+        <label>出廠年份</label><input type="number" id="edit-year">
+        <label>車牌號碼</label><input type="text" id="edit-plate">
         <label>年平均行駛里程</label><select id="edit-mileage"><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
         <button class="btn-main" onclick="updateProfile()" style="margin-top:10px;">儲存變更</button>
       </div>
     </div>
     
     <div id="set-content-theme" style="display:none;">
-      <div class="g-card" style="text-align: center; padding: 40px 20px;">
+      <div class="card" style="text-align: center; padding: 40px 20px;">
         <h3 style="margin-top:0; color:var(--text-primary); margin-bottom: 30px; font-size:20px;">選擇座艙顯示模式</h3>
         <div style="display:flex; flex-direction: column; gap:16px;">
-          <button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#00e676; border:1px solid #222222; box-shadow: 0 8px 25px rgba(0,0,0,0.8);" onclick="setTheme('dark')">🌙 曜石黑 (預設)</button>
-          <button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #e5e5ea; box-shadow: 0 8px 25px rgba(0,0,0,0.06);" onclick="setTheme('light')">☀️ 極簡白 (Gogoro風格)</button>
+          <button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#00e676; border:1px solid #222222; box-shadow: 0 8px 25px rgba(0,0,0,0.8);" onclick="setTheme('dark')">🌙 曜石黑</button>
+          <button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #e5e5ea; box-shadow: 0 8px 25px rgba(0,0,0,0.06);" onclick="setTheme('light')">☀️ 極簡白</button>
           <button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); color:#06b6d4; border:1px solid #3a3a3c; box-shadow: 0 8px 25px rgba(0,0,0,0.6);" onclick="setTheme('metal')">🌊 淨化藍</button>
         </div>
       </div>
     </div>
 
     <div id="set-content-b" style="display:none;">
-      <div class="g-card">
+      <div class="card">
         <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:20px; font-weight:700;">
           <option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 保修廠預約紀錄</option>
           <option value="shop">🛒 商城購買紀錄</option>
@@ -381,9 +353,9 @@
     </div>
     
     <div id="set-content-c" style="display:none;">
-      <div class="g-card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
+      <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">5.1 - 桌面 RWD 手機比例版</div>
+    <div class="version-tag">4.14</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -400,100 +372,292 @@
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
     
-    const carData = { "Toyota": ["RAV4", "Corolla Cross", "Altis", "其他"], "Honda": ["CR-V", "HR-V", "Fit", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他品牌"] };
+    const carData = { 
+      "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "其他"], "Honda": ["CR-V", "HR-V", "Civic", "Fit", "其他"],
+      "Nissan": ["Kicks", "Sentra", "X-Trail", "其他"], "Ford": ["Focus", "Kuga", "其他"], "Mazda": ["Mazda 3", "CX-5", "其他"],
+      "Mitsubishi": ["Outlander", "Eclipse Cross", "Colt Plus", "其他"], "Hyundai": ["Tucson", "Custin", "Venue", "其他"],
+      "Kia": ["Sportage", "Sorento", "EV6", "其他"], "Volkswagen": ["Golf", "Tiguan", "其他"], "Skoda": ["Kodiaq", "Kamiq", "其他"],
+      "Lexus": ["NX", "RX", "UX", "ES", "其他"], "Benz": ["C-Class", "E-Class", "GLC", "GLE", "其他"],
+      "BMW": ["3-Series", "5-Series", "X3", "X5", "其他"], "Audi": ["A3", "A4", "Q3", "Q5", "其他"],
+      "Volvo": ["XC60", "XC40", "其他"], "Porsche": ["Macan", "Cayenne", "其他"], "Tesla": ["Model Y", "Model 3", "Model X", "Model S"],
+      "Subaru": ["Forester", "XV", "其他"], "Suzuki": ["Swift", "Jimny", "其他"], "Luxgen": ["URX", "n7", "其他"], "Other": ["其他品牌"] 
+    };
 
-    function normalizeCityName(cityStr) { return cityStr ? cityStr.replace(/臺/g, '台') : ''; }
-    function formatTaipeiTime(dateString) { return dateString ? new Date(dateString).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }) : '-'; }
+    const taiwanDistricts = {
+      "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
+      "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
+      "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"],
+      "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"],
+      "新竹市": ["東區", "北區", "香山區"],
+      "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
+      "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"],
+      "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
+      "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"],
+      "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"],
+      "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"],
+      "嘉義市": ["東區", "西區"],
+      "嘉義縣": ["太保市", "朴子市", "布袋鎮", "大林鎮", "民雄鄉", "溪口鄉", "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉", "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"],
+      "台南市": ["新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區", "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區", "七股區", "將軍區", "北門區", "新化區", "善化區", "新市區", "安定區", "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區", "關廟區", "龍崎區", "永康區", "東區", "南區", "北區", "安南區", "安平區", "中西區"],
+      "高雄市": ["鹽埕區", "鼓山區", "左營區", "楠梓區", "三民區", "新興區", "前金區", "苓雅區", "前鎮區", "旗津區", "小港區", "鳳山區", "林園區", "大寮區", "大樹區", "大社區", "仁武區", "鳥松區", "岡山區", "橋頭區", "燕巢區", "田寮區", "阿蓮區", "路竹區", "湖內區", "茄萣區", "永安區", "彌陀區", "梓官區", "旗山區", "美濃區", "六龜區", "甲仙區", "杉林區", "內門區", "茂林區", "桃源區", "那瑪夏區"],
+      "屏東縣": ["屏東市", "潮州鎮", "東港鎮", "恆春鎮", "萬丹鄉", "長治鄉", "麟洛鄉", "九如鄉", "里港鄉", "鹽埔鄉", "高樹鄉", "萬巒鄉", "內埔鄉", "竹田鄉", "新埤鄉", "枋寮鄉", "新園鄉", "崁頂鄉", "林邊鄉", "南州鄉", "佳冬鄉", "琉球鄉", "車城鄉", "滿州鄉", "枋山鄉", "三地門鄉", "霧臺鄉", "瑪家鄉", "泰武鄉", "來義鄉", "春日鄉", "獅子鄉", "牡丹鄉"],
+      "宜蘭縣": ["宜蘭市", "羅東鎮", "蘇澳鎮", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "冬山鄉", "五結鄉", "三星鄉", "大同鄉", "南澳鄉"],
+      "花蓮縣": ["花蓮市", "鳳林鎮", "玉里鎮", "新城鄉", "吉安鄉", "壽豐鄉", "光復鄉", "豐濱鄉", "瑞穗鄉", "富里鄉", "秀林鄉", "萬榮鄉", "卓溪鄉"],
+      "台東縣": ["台東市", "成功鎮", "關山鎮", "卑南鄉", "鹿野鄉", "池上鄉", "東河鄉", "長濱鄉", "太麻里鄉", "大武鄉", "綠島鄉", "海端鄉", "延平鄉", "金峰鄉", "達仁鄉", "蘭嶼鄉"],
+      "澎湖縣": ["馬公市", "湖西鄉", "白沙鄉", "西嶼鄉", "望安鄉", "七美鄉"],
+      "金門縣": ["金城鎮", "金湖鎮", "金沙鎮", "金寧鄉", "烈嶼鄉", "烏坵鄉"],
+      "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
+    };
+
+    function normalizeCityName(cityStr) {
+      if (!cityStr) return '';
+      return cityStr.replace(/臺/g, '台');
+    }
 
     function getCarSizeRate(model) {
         if (!model) return 1.0; 
-        const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V']; const sModels = ['Yaris', 'Fit', 'Swift'];
-        if (lModels.includes(model)) return 1.3; if (sModels.includes(model)) return 0.8; return 1.0;
+        const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V', 'X-Trail', 'Kuga', 'CX-5', 'Outlander', 'Tucson', 'Sportage', 'Sorento', 'Tiguan', 'Kodiaq', 'NX', 'RX', 'GLC', 'GLE', 'X3', 'X5', 'Q5', 'XC60', 'XC90', 'Cayenne', 'Macan', 'URX', 'n7'];
+        const sModels = ['Yaris', 'Fit', 'Swift', 'Colt Plus', 'Venue', 'Kamiq', 'UX'];
+        if (lModels.includes(model)) return 1.3;
+        if (sModels.includes(model)) return 0.8;
+        return 1.0;
+    }
+
+    function formatTaipeiTime(dateString) {
+      if (!dateString) return '-';
+      const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      return new Date(dateString).toLocaleString('zh-TW', options);
     }
 
     function setTheme(theme) {
       document.body.classList.remove('light-mode', 'metal-mode');
-      document.getElementById('btn-theme-dark').style.borderColor = 'transparent'; document.getElementById('btn-theme-light').style.borderColor = 'transparent'; document.getElementById('btn-theme-metal').style.borderColor = 'transparent';
+      document.getElementById('btn-theme-dark').style.borderColor = 'transparent';
+      document.getElementById('btn-theme-light').style.borderColor = 'transparent';
+      document.getElementById('btn-theme-metal').style.borderColor = 'transparent';
       if (theme === 'light') { document.body.classList.add('light-mode'); document.getElementById('btn-theme-light').style.borderColor = '#10b981'; } 
       else if (theme === 'metal') { document.body.classList.add('metal-mode'); document.getElementById('btn-theme-metal').style.borderColor = '#06b6d4'; } 
       else { theme = 'dark'; document.getElementById('btn-theme-dark').style.borderColor = '#00e676'; }
       localStorage.setItem('hypass_theme', theme);
     }
-    setTheme(localStorage.getItem('hypass_theme') || 'light');
+    setTheme(localStorage.getItem('hypass_theme') || 'dark');
 
     function updateCarModels(brandId, modelId) { 
       const bSelect = document.getElementById(brandId).value; const mSelect = document.getElementById(modelId); mSelect.innerHTML = '<option value="">* 選擇車型</option>'; 
       if (carData[bSelect]) carData[bSelect].forEach(item => { mSelect.innerHTML += `<option value="${item}">${item}</option>`; });
     }
 
+    function updateDistricts(cityId, districtId) {
+      const city = document.getElementById(cityId).value;
+      const distSelect = document.getElementById(districtId);
+      distSelect.innerHTML = '<option value="">* 鄉鎮市區</option>';
+      if (taiwanDistricts[city]) {
+          taiwanDistricts[city].forEach(d => { distSelect.innerHTML += `<option value="${d}">${d}</option>`; });
+      }
+    }
+
     function showForm(role) { document.getElementById('form-customer').style.display = (role === 'customer') ? 'block' : 'none'; document.getElementById('form-garage').style.display = (role === 'garage') ? 'block' : 'none'; }
-    function switchPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('page-' + id).classList.add('active'); if (el) el.classList.add('active'); if (id === 'book') loadGarages(); }
-    function switchSetTab(t) { ['a','theme','b','c'].forEach(tab => { document.getElementById(`set-content-${tab}`).style.display = (t === tab) ? 'block' : 'none'; document.getElementById(`tab-set-${tab}`).className = `tab-btn ${t === tab ? 'active' : 'inactive'}`; }); }
+    
+    function switchPage(id, el) { 
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+      document.getElementById('page-' + id).classList.add('active'); 
+      if (el) el.classList.add('active'); 
+      if (id === 'book') loadGarages(); 
+    }
+    
+    function switchSetTab(t) { 
+      ['a','theme','b','c'].forEach(tab => {
+        document.getElementById(`set-content-${tab}`).style.display = (t === tab) ? 'block' : 'none';
+        document.getElementById(`tab-set-${tab}`).className = `tab-btn ${t === tab ? 'active' : 'inactive'}`;
+      });
+    }
+    
     function switchBookingTab(t) { document.getElementById('booking-smart').style.display = (t === 'smart') ? 'block' : 'none'; document.getElementById('booking-manual').style.display = (t === 'manual') ? 'block' : 'none'; document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : 'inactive'}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : 'inactive'}`; }
 
+    async function submitRegister(role) {
+      try {
+        const p = await liff.getProfile(); let referrerId = new URLSearchParams(window.location.search).get('ref');
+        if (role === 'customer') {
+          const n = document.getElementById('c-name').value; const ph = document.getElementById('c-phone').value; const e = document.getElementById('c-email').value;
+          const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; 
+          const dist = document.getElementById('c-district').value; const addr = document.getElementById('c-address').value;
+          const b = document.getElementById('c-brand').value; const m = document.getElementById('c-model').value; const y = document.getElementById('c-year').value; const pl = document.getElementById('c-plate').value; const mil = document.getElementById('c-mileage').value;
+          
+          if (!n || !ph || !e || !c || !dist || !b || !m || !pl || !mil) return alert("請完整填寫所有 * 必填欄位！");
+          
+          const payload = { line_uid: p.userId, role: role, referrer_uid: referrerId, name: n, phone: ph, email: e, gender: g, city: c, district: dist, address: addr, car_brand: b, car_model: m, license_plate: pl, yearly_mileage: parseInt(mil), car_year: parseInt(y) || null };
+          
+          const { error } = await supabaseClient.from('users').upsert(payload);
+          if (error) alert("註冊失敗：" + error.message); else { alert("✅ 註冊成功！"); location.reload(); }
+        }
+      } catch (err) { alert("系統錯誤，請稍後再試。"); }
+    }
+
     async function updateProfile() {
-      const payload = { name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, license_plate: document.getElementById('edit-plate').value, yearly_mileage: parseInt(document.getElementById('edit-mileage').value) };
+      const payload = {
+        name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, email: document.getElementById('edit-email').value,
+        gender: document.getElementById('edit-gender').value, city: document.getElementById('edit-city').value,
+        district: document.getElementById('edit-district').value, address: document.getElementById('edit-address').value,
+        car_brand: document.getElementById('edit-brand').value, car_model: document.getElementById('edit-model').value,
+        car_year: parseInt(document.getElementById('edit-year').value) || null, license_plate: document.getElementById('edit-plate').value, 
+        yearly_mileage: parseInt(document.getElementById('edit-mileage').value)
+      };
       if (!payload.name || !payload.phone || !payload.license_plate) return alert("姓名、電話、車牌不可為空！");
       const { error } = await supabaseClient.from('users').update(payload).eq('line_uid', currentUser.line_uid); 
-      if (error) alert("更新失敗：" + error.message); else { alert('✅ 成功更新！'); location.reload(); }
+      if (error) alert("更新失敗：" + error.message); else { alert('✅ 您的座艙資料已成功更新！'); location.reload(); }
+    }
+
+    async function loadHistory(type) {
+      const container = document.getElementById('history-container'); container.innerHTML = '讀取中...'; let html = '';
+      if (type === 'filter') {
+        const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
+        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">🔄 [${d.activation_type}] 啟用新濾網</span><br><span style="font-size:11px;">${formatTaipeiTime(d.activated_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+      } else if (type === 'book') {
+        const { data } = await supabaseClient.from('appointments').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('appointment_time', { ascending: false });
+        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📍 預約：${d.garages.name} [${d.status}]</span><br><span style="font-size:11px;">預約時間: ${formatTaipeiTime(d.appointment_time)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+      } else if (type === 'shop' || type === 'logs') {
+        let query = supabaseClient.from('user_logs').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
+        if (type === 'shop') query = query.eq('action', '🛒 商城購買');
+        const { data } = await query;
+        if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📝 ${d.action}</span><br><span style="color:var(--text-secondary);">${d.details}</span><br><span style="font-size:11px;">${formatTaipeiTime(d.created_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+      }
+      container.innerHTML = html;
     }
 
     async function scanFilter() {
       const res = await liff.scanCodeV2(); if (!res.value) return;
       await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
       const { error } = await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand, installed_location: currentLocName }).eq('uid', res.value);
-      if (error) return alert("啟用失敗"); alert("✅ 啟用成功！"); location.reload();
+      if (error) return alert("啟用失敗，可能為無效的 QR Code。");
+      await supabaseClient.from('user_logs').insert([{ user_uid: currentUser.line_uid, action: '濾網重置', details: `DIY 啟用了新濾網 UID: ${res.value}` }]);
+      alert("✅ 啟用成功！座艙防護已滿血復活。"); location.reload();
     }
 
+    async function book(gId, prefix = '') {
+      const time = document.getElementById(prefix ? `date-${prefix}-${gId}` : `date-${gId}`).value;
+      if (!time) return alert("請選擇預約時間");
+      const { error } = await supabaseClient.from('appointments').insert([{ user_uid: currentUser.line_uid, garage_id: gId, appointment_time: new Date(time) }]);
+      if (error) alert("預約失敗：" + error.message); else { alert("🎉 預約送出成功！"); loadGarages(); }
+    }
+
+    window.generateMGM = function() {
+      const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(() => { alert(`✅ 推薦連結已複製！快貼給好友吧！\n${link}`); }).catch(() => { alert(`請手動複製連結：\n${link}`); });
+      else alert(`請手動複製連結：\n${link}`);
+    };
+
+    window.redeemPoints = async function() {
+      const balText = document.getElementById('reward-balance').innerText.replace('$','');
+      if (parseInt(balText) < 100) return alert('餘額不足 $100，快去邀請好友吧！');
+      if (confirm('確定申請兌換 LINE Points 嗎？')) {
+        await supabaseClient.from('rewards').insert([{ user_uid: currentUser.line_uid, type: 'redeem', amount: 100, status: 'pending' }]);
+        alert('✅ 提領申請已送出！總部將盡快為您審核派發。'); loadRewards();
+      }
+    };
+
     async function updateDynamicMarquee(aqi, health, status) {
-        document.getElementById('ui-dynamic-msg').innerText = `系統連線正常，目前室外 AQI: ${aqi}，濾網持續防護中！`;
+      try {
+        const { data: rules } = await supabaseClient.from('notification_rules').select('*').eq('is_active', true);
+        let messages = [];
+        
+        if (rules && rules.length > 0) {
+          rules.forEach(rule => {
+            try {
+              const context = { aqi: aqi, health: health, status: status };
+              const isTriggered = new Function(...Object.keys(context), `return ${rule.trigger_condition};`)(...Object.values(context));
+              if (isTriggered) messages.push(rule.message_template);
+            } catch (e) { console.error("推播條件解析失敗", rule.rule_name); }
+          });
+        }
+
+        const msgBox = document.getElementById('dynamic-msg-box');
+        
+        if (messages.length > 0) {
+          let finalMsg = messages.join(' ｜ ');
+          document.getElementById('ui-dynamic-msg').innerText = finalMsg;
+          
+          if (finalMsg.includes('紫爆') || finalMsg.includes('🚨')) {
+            msgBox.style.color = '#ef4444'; msgBox.style.borderColor = '#ef4444'; msgBox.style.boxShadow = 'inset 0 0 10px rgba(239, 68, 68, 0.2)';
+          } else if (finalMsg.includes('警告') || finalMsg.includes('⚠️')) {
+            msgBox.style.color = '#f59e0b'; msgBox.style.borderColor = '#f59e0b'; msgBox.style.boxShadow = 'inset 0 0 10px rgba(245, 158, 11, 0.2)';
+          } else {
+            msgBox.style.color = 'var(--accent-color)'; msgBox.style.borderColor = 'var(--accent-color)'; msgBox.style.boxShadow = 'inset 0 0 10px var(--accent-glow)';
+          }
+        } else {
+          document.getElementById('ui-dynamic-msg').innerText = `系統連線正常，目前室外 AQI: ${aqi}，濾網持續防護中！`;
+          msgBox.style.color = 'var(--accent-color)'; msgBox.style.borderColor = 'var(--border-color)'; msgBox.style.boxShadow = 'inset 0 2px 6px rgba(0,0,0,0.05)';
+        }
+      } catch (e) { console.log("推播載入錯誤", e); }
     }
 
     async function calculateDashboardStats() {
       if (!currentUser) return;
-      const badge = document.getElementById('ui-shield-badge'); const badgeText = document.getElementById('ui-shield-text'); const pulseDot = document.getElementById('ui-pulse-dot');
+      const badge = document.getElementById('ui-shield-badge');
+      const badgeText = document.getElementById('ui-shield-text');
+      const pulseDot = document.getElementById('ui-pulse-dot');
       
       const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
       
       if (filter && filter.activated_at) {
-        const actDate = new Date(filter.activated_at); document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
+        const actDate = new Date(filter.activated_at);
+        document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
+
         const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
         const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
         
         let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
-        let aqiRate = (envData.aqi > 150) ? 1.8 : (envData.aqi > 100 ? 1.4 : 1.0);
+        
+        let aqi = envData.aqi || 50;
+        let wRed = parseFloat(algoParams.weightRed || 1.8); let wOrange = parseFloat(algoParams.weightOrange || 1.4);
+        let aqiRate = 1.0;
+        if (aqi > 150) aqiRate = wRed + ((aqi - 150) / 50) * 0.5;
+        else if (aqi > 100) aqiRate = wOrange + ((aqi - 100) / 50) * (wRed - wOrange);
+        else if (aqi > 50) aqiRate = 1.0 + ((aqi - 50) / 50) * (wOrange - 1.0);
+        else aqiRate = 0.8 + (aqi / 50) * 0.2;
+        
         let carSizeRate = getCarSizeRate(currentUser.car_model);
-        let tempRate = envData.temp > 28 ? 1.2 : (envData.temp < 20 ? 0.8 : 1.0);
+
+        let currentTemp = envData.temp !== null ? parseFloat(envData.temp) : 25;
+        let tempRate = 1.0;
+        if (currentTemp > 28) tempRate = 1.2; 
+        else if (currentTemp < 20) tempRate = 0.8; 
+
         let totalMultiplier = mileageRate * aqiRate * carSizeRate * tempRate;
 
         let baseWear = parseFloat(algoParams.baseWear || 0.27);
         let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
         document.getElementById('ui-health').innerText = `${health}%`;
         
-        if (health >= 60) { badgeText.innerText = '極效防護中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
-        else if (health >= 30) { badgeText.innerText = '穩定監控中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
-        else if (health > 0) { badge.style.setProperty('--accent-color', '#f59e0b'); badgeText.innerText = '效能衰退中'; document.getElementById('ui-health').style.color = '#f59e0b';} 
-        else { badge.style.setProperty('--accent-color', '#ef4444'); badgeText.innerText = '請即刻更換'; document.getElementById('ui-health').style.color = '#ef4444';}
+        if (health >= 60) {
+            badge.style.removeProperty('--accent-color'); badge.style.removeProperty('--accent-glow');
+            badgeText.innerText = '極效防護中'; pulseDot.style.animationDuration = '1.8s'; document.getElementById('ui-health').style.color = 'var(--accent-color)';
+        } else if (health >= 30) {
+            badge.style.removeProperty('--accent-color'); badge.style.removeProperty('--accent-glow');
+            badgeText.innerText = '穩定監控中'; pulseDot.style.animationDuration = '2.5s'; document.getElementById('ui-health').style.color = 'var(--accent-color)';
+        } else if (health > 0) {
+            badge.style.setProperty('--accent-color', '#f59e0b'); badge.style.setProperty('--accent-glow', 'rgba(245, 158, 11, 0.2)');
+            badgeText.innerText = '效能衰退中'; pulseDot.style.animationDuration = '1s'; document.getElementById('ui-health').style.color = '#f59e0b';
+        } else {
+            badge.style.setProperty('--accent-color', '#ef4444'); badge.style.setProperty('--accent-glow', 'rgba(239, 68, 68, 0.2)');
+            badgeText.innerText = '請即刻更換'; pulseDot.style.animationDuration = '0.4s'; document.getElementById('ui-health').style.color = '#ef4444';
+        }
         
-        let totalPm25 = Math.round(days * 1250 * totalMultiplier);
-        let displayPm25 = (totalPm25 / 10000).toFixed(1);
-        document.getElementById('ui-pm25-w').innerText = displayPm25;
+        let basePm25 = parseFloat(algoParams.basePm25 || 1250);
+        document.getElementById('ui-pm25').innerText = Math.round(days * basePm25 * totalMultiplier).toLocaleString();
         
-        let totalKwhSaved = (days * 0.25 * mileageRate).toFixed(1);
+        let paHypass = parseFloat(algoParams.paHypass || 4); let paOther = parseFloat(algoParams.paOther || 8);
+        document.getElementById('ui-esg-ac').innerText = Math.round(((paOther - paHypass) / paOther) * 30);
+        let totalKwhSaved = (days * parseFloat(algoParams.kwhPerDay || 0.25) * mileageRate).toFixed(1);
         document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
-        let totalCo2 = (totalKwhSaved * 0.5).toFixed(1);
-        document.getElementById('ui-esg-co2').innerText = totalCo2;
-
-        let levelTitle = "清新新手 LV.1"; let titleColor = "var(--text-secondary)";
-        if(totalCo2 > 50) { levelTitle = "御風尊者 LV.3"; titleColor = "#FFD700"; }
-        else if(totalCo2 > 10) { levelTitle = "淨化達人 LV.2"; titleColor = "var(--accent-color)"; }
-        document.getElementById('ui-level-title').innerText = levelTitle;
-        document.getElementById('ui-level-badge').style.color = titleColor;
-        document.getElementById('ui-level-badge').style.borderColor = titleColor;
+        document.getElementById('ui-esg-co2').innerText = (totalKwhSaved * parseFloat(algoParams.co2Factor || 0.5)).toFixed(1);
+        
+        updateDynamicMarquee(envData.aqi, health, 'activated');
 
       } else {
         document.getElementById('ui-filter-date').innerText = '尚未啟用';
-        badge.style.setProperty('--accent-color', '#888888'); badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
+        badge.style.setProperty('--accent-color', '#888888'); badge.style.setProperty('--accent-glow', 'rgba(136, 136, 136, 0.2)');
+        badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
+        
+        updateDynamicMarquee(envData.aqi, 100, 'unactivated');
       }
     }
 
@@ -501,15 +665,22 @@
       try {
         let searchCity = normalizeCityName(city);
         let { data } = await supabaseClient.from('env_cache').select('*').eq('city', searchCity).eq('district', district).maybeSingle();
+        if (!data) { const { data: cityData } = await supabaseClient.from('env_cache').select('*').eq('city', searchCity).limit(1).maybeSingle(); data = cityData; }
         if (!data) { const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; }
 
         envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
         document.getElementById('env-aqi').innerText = envData.aqi;
+
+        let homeCityRaw = currentUser.city || '台北市';
+        document.getElementById('ui-home-city').innerText = homeCityRaw;
         
-        let homeCityRaw = currentUser.city || '台北市'; document.getElementById('ui-home-city').innerText = homeCityRaw;
-        document.getElementById('env-home-aqi').innerText = Math.round(envData.aqi * (0.9 + Math.random() * 0.2));
+        let searchHomeCity = normalizeCityName(homeCityRaw);
+        let { data: homeData } = await supabaseClient.from('env_cache').select('aqi').eq('city', searchHomeCity).limit(1).maybeSingle();
+        let homeAqi = homeData ? homeData.aqi : envData.aqi;
+        document.getElementById('env-home-aqi').innerText = Math.round(homeAqi * (0.9 + Math.random() * 0.2));
+
         calculateDashboardStats();
-      } catch (e) { calculateDashboardStats(); }
+      } catch (e) { console.log("AQI fetch error", e); calculateDashboardStats(); }
     }
 
     function getGPS() {
@@ -518,11 +689,15 @@
           fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
             .then(res => res.json())
             .then(d => {
-              let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
-              currentLocName = `${city}${district}`; document.getElementById('ui-loc-name').innerText = currentLocName;
+              let city = d.address.city || d.address.county || '';
+              let district = d.address.suburb || d.address.town || '';
+              currentLocName = `${city}${district}`;
+              document.getElementById('ui-loc-name').innerText = currentLocName;
               fetchEnvironmentalData(city, district);
             }).catch(e => { document.getElementById('ui-loc-name').innerText = "定位完成"; fetchEnvironmentalData('', '');});
         }, () => { fetchEnvironmentalData('', ''); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); 
+      } else {
+        fetchEnvironmentalData('', '');
       }
     }
 
@@ -536,13 +711,32 @@
           currentUser = data; document.getElementById('nav-bar').style.display = 'flex';
           if (data.role === 'customer') {
             document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
-            document.getElementById('ui-plate-tag').innerText = data.license_plate || '未綁定車牌';
-            document.getElementById('edit-name').value = data.name; document.getElementById('edit-phone').value = data.phone; 
+            document.getElementById('ui-car-info').innerText = `${data.car_brand} ${data.car_model}`;
+            
+            document.getElementById('edit-name').value = data.name; 
+            document.getElementById('edit-phone').value = data.phone; 
+            document.getElementById('edit-email').value = data.email; 
+            if(data.gender) document.getElementById('edit-gender').value = data.gender;
+            
+            if(data.city) { 
+              document.getElementById('edit-city').value = data.city; 
+              updateDistricts('edit-city', 'edit-district');
+              if(data.district) document.getElementById('edit-district').value = data.district;
+            }
+            if(data.address) document.getElementById('edit-address').value = data.address;
+
+            if(data.car_brand) { 
+              document.getElementById('edit-brand').value = data.car_brand; 
+              updateCarModels('edit-brand', 'edit-model'); 
+              if(data.car_model) document.getElementById('edit-model').value = data.car_model; 
+            }
+            
+            if(data.car_year) document.getElementById('edit-year').value = data.car_year;
             document.getElementById('edit-plate').value = data.license_plate; document.getElementById('contract-plate').innerText = data.license_plate;
             if(data.yearly_mileage) document.getElementById('edit-mileage').value = data.yearly_mileage;
 
             switchPage('home', document.querySelector('.nav-item'));
-            getGPS();
+            getGPS(); loadHistory('filter'); loadRewards();
           }
         } else { switchPage('register', null); }
       } catch (err) { console.log("LIFF 啟動失敗"); }
