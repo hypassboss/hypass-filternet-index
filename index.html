@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>HYPASS Air+ 智能座艙</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V5.3 Tesla x Gogoro (核心引擎升級版)
+       💎 V5.4 Tesla x Gogoro (內建專屬掃描引擎)
        ========================================= */
        
     :root {
@@ -45,30 +46,15 @@
       --input-bg: #111112;
     }
 
-    /* 強制設定 HTML 為劇院黑，將 Body 鎖定為手機寬度並置中 */
-    html {
-      background-color: #000000;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
+    html { background-color: #000000; display: flex; justify-content: center; min-height: 100vh; }
 
     body { 
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-      margin: 0; 
-      width: 100vw;
-      max-width: 430px; 
-      background-color: var(--bg-color); 
-      background-image: var(--bg-image); 
-      color: var(--text-primary); 
+      margin: 0; width: 100vw; max-width: 430px; 
+      background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); 
       padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); 
-      transition: background 0.4s ease, color 0.4s ease; 
-      min-height: 100vh; 
-      letter-spacing: 0.5px; 
-      -webkit-font-smoothing: antialiased;
-      box-shadow: 0 0 40px rgba(0,0,0,0.8); 
-      position: relative;
-      overflow-x: hidden;
+      transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; 
+      -webkit-font-smoothing: antialiased; box-shadow: 0 0 40px rgba(0,0,0,0.8); position: relative; overflow-x: hidden;
     }
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -79,26 +65,12 @@
     
     .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 4px 15px var(--accent-glow); letter-spacing: 1px;}
     .btn-main:active { transform: scale(0.96); box-shadow: 0 2px 8px var(--accent-glow); }
+    .btn-danger { background: #ff3b30; color: #fff; border: none; padding: 14px; border-radius: 16px; font-weight: 600; width: 100%; cursor: pointer; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);}
     
     input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none; box-sizing: border-box;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    /* 底部導覽列絕對跟隨手機寬度 */
-    .bottom-nav { 
-      position: fixed; 
-      bottom: 0; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      width: 100%; 
-      max-width: 430px; 
-      background: var(--glass-bg); 
-      display: flex; justify-content: space-between; align-items: flex-end; 
-      padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; 
-      border-top: 1px solid var(--border-color); 
-      z-index: 999; 
-      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.2); 
-    }
+    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); }
     .nav-item { color: var(--text-secondary); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex: 1; height: 42px; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
     .nav-item:active { transform: scale(0.9); }
     .nav-item.active { color: var(--accent-color); font-weight: 700; transform: none; }
@@ -108,8 +80,6 @@
     .header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    .plate-tag { background: var(--input-bg); color: var(--text-secondary); padding: 6px 12px; border-radius: 16px; font-family: monospace; font-size: 13px; font-weight: 700; border: 1px solid var(--border-color); letter-spacing: 1px;}
     
     .shield-badge { display:inline-flex; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; align-items: center; gap: 6px; animation: badgePulse 2.5s infinite alternate ease-in-out; transition: all 0.5s ease; margin-top:6px;}
     @keyframes badgePulse { 0% { box-shadow: 0 0 5px var(--accent-glow); border-color: transparent; } 100% { box-shadow: 0 0 20px var(--accent-color); border-color: var(--accent-color); } }
@@ -121,25 +91,10 @@
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     
-    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .chart-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
-    .chart-content { display: flex; justify-content: space-between; align-items: flex-end; }
-    .chart-number-box { display:flex; align-items:baseline; gap:4px; }
-    .chart-number { font-size: 42px; font-weight: 900; letter-spacing: -2px; color: var(--text-primary); line-height: 1;}
-    .chart-unit { font-size: 12px; font-weight: 600; color: var(--text-secondary); padding-bottom: 6px;}
-    
-    .bars-container { display: flex; align-items: flex-end; gap: 6px; height: 45px; }
-    .bar { width: 10px; border-radius: 5px; background: var(--chart-bar); transition: height 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
-    .bar.active { background: var(--accent-gradient); }
-
-    .level-row { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-color); margin-top: 15px; }
-    .level-badge { background: var(--input-bg); color: var(--accent-color); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 16px; border: 1px solid var(--border-color); display:flex; align-items:center; gap:6px;}
-    
     .pm25-badge { background: rgba(255,255,255,0.05); border: 1px solid var(--gold-color); color: var(--gold-color); padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 25px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.15); letter-spacing: 0.5px;}
 
     .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
     .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .t-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0;}
     
     .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: var(--card-shadow); }
     .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
@@ -169,9 +124,21 @@
 
     .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
     .vip-card::before { content: ''; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px; background: var(--gold-glow); filter: blur(50px); border-radius: 50%; }
-    .shine-btn { position: relative; overflow: hidden; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; box-shadow: 0 8px 25px var(--gold-glow); border-radius: 16px;}
-    .shine-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%); transform: skewX(-25deg); animation: shine 3s infinite; }
-    @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+    
+    /* 🌟 前台專屬掃描器 Modal 樣式 */
+    .scanner-modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; align-items: center; justify-content: center;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .scanner-box {
+      width: 90%; max-width: 400px; background: #111; padding: 20px; border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0,230,118,0.2); border: 2px solid var(--accent-color);
+      text-align: center;
+    }
+    #frontend-reader { width: 100%; border-radius: 12px; overflow: hidden; }
+    .scanner-hint { color: var(--accent-color); font-weight: 800; font-size: 18px; margin-bottom: 15px; }
+
   </style>
 </head>
 <body>
@@ -220,7 +187,7 @@
       
       <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
       <input type="text" id="c-plate" placeholder="* 車牌號碼 (例：ABC-1234)">
-      <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里以下</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里以上</option></select>
+      <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
       <button class="btn-main" onclick="submitRegister('customer')">完成授權並啟用座艙</button>
     </div>
   </div>
@@ -286,7 +253,7 @@
       </div>
     </div>
     
-    <button class="btn-main" onclick="scanFilter()" style="margin-top:15px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描一維條碼 (UID) 啟用新濾網</button>
+    <button class="btn-main" onclick="openFrontendScanner()" style="margin-top:15px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描條碼 (UID) 啟用新濾網</button>
   </div>
 
   <div id="page-shop" class="page">
@@ -407,7 +374,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.30 (大滿配終極版)</div>
+    <div class="version-tag">System Ver. V5.4 (專業掃描器升級版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -416,6 +383,14 @@
     <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
     <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span><span class="nav-text">任務</span></div>
     <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
+  </div>
+
+  <div class="scanner-modal" id="frontend-scanner-modal">
+    <div class="scanner-box">
+      <div class="scanner-hint">請將鏡頭對準包裝上的一維條碼</div>
+      <div id="frontend-reader"></div>
+      <button class="btn-danger" style="margin-top: 25px;" onclick="closeFrontendScanner()">✖ 取消掃描</button>
+    </div>
   </div>
 
   <script>
@@ -518,7 +493,7 @@
     }
 
     // 導覽列切換
-    function showForm(role) { document.getElementById('form-customer').style.display = (role === 'customer') ? 'block' : 'none'; }
+    function showForm(role) { document.getElementById('form-customer').style.display = (role === 'customer') ? 'block' : 'none'; document.getElementById('form-garage').style.display = (role === 'garage') ? 'block' : 'none'; }
     function switchPage(id, el) { 
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
@@ -585,7 +560,7 @@
       try {
           if (type === 'filter') {
             const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
-            if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📦 [${d.uid}] 啟用新濾網</span><br><span style="font-size:11px;">${formatTaipeiTime(d.activated_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
+            if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">🔄 [${d.activation_type}] 啟用新濾網 (${d.uid})</span><br><span style="font-size:11px;">${formatTaipeiTime(d.activated_at)}</span></div>`; }); else html = '<p>尚無紀錄</p>';
           } else if (type === 'book') {
             const { data } = await supabaseClient.from('bookings').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
             if (data && data.length > 0) data.forEach(d => { html += `<div class="log-item"><span style="color:var(--text-primary); font-weight:600;">📍 預約：${d.garages.name} [${d.status}]</span><br><span style="font-size:11px;">預約時間: ${d.book_date}</span></div>`; }); else html = '<p>尚無紀錄</p>';
@@ -596,20 +571,52 @@
       } catch(e) { container.innerHTML = '<p style="color:red;">讀取失敗</p>'; }
     }
 
-    // 🌟 一維條碼掃描與雲端防呆防偽系統
-    async function scanFilter() {
-        try {
-            if (!liff.isInClient()) {
-                alert("⚠️ 掃描功能限定於手機 LINE App 內使用！\n請將此網址貼在 LINE 聊天室中點開。");
-                return;
+    // ==============================================
+    // 🌟 工業級 html5-qrcode 前台掃描引擎 (V5.4)
+    // ==============================================
+    let html5QrCodeFront = null;
+
+    function openFrontendScanner() {
+        document.getElementById('frontend-scanner-modal').style.display = 'flex';
+        if (!html5QrCodeFront) {
+            html5QrCodeFront = new Html5Qrcode("frontend-reader");
+        }
+
+        // 使用 280x120 的寬扁型框，專門優化一維條碼讀取
+        html5QrCodeFront.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 280, height: 120 } },
+            (decodedText, decodedResult) => {
+                // 成功掃描後立即停止並關閉視窗，然後處理驗證
+                html5QrCodeFront.stop().then(() => {
+                    document.getElementById('frontend-scanner-modal').style.display = 'none';
+                    processScannedUID(decodedText.trim());
+                });
+            },
+            (errorMessage) => {
+                // 掃描過程中的背景雜訊忽略
             }
+        ).catch((err) => {
+            alert("相機啟動失敗，請確認已允許瀏覽器或 LINE 存取相機權限！");
+            document.getElementById('frontend-scanner-modal').style.display = 'none';
+        });
+    }
 
-            const res = await liff.scanCodeV2(); 
-            if (!res || !res.value) return;
-            const scannedUid = res.value.trim();
+    function closeFrontendScanner() {
+        if (html5QrCodeFront && html5QrCodeFront.isScanning) {
+            html5QrCodeFront.stop().then(() => {
+                document.getElementById('frontend-scanner-modal').style.display = 'none';
+            }).catch(e => console.error(e));
+        } else {
+            document.getElementById('frontend-scanner-modal').style.display = 'none';
+        }
+    }
 
+    // 🌟 一維碼雲端防呆驗證
+    async function processScannedUID(scannedUid) {
+        try {
             if (!scannedUid.match(/^HP-\d+$/)) {
-                return alert("❌ 條碼格式錯誤！\n請對準濾網包裝上「HP-」開頭的一維條碼進行掃描。");
+                return alert("❌ 條碼格式錯誤！\n請對準濾網包裝上「HP-」開頭的條碼進行掃描。");
             }
 
             const { data: filterData, error: checkErr } = await supabaseClient.from('filters_uid').select('status, activated_by_uid').eq('uid', scannedUid).maybeSingle();
@@ -621,6 +628,7 @@
                 return alert("❌ 攔截！此濾網已經被啟用過了，無法重複綁定！");
             }
 
+            // 啟用程序
             await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
             
             const { error } = await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand, installed_location: currentLocName }).eq('uid', scannedUid);
@@ -631,9 +639,7 @@
             location.reload();
             
         } catch (err) {
-            if (err.message !== "scanCode:fail cancel" && !err.message.includes("cancel")) { 
-                alert("掃描發生異常：" + err.message); 
-            }
+            alert("掃描驗證發生異常：" + err.message); 
         }
     }
 
@@ -722,7 +728,6 @@
       } catch (e) { console.log("推播載入錯誤", e); }
     }
 
-    // 🌟 核心儀表板演算與狀態更新
     async function calculateDashboardStats() {
       try {
         if (!currentUser) return;
@@ -740,6 +745,7 @@
           const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
           
           let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
+          
           let aqi = envData.aqi || 50;
           let wRed = parseFloat(algoParams.weightRed || 1.8); let wOrange = parseFloat(algoParams.weightOrange || 1.4);
           let aqiRate = 1.0;
@@ -749,6 +755,7 @@
           else aqiRate = 0.8 + (aqi / 50) * 0.2;
           
           let carSizeRate = getCarSizeRate(currentUser.car_model);
+
           let currentTemp = envData.temp !== null ? parseFloat(envData.temp) : 25;
           let tempRate = 1.0;
           if (currentTemp > 28) tempRate = 1.2; 
@@ -806,7 +813,6 @@
       } catch (e) { console.log("Dashboard fetch error", e); }
     }
 
-    // 🌟 雙 AQI 環境數據抓取
     async function fetchEnvironmentalData(city, district) {
       try {
         let searchCity = normalizeCityName(city);
@@ -815,13 +821,11 @@
         if (!data) { const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; }
 
         envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
-        
         setElText('env-aqi', envData.aqi);
 
         let homeCityRaw = currentUser.city || '台北市';
         setElText('ui-home-city', homeCityRaw);
         
-        // 7日均值演算防呆
         let aqi7d = (data.aqi_7d_avg !== undefined && data.aqi_7d_avg !== null) ? data.aqi_7d_avg : data.aqi;
         setElText('env-home-aqi', Math.round(aqi7d));
 
@@ -847,22 +851,16 @@
       }
     }
 
-    // --------------------------------------------------
-    // 系統初始化核心
-    // --------------------------------------------------
     async function initApp() {
       try {
         await liff.init({ liffId: "2009187567-58hBrZRj" });
         if (!liff.isLoggedIn()) { liff.login(); return; }
-        
         const profile = await liff.getProfile();
         const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
-        
         if (data && data.name) {
           currentUser = data; 
-          
-          const navBar = document.getElementById('nav-bar');
-          if (navBar) navBar.style.display = 'flex';
+          const nBar = document.getElementById('nav-bar');
+          if(nBar) nBar.style.display = 'flex';
           
           if (data.role === 'customer') {
             setElText('ui-owner', `${data.name} 的專屬座艙`);
@@ -892,14 +890,12 @@
             if(data.yearly_mileage) setElVal('edit-mileage', data.yearly_mileage);
 
             switchPage('home', document.querySelector('.nav-item'));
-            getGPS(); 
-            // 這裡不預先載入 loadHistory()，等使用者點擊設定頁再載入，可優化首頁速度
+            getGPS(); loadHistory('filter');
           }
         } else { switchPage('register', null); }
       } catch (err) { console.log("LIFF 啟動失敗"); }
     }
     
-    // 啟動系統
     initApp();
   </script>
 </body>
