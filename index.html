@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.29 Tesla 經典 6D 矩陣 (防彈容錯版)
+       💎 V4.30 Tesla 經典大滿配版 (含雙 AQI 雷達)
        ========================================= */
     :root {
       --bg-color: #000000; 
@@ -66,15 +66,21 @@
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--accent-glow); } 70% { box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
 
     /* 🌟 經典大圓環與 PM2.5 徽章 */
-    .main-visual-container { display: flex; flex-direction: column; align-items: center; margin: 30px 0 25px 0; }
+    .main-visual-container { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
     .ring { width: 240px; height: 240px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index:2;}
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.3; z-index:1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     
     .pm25-badge { background: rgba(255,255,255,0.05); border: 1px solid var(--gold-color); color: var(--gold-color); padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 25px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.15); letter-spacing: 0.5px;}
 
+    /* 🌟 空汙雷達 (雙 AQI 框) */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; width: 100%;}
+    .env-box { background: var(--surface-color); border-radius: 12px; padding: 15px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center;}
+    .env-box h4 { margin: 0 0 8px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5;}
+    .env-box .val { font-size: 28px; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -1px;}
+
     /* 🌟 6D 功能矩陣 */
-    .tech-tag-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+    .tech-tag-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; margin-bottom: 25px; }
     .tech-tag { background: rgba(255,255,255,0.05); color: var(--text-secondary); padding: 12px 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 13px; font-weight: 600; white-space: nowrap;}
     
     /* 跑馬燈 */
@@ -157,6 +163,23 @@
         🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg
       </div>
 
+      <div class="grid-2">
+        <div class="env-box">
+          <h4>📍 即時所在地<br><span id="ui-loc-name" style="color:var(--text-primary); font-size:14px;">定位中...</span></h4>
+          <div style="display:flex; align-items:baseline; justify-content:center; gap:4px;">
+             <span style="font-size:12px; color:var(--text-secondary); font-weight:bold;">AQI</span>
+             <p class="val" id="env-aqi" style="color:var(--accent-color);">--</p>
+          </div>
+        </div>
+        <div class="env-box">
+          <h4>🏠 預設居住地 (7日均值)<br><span id="ui-home-city" style="color:var(--text-primary); font-size:14px;">讀取中...</span></h4>
+          <div style="display:flex; align-items:baseline; justify-content:center; gap:4px;">
+             <span style="font-size:12px; color:var(--text-secondary); font-weight:bold;">AQI</span>
+             <p class="val" id="env-home-aqi" style="color:var(--gold-color);">--</p>
+          </div>
+        </div>
+      </div>
+
       <div style="font-size:13px; color:var(--text-secondary); margin-top:15px; letter-spacing:1px;">
         濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span>
       </div>
@@ -198,15 +221,21 @@
       <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')">🤖 智能配對</div>
       <div class="tab-btn" id="tab-btn-manual" onclick="switchBookingTab('manual')">📋 全台保修廠</div>
     </div>
-    <div id="booking-smart"><div id="smart-match-result" class="card" style="text-align:center;">定位配對中...</div></div>
-    <div id="booking-manual" style="display: none;"><div id="garage-list">讀取清單中...</div></div>
+    <div id="booking-smart">
+        <div id="smart-match-result" class="card" style="text-align:center;">定位配對中...</div>
+    </div>
+    <div id="booking-manual" style="display: none;">
+        <div id="garage-list">讀取清單中...</div>
+    </div>
   </div>
 
   <div id="page-rewards" class="page">
     <h3 style="color:var(--text-primary); font-size:22px; margin-bottom:20px;">🎁 任務與獎勵</h3>
     <div class="vip-card">
       <h4 style="margin:0; color:var(--gold-color); font-size: 16px; letter-spacing: 2px;">VIP 專屬獎勵金</h4>
-      <h1 style="margin:20px 0; font-size: 56px; color: #FFF; text-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);"><span id="reward-balance">$0</span></h1>
+      <h1 style="margin:20px 0; font-size: 56px; color: #FFF; text-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);">
+          <span id="reward-balance">$0</span>
+      </h1>
       <p style="font-size:13px; color:#aaa; margin-bottom: 25px; line-height:1.6;">累積滿 $100 即可兌換 LINE Points<br>推薦無上限，獎金無上限！</p>
       <button class="btn-main" style="background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color:#000; box-shadow: 0 4px 15px var(--gold-glow);" onclick="redeemPoints()">申請提領點數</button>
     </div>
@@ -224,6 +253,7 @@
       <div class="tab-btn" id="tab-set-b" onclick="switchSetTab('b')">📜 歷史紀錄</div>
       <div class="tab-btn" id="tab-set-c" onclick="switchSetTab('c')">📄 數位合約</div>
     </div>
+
     <div id="set-content-a" style="display:block;">
       <div class="card">
         <label>車主姓名</label><input type="text" id="edit-name">
@@ -234,19 +264,21 @@
         <button class="btn-main" onclick="updateProfile()" style="margin-top:15px;">儲存變更</button>
       </div>
     </div>
+    
     <div id="set-content-b" style="display:none;">
       <div class="card">
         <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:15px;"><option value="filter">🔄 濾網更換與啟用紀錄</option><option value="book">📍 保修廠預約紀錄</option></select>
         <div id="history-container" style="max-height: 350px; overflow-y: auto;">讀取中...</div>
       </div>
     </div>
+    
     <div id="set-content-c" style="display:none;">
       <div class="card">
           <h4 style="margin:0 0 10px 0; color:var(--accent-color); font-size:18px;">📄 HYPASS 數位保固</h4>
           <p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--text-primary); font-weight:bold; font-size:16px;"></span></p>
       </div>
     </div>
-    <div class="version-tag">System Ver. V4.29 (防彈修復版)</div>
+    <div class="version-tag">System Ver. V4.30 (終極滿配防護版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -268,6 +300,13 @@
         if (el) el.value = val;
     }
 
+    // 捕捉全域錯誤，防止白畫面
+    window.onerror = function(msg, url, line) { 
+        console.error("System Error:", msg, "at line:", line); 
+        alert("系統發生暫時性異常，正在為您嘗試恢復，請稍後再試。 (" + msg + ")");
+        return false; 
+    };
+
     // Supabase 初始化
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     
@@ -276,16 +315,45 @@
     let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
     const carData = { "Toyota": ["RAV4", "Corolla Cross", "Altis", "其他"], "Honda": ["CR-V", "HR-V", "Fit", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他品牌"] };
 
+    // --------------------------------------------------
+    // 工具函數區
+    // --------------------------------------------------
     function formatTaipeiTime(dateString) { 
-        try { if (!dateString) return '-'; const d = new Date(dateString); if (isNaN(d.getTime())) return '-'; return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0'); } catch(e){ return '-';} 
+        try { 
+            if (!dateString) return '-'; 
+            const d = new Date(dateString); 
+            if (isNaN(d.getTime())) return '-'; 
+            return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0'); 
+        } catch(e) { 
+            return '-';
+        } 
     }
+    
     function getCarSizeRate(model) { 
-        if (!model) return 1.0; const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V']; const sModels = ['Yaris', 'Fit', 'Swift']; if (lModels.includes(model)) return 1.3; if (sModels.includes(model)) return 0.8; return 1.0; 
+        if (!model) return 1.0; 
+        const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V']; 
+        const sModels = ['Yaris', 'Fit', 'Swift']; 
+        if (lModels.includes(model)) return 1.3; 
+        if (sModels.includes(model)) return 0.8; 
+        return 1.0; 
     }
 
+    function normalizeCityName(cityStr) { 
+        return cityStr ? cityStr.replace(/臺/g, '台') : ''; 
+    }
+
+    // --------------------------------------------------
+    // UI 控制與互動
+    // --------------------------------------------------
     function updateCarModels(brandId, modelId) { 
-      const bSelect = document.getElementById(brandId).value; const mSelect = document.getElementById(modelId); mSelect.innerHTML = '<option value="">* 選擇車型</option>'; 
-      if (carData[bSelect]) carData[bSelect].forEach(item => { mSelect.innerHTML += `<option value="${item}">${item}</option>`; });
+      const bSelect = document.getElementById(brandId).value; 
+      const mSelect = document.getElementById(modelId); 
+      mSelect.innerHTML = '<option value="">* 選擇車型</option>'; 
+      if (carData[bSelect]) {
+          carData[bSelect].forEach(item => { 
+              mSelect.innerHTML += `<option value="${item}">${item}</option>`; 
+          });
+      }
     }
 
     function showForm(role) { 
@@ -295,9 +363,11 @@
     function switchPage(id, el) { 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+        
         const targetPage = document.getElementById('page-' + id);
         if (targetPage) targetPage.classList.add('active'); 
         if (el) el.classList.add('active'); 
+        
         if (id === 'book') loadGarages(); 
         if (id === 'settings') loadHistory('filter');
     }
@@ -316,50 +386,99 @@
         const manual = document.getElementById('booking-manual');
         if(smart) smart.style.display = (t === 'smart') ? 'block' : 'none'; 
         if(manual) manual.style.display = (t === 'manual') ? 'block' : 'none'; 
-        document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : ''}`; 
-        document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : ''}`; 
+        
+        const btnSmart = document.getElementById('tab-btn-smart');
+        const btnManual = document.getElementById('tab-btn-manual');
+        if(btnSmart) btnSmart.className = `tab-btn ${t === 'smart' ? 'active' : ''}`; 
+        if(btnManual) btnManual.className = `tab-btn ${t === 'manual' ? 'active' : ''}`; 
     }
 
+    // --------------------------------------------------
+    // 設定與基本資料
+    // --------------------------------------------------
     async function updateProfile() {
       try {
-          const payload = { name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, license_plate: document.getElementById('edit-plate').value, yearly_mileage: parseInt(document.getElementById('edit-mileage').value) };
+          const payload = { 
+              name: document.getElementById('edit-name').value, 
+              phone: document.getElementById('edit-phone').value, 
+              license_plate: document.getElementById('edit-plate').value, 
+              yearly_mileage: parseInt(document.getElementById('edit-mileage').value) 
+          };
           if (!payload.name || !payload.phone || !payload.license_plate) return alert("姓名、電話、車牌不可為空！");
+          
           const { error } = await supabaseClient.from('users').update(payload).eq('line_uid', currentUser.line_uid); 
-          if (error) throw new Error(error.message); alert('✅ 成功更新資料！'); location.reload();
-      } catch (err) { alert("更新失敗：" + err.message); }
+          if (error) throw new Error(error.message); 
+          
+          alert('✅ 成功更新資料！'); 
+          location.reload();
+      } catch (err) { 
+          alert("更新失敗：" + err.message); 
+      }
     }
 
     async function loadHistory(type) {
       const container = document.getElementById('history-container'); 
       if(!container) return;
       container.innerHTML = '讀取中...';
+      
       try {
           if (type === 'filter') {
             const { data, error } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
             if (error) throw new Error(error.message);
+            
             let html = '';
-            if (data && data.length > 0) { data.forEach(d => { html += `<div class="log-item"><b>📦 濾網 UID：${d.uid}</b><br><span style="color:var(--accent-color);">啟用時間：${formatTaipeiTime(d.activated_at)}</span><br>狀態：${d.status === 'activated' ? '🟢 服役中' : '⚪️ 已替換'}</div>`; }); } else { html = '<div class="log-item">尚無更換紀錄</div>'; }
+            if (data && data.length > 0) { 
+                data.forEach(d => { 
+                    html += `<div class="log-item"><b>📦 濾網 UID：${d.uid}</b><br><span style="color:var(--accent-color);">啟用時間：${formatTaipeiTime(d.activated_at)}</span><br>狀態：${d.status === 'activated' ? '🟢 服役中' : '⚪️ 已替換'}</div>`; 
+                }); 
+            } else { 
+                html = '<div class="log-item">尚無更換紀錄</div>'; 
+            }
             container.innerHTML = html;
+            
           } else if (type === 'book') {
             const { data, error } = await supabaseClient.from('bookings').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
             if (error) throw new Error(error.message);
+            
             let html = '';
-            if (data && data.length > 0) { data.forEach(d => { html += `<div class="log-item"><b>📍 ${d.garages?.name || '保修廠'}</b><br>預約時間：${d.book_date}<br>狀態：${d.status}</div>`; }); } else { html = '<div class="log-item">尚無預約紀錄</div>'; }
+            if (data && data.length > 0) { 
+                data.forEach(d => { 
+                    html += `<div class="log-item"><b>📍 ${d.garages?.name || '保修廠'}</b><br>預約時間：${d.book_date}<br>狀態：${d.status}</div>`; 
+                }); 
+            } else { 
+                html = '<div class="log-item">尚無預約紀錄</div>'; 
+            }
             container.innerHTML = html;
           }
-      } catch(e) { container.innerHTML = `<div class="log-item" style="color:red;">載入失敗：${e.message}</div>`; }
+      } catch(e) { 
+          container.innerHTML = `<div class="log-item" style="color:red;">載入失敗：${e.message}</div>`; 
+      }
     }
 
+    // --------------------------------------------------
+    // 保修廠清單與預約
+    // --------------------------------------------------
     async function loadGarages() {
       try {
           const { data, error } = await supabaseClient.from('garages').select('*').eq('status', 'active');
           if (error) throw new Error(error.message);
+          
           let html = '';
+          const smartBox = document.getElementById('smart-match-result');
+          const manualBox = document.getElementById('garage-list');
+          
           if (data && data.length > 0) {
-            document.getElementById('smart-match-result').innerHTML = `為您配對到最近的保修廠：<br><h3 style="color:var(--accent-color);">${data[0].name}</h3><p>${data[0].city}${data[0].address}</p><button class="btn-main" onclick="bookGarage(${data[0].id})">立即預約</button>`;
-            data.forEach(g => { html += `<div class="card" style="margin-bottom:10px;"><h4 style="margin:0 0 5px 0; color:var(--text-primary);">${g.name}</h4><p style="font-size:13px; color:var(--text-secondary); margin:0 0 10px 0;">${g.city}${g.address}</p><button class="btn-main" style="padding:10px; font-size:14px;" onclick="bookGarage(${g.id})">預約此廠</button></div>`; });
-          } else { html = '目前尚無合作保修廠'; document.getElementById('smart-match-result').innerHTML = '目前尚無配對結果'; }
-          document.getElementById('garage-list').innerHTML = html;
+            if(smartBox) {
+                smartBox.innerHTML = `為您配對到最近的保修廠：<br><h3 style="color:var(--accent-color);">${data[0].name}</h3><p>${data[0].city}${data[0].address}</p><button class="btn-main" onclick="bookGarage(${data[0].id})">立即預約</button>`;
+            }
+            data.forEach(g => { 
+                html += `<div class="card" style="margin-bottom:10px;"><h4 style="margin:0 0 5px 0; color:var(--text-primary);">${g.name}</h4><p style="font-size:13px; color:var(--text-secondary); margin:0 0 10px 0;">${g.city}${g.address}</p><button class="btn-main" style="padding:10px; font-size:14px;" onclick="bookGarage(${g.id})">預約此廠</button></div>`; 
+            });
+          } else { 
+            html = '目前尚無合作保修廠'; 
+            if(smartBox) smartBox.innerHTML = '目前尚無配對結果'; 
+          }
+          if(manualBox) manualBox.innerHTML = html;
       } catch(e) { 
           const el = document.getElementById('garage-list');
           if(el) el.innerHTML = `<div style="color:red;">清單載入失敗</div>`; 
@@ -372,19 +491,30 @@
       try {
           const payload = { user_uid: currentUser.line_uid, garage_id: garageId, book_date: date, status: 'pending' };
           const { error } = await supabaseClient.from('bookings').insert([payload]);
-          if (error) throw error; alert("✅ 預約請求已送出，請等候保修廠聯絡確認！");
-      } catch(e) { alert("系統異常：" + e.message); }
+          if (error) throw error; 
+          
+          alert("✅ 預約請求已送出，請等候保修廠聯絡確認！");
+      } catch(e) { 
+          alert("系統異常：" + e.message); 
+      }
     }
 
+    // --------------------------------------------------
+    // MGM 任務與獎勵
+    // --------------------------------------------------
     function generateMGM() {
         if (!currentUser) return alert("請先登入");
         const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
         alert("複製成功！請將以下專屬連結傳給車友：\n\n" + link + "\n\n車友透過此連結啟用濾網，您即可獲得獎金！");
     }
     
-    async function redeemPoints() { alert("提領申請已送出！總部審核後將會派發 LINE Points 給您。"); }
+    async function redeemPoints() { 
+        alert("提領申請已送出！總部審核後將會派發 LINE Points 給您。"); 
+    }
 
-    // 🌟 一維條碼掃描與雲端防呆防偽系統
+    // --------------------------------------------------
+    // 🌟 一維條碼掃描與防呆
+    // --------------------------------------------------
     async function scanFilter() {
         try {
             if (!liff.isInClient()) {
@@ -409,9 +539,21 @@
                 return alert("❌ 攔截！此濾網已經被啟用過了，無法重複綁定！");
             }
 
-            await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
+            await supabaseClient.from('filters_uid')
+                .update({ status: 'replaced', deactivated_at: new Date() })
+                .eq('activated_by_uid', currentUser.line_uid)
+                .eq('status', 'activated');
             
-            const { error } = await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date(), activation_type: 'DIY', installed_car_model: currentUser.car_brand, installed_location: currentLocName }).eq('uid', scannedUid);
+            const { error } = await supabaseClient.from('filters_uid')
+                .update({ 
+                    status: 'activated', 
+                    activated_by_uid: currentUser.line_uid, 
+                    activated_at: new Date(), 
+                    activation_type: 'DIY', 
+                    installed_car_model: currentUser.car_brand, 
+                    installed_location: currentLocName 
+                })
+                .eq('uid', scannedUid);
             
             if (error) throw error;
             
@@ -425,26 +567,34 @@
         }
     }
 
-    // 🌟 經典版面專屬：演算法與狀態更新
+    // --------------------------------------------------
+    // 🌟 核心儀表板演算與狀態更新
+    // --------------------------------------------------
     async function calculateDashboardStats() {
         try {
             if (!currentUser) return;
             
             const badge = document.getElementById('ui-shield-badge'); 
-            const badgeText = document.getElementById('ui-shield-text'); 
             const pulseDot = document.getElementById('ui-pulse-dot');
             const healthEl = document.getElementById('ui-health');
-            const dateEl = document.getElementById('ui-filter-date');
-            const pm25El = document.getElementById('ui-pm25');
             
-            const { data: filter, error } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).maybeSingle();
+            const { data: filter, error } = await supabaseClient
+                .from('filters_uid')
+                .select('activated_at')
+                .eq('activated_by_uid', currentUser.line_uid)
+                .eq('status', 'activated')
+                .order('activated_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+                
             if (error) throw error;
             
             if (filter && filter.activated_at) {
-                if(dateEl) dateEl.innerText = formatTaipeiTime(filter.activated_at);
-                const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
+                setElText('ui-filter-date', formatTaipeiTime(filter.activated_at));
                 
+                const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
                 const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
+                
                 let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
                 let aqiRate = (envData.aqi > 150) ? 1.8 : (envData.aqi > 100 ? 1.4 : 1.0);
                 let carSizeRate = getCarSizeRate(currentUser.car_model);
@@ -457,52 +607,71 @@
                 if(healthEl) healthEl.innerText = `${health}%`;
                 
                 if (health >= 60) { 
-                    if(badgeText) badgeText.innerText = '極效防護中'; 
+                    setElText('ui-shield-text', '極效防護中');
                     if(healthEl) healthEl.style.color = 'var(--accent-color)';
                     if(badge) { badge.style.borderColor = 'var(--accent-color)'; badge.style.color = 'var(--accent-color)'; }
                     if(pulseDot) { pulseDot.style.background = 'var(--accent-color)'; pulseDot.style.animation = 'pulse 2s infinite'; }
                 } else if (health >= 30) { 
-                    if(badgeText) badgeText.innerText = '穩定監控中'; 
+                    setElText('ui-shield-text', '穩定監控中');
                     if(healthEl) healthEl.style.color = 'var(--accent-color)';
                     if(badge) { badge.style.borderColor = 'var(--accent-color)'; badge.style.color = 'var(--accent-color)'; }
                     if(pulseDot) { pulseDot.style.background = 'var(--accent-color)'; pulseDot.style.animation = 'pulse 2s infinite'; }
                 } else if (health > 0) { 
-                    if(badgeText) badgeText.innerText = '效能衰退中'; 
+                    setElText('ui-shield-text', '效能衰退中');
                     if(healthEl) healthEl.style.color = '#f59e0b';
                     if(badge) { badge.style.borderColor = '#f59e0b'; badge.style.color = '#f59e0b'; }
                     if(pulseDot) { pulseDot.style.background = '#f59e0b'; pulseDot.style.animation = 'pulse 2s infinite'; }
                 } else { 
-                    if(badgeText) badgeText.innerText = '請即刻更換'; 
+                    setElText('ui-shield-text', '請即刻更換');
                     if(healthEl) healthEl.style.color = '#ef4444';
                     if(badge) { badge.style.borderColor = '#ef4444'; badge.style.color = '#ef4444'; }
                     if(pulseDot) { pulseDot.style.background = '#ef4444'; pulseDot.style.animation = 'none'; }
                 }
                 
                 let totalPm25 = Math.round(days * parseFloat(algoParams.basePm25 || 1250) * totalMultiplier);
-                if(pm25El) pm25El.innerText = totalPm25.toLocaleString();
+                setElText('ui-pm25', totalPm25.toLocaleString());
 
             } else {
-                if(dateEl) dateEl.innerText = '尚未啟用';
+                setElText('ui-filter-date', '尚未啟用');
                 if(healthEl) healthEl.innerText = '--%';
-                if(pm25El) pm25El.innerText = '0';
-                if(badgeText) badgeText.innerText = '系統待命'; 
+                setElText('ui-pm25', '0');
+                setElText('ui-shield-text', '系統待命');
                 if(badge) { badge.style.borderColor = '#555555'; badge.style.color = '#555555'; }
                 if(pulseDot) { pulseDot.style.background = '#555555'; pulseDot.style.animation = 'none'; }
             }
-        } catch(e) { console.error("Dashboard calculation error:", e); }
+        } catch(e) { 
+            console.error("Dashboard calculation error:", e); 
+        }
     }
 
-    // 🌟 背景抓取環境數據 (不顯示 AQI 視窗，但保留演算法運作)
+    // --------------------------------------------------
+    // 🌟 雙 AQI 環境數據抓取
+    // --------------------------------------------------
     async function fetchEnvironmentalData(city, district) {
         try {
             let searchCity = normalizeCityName(city);
             let { data } = await supabaseClient.from('env_cache').select('*').eq('city', searchCity).eq('district', district).maybeSingle();
+            
             if (!data) { 
                 const { data: fallback } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); 
                 data = fallback || { temp: 25, hum: 60, aqi: 50, pm25: 15 }; 
             }
 
-            envData.temp = data.temp; envData.hum = data.hum; envData.aqi = data.aqi; envData.pm25 = data.pm25;
+            envData.temp = data.temp; 
+            envData.hum = data.hum; 
+            envData.aqi = data.aqi; 
+            envData.pm25 = data.pm25;
+            
+            // 寫入即時 AQI 與所在地
+            setElText('env-aqi', envData.aqi);
+            
+            let homeCityRaw = currentUser.city || '台北市'; 
+            setElText('ui-home-city', homeCityRaw);
+            
+            // 寫入預設居住地 7 日均值 (防呆：如果資料庫沒有算出 aqi_7d_avg，先用當下的 aqi 補上)
+            let aqi7d = (data.aqi_7d_avg !== undefined && data.aqi_7d_avg !== null) ? data.aqi_7d_avg : data.aqi;
+            setElText('env-home-aqi', Math.round(aqi7d));
+
             calculateDashboardStats();
             
         } catch (e) { 
@@ -511,24 +680,36 @@
         }
     }
 
+    // --------------------------------------------------
+    // GPS 定位服務
+    // --------------------------------------------------
     function getGPS() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((pos) => {
                 fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
                 .then(res => res.json())
                 .then(d => {
-                    let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
+                    let city = d.address.city || d.address.county || ''; 
+                    let district = d.address.suburb || d.address.town || '';
                     currentLocName = `${city}${district}`;
+                    
+                    setElText('ui-loc-name', currentLocName);
                     fetchEnvironmentalData(city, district);
-                }).catch(e => { fetchEnvironmentalData('', ''); });
-            }, () => { fetchEnvironmentalData('', ''); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); 
+                }).catch(e => { 
+                    setElText('ui-loc-name', '定位完成');
+                    fetchEnvironmentalData('', ''); 
+                });
+            }, () => { 
+                setElText('ui-loc-name', '定位失敗');
+                fetchEnvironmentalData('', ''); 
+            }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }); 
         } else {
             fetchEnvironmentalData('', '');
         }
     }
 
     // --------------------------------------------------
-    // 系統初始化核心
+    // 系統初始化登入核心
     // --------------------------------------------------
     async function initApp() {
         try {
