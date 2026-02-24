@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>HYPASS V4.16 總部戰情室</title>
+  <title>HYPASS V4.17 總部戰情室</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
+    /* 🌟 已經將版面樣式完全退回您習慣的原始版本，移除手機版變形設定 */
     body { font-family: sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
     .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; overflow-y: auto; flex-shrink:0; }
     .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; border-left: 4px solid transparent; }
@@ -40,7 +41,6 @@
     .param-group input { width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: right; font-family: monospace; font-size: 14px;}
     .param-group select { width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight:bold; cursor:pointer;}
 
-    /* 出貨掃描站樣式 */
     .scan-container { display: flex; gap: 20px; background: #1e1e1e; padding: 20px; border-radius: 8px; border-left: 5px solid #00D100; align-items: flex-start; flex-wrap: wrap;}
     .scan-input-group { flex: 1; min-width: 250px; }
     .scan-input { width: 100%; padding: 18px; font-size: 20px; border-radius: 5px; border: 2px solid #555; background: #000; color: #00D100; font-weight: bold; margin-bottom: 10px; box-sizing: border-box; transition: all 0.3s; }
@@ -48,22 +48,13 @@
     .scan-input:disabled { background: #333; color: #888; cursor: not-allowed; border-color: #444; }
     .scan-label { color: #aaa; font-size: 13px; font-weight: bold; margin-bottom: 5px; display: block; }
     
-    /* 鏡頭區塊 */
     #reader-container { width: 100%; margin-top: 15px; display: none; background:#000; padding:10px; border-radius:8px;}
-    #reader { width: 100%; max-width: 500px; margin: 0 auto; }
+    #reader { width: 100%; max-width: 400px; margin: 0 auto; overflow: hidden; border-radius: 8px;}
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
     .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 500px; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     .modal-content textarea { width: 100%; height: 120px; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; font-family: sans-serif; font-size: 14px; box-sizing: border-box; resize: vertical; }
     .modal-content select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-    
-    @media (max-width: 768px) {
-        body { flex-direction: column; }
-        .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; white-space: nowrap; padding-bottom:10px;}
-        .nav-btn { display: inline-block; width: auto; border-left: none; border-bottom: 4px solid transparent; padding: 10px 15px;}
-        .nav-btn.active { border-bottom-color: #00D100; border-left:none;}
-        .scan-container { flex-direction: column; }
-    }
   </style>
 </head>
 <body>
@@ -91,7 +82,7 @@
       
       <div id="reader-container">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <span style="color:#00D100; font-weight:bold;" id="camera-target-hint">正在掃描...</span>
+          <span style="color:#00D100; font-weight:bold;" id="camera-target-hint">正在啟動相機...</span>
           <button class="btn btn-danger" onclick="stopCamera()">關閉相機</button>
         </div>
         <div id="reader"></div>
@@ -160,7 +151,6 @@
           <div class="param-group"><label>基準 PM2.5 攔截量 (µg)</label><input type="number" id="param-base-pm25" value="1250"></div>
           <div class="param-group"><label>🔴 紫爆加權係數 (AQI>150)</label><input type="number" step="0.1" id="param-weight-red" value="1.8"></div>
           <div class="param-group"><label>🟠 橘害加權係數 (AQI>100)</label><input type="number" step="0.1" id="param-weight-orange" value="1.4"></div>
-          
           <div class="param-group"><label>🌡️ 極端溫濕度加權係數</label><input type="number" step="0.1" id="param-weight-temp" value="1.2"></div>
 
           <h4 style="margin: 20px 0 5px 0; color:#d32f2f; font-size:14px;">▍系統自動化與預警推播</h4>
@@ -289,9 +279,9 @@
     }
 
     // ----------------------------------------------------
-    // 🌟 相機掃描引擎邏輯
+    // 🌟 相機掃描引擎邏輯 (修復 iOS / 瀏覽器相容性)
     // ----------------------------------------------------
-    let html5QrcodeScanner = null;
+    let html5QrCode;
     let cameraTarget = ''; 
 
     function startCamera(target) {
@@ -299,35 +289,52 @@
       document.getElementById('reader-container').style.display = 'block';
       document.getElementById('camera-target-hint').innerText = target === 'uid' ? '正在掃描：第一步 濾網 UID' : '正在掃描：第二步 訂單條碼';
       
-      if(html5QrcodeScanner) { stopCamera(); } 
+      if (!html5QrCode) {
+          html5QrCode = new Html5Qrcode("reader");
+      }
+      
+      if (html5QrCode.isScanning) {
+          html5QrCode.stop().then(startScanProcess).catch(err => console.log(err));
+      } else {
+          startScanProcess();
+      }
+    }
 
-      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    function startScanProcess() {
+        // 強制要求後置鏡頭 (environment)
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText, decodedResult) => {
+                // 掃描成功回呼
+                playSuccessBeep();
+                stopCamera(); 
+                if (cameraTarget === 'uid') {
+                   document.getElementById('scan-uid-input').value = decodedText;
+                   currentScanUid = decodedText;
+                   document.getElementById('scan-status-msg').innerHTML = `<span style='color:#FF9800;'>📌 UID 已確認，請接著掃描訂單...</span>`;
+                   document.getElementById('scan-order-input').focus();
+                } else if (cameraTarget === 'order') {
+                   document.getElementById('scan-order-input').value = decodedText;
+                   processOrder(decodedText);
+                }
+            },
+            (errorMessage) => { /* 掃描中忽略錯誤 */ }
+        ).catch((err) => {
+            alert("相機啟動失敗 ❌\n\n原因：瀏覽器阻擋或未授權。\n解決方式：請確認您使用「Chrome」或「Safari」瀏覽器打開此網頁，並允許網站存取您的相機。");
+            document.getElementById('reader-container').style.display = 'none';
+        });
     }
 
     function stopCamera() {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
-        html5QrcodeScanner = null;
-      }
-      document.getElementById('reader-container').style.display = 'none';
-    }
-
-    function onScanSuccess(decodedText, decodedResult) {
-      playSuccessBeep();
-      stopCamera(); 
-      
-      if (cameraTarget === 'uid') {
-         document.getElementById('scan-uid-input').value = decodedText;
-         currentScanUid = decodedText;
-         document.getElementById('scan-status-msg').innerHTML = `<span style='color:#FF9800;'>📌 UID 已確認，請接著掃描訂單...</span>`;
-         document.getElementById('scan-order-input').focus();
-      } else if (cameraTarget === 'order') {
-         document.getElementById('scan-order-input').value = decodedText;
-         processOrder(decodedText);
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('reader-container').style.display = 'none';
+        }).catch(err => console.log(err));
+      } else {
+        document.getElementById('reader-container').style.display = 'none';
       }
     }
-    function onScanFailure(error) { }
 
     // ----------------------------------------------------
     // 🌟 實體條碼槍邏輯與防呆
@@ -422,8 +429,9 @@
       }
     }
 
+
     // ----------------------------------------------------
-    // 🌟 參數存取邏輯 (加入溫濕度、更新頻率與推播設定)
+    // 🌟 參數存取與大數據邏輯
     // ----------------------------------------------------
     function loadAlgorithmParams() {
       const params = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
@@ -533,10 +541,10 @@
       renderMonitorTable(filtered);
     }
     async function forceUpdateCache() {
-      const btn = document.getElementById('btn-force-update'); btn.innerText = '⏳ 368鄉鎮大數據抓取中 (請耐心等待約 40 秒)...'; btn.disabled = true;
+      const btn = document.getElementById('btn-force-update'); btn.innerText = '⏳ 368鄉鎮大數據抓取中 (約 40 秒)...'; btn.disabled = true;
       try {
         const res = await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/webhook?action=update_cache', { method: 'POST' });
-        if (res.ok) { alert('✅ 全台 368 鄉鎮快取池更新成功！'); loadMonitor(); } else { alert('⚠️ 氣象局連線逾時，但已抓取部分資料，請重整畫面。'); loadMonitor(); }
+        if (res.ok) { alert('✅ 全台 368 鄉鎮快取池更新成功！'); loadMonitor(); } else { alert('⚠️ 氣象局連線逾時，請重整畫面。'); loadMonitor(); }
       } catch (e) { alert('呼叫失敗：' + e.message); } finally { btn.innerText = '⚡ 強制重新抓取 (約40秒)'; btn.disabled = false; }
     }
 
