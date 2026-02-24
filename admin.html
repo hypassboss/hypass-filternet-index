@@ -259,10 +259,7 @@
   </div>
 
   <script>
-    const supabaseClient = supabase.createClient(
-      'https://qznvabjtxcbffjryfgqi.supabase.co', 
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
-    );
+    const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
     let fullMonitorData = []; 
 
@@ -305,7 +302,6 @@
       try {
           document.getElementById('crm-table').querySelector('tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; font-weight:bold; color:#1976d2;">🚀 系統並行加速讀取大數據中...</td></tr>';
           
-          // ⚡ 同時發出三個網路請求，節省 60% 載入時間
           const pUsers = supabaseClient.from('users').select('*').eq('role', 'customer').order('created_at', { ascending: false });
           const pFilters = supabaseClient.from('filters_uid').select('activated_by_uid').not('activated_by_uid', 'is', null);
           const pBookings = supabaseClient.from('bookings').select('user_uid').then(res => res).catch(() => ({ data: [] }));
@@ -408,9 +404,6 @@
     }
     function closeCustomerModal() { document.getElementById('customer-modal').style.display = 'none'; }
 
-    // ==========================================
-    // 🌟 UID 庫存管理 (開放修改與防呆刪除)
-    // ==========================================
     async function generateSequentialUIDs() { const count = parseInt(document.getElementById('uid-gen-count').value) || 50; if(count <= 0 || count > 500) return alert("請輸入 1 ~ 500 之間的數量"); const { data } = await supabaseClient.from('filters_uid').select('uid').order('uid', {ascending: false}).limit(200); let maxNum = 0; if (data && data.length > 0) { data.forEach(d => { const match = d.uid.match(/^HP-(\d+)$/); if (match) { const num = parseInt(match[1], 10); if (num > maxNum) maxNum = num; } }); } let ins = []; for(let i=1; i<=count; i++) { ins.push({ uid: 'HP-' + (maxNum + i).toString().padStart(6, '0') }); } await supabaseClient.from('filters_uid').insert(ins); alert(`✅ 成功接續產出 ${count} 組新流水號！(迄至 ${ins[ins.length-1].uid})`); loadUIDs(); }
     
     async function loadUIDs() { 
@@ -456,9 +449,6 @@
         if (error) alert("刪除失敗：" + error.message); else { alert("✅ 刪除成功！"); loadUIDs(); }
     }
 
-    // ==========================================
-    // 🌟 相機掃描引擎邏輯 (防呆無間斷版)
-    // ==========================================
     let html5QrCode = null; let scanState = 'WAITING_UID'; let currentScanUid = ''; let isProcessingDB = false;    
     function playBeep() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gainNode = ctx.createGain(); osc.connect(gainNode); gainNode.connect(ctx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(1500, ctx.currentTime); gainNode.gain.setValueAtTime(0.1, ctx.currentTime); osc.start(); osc.stop(ctx.currentTime + 0.1); } catch(e){} }
     function playDingDong() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc1 = ctx.createOscillator(); const gain1 = ctx.createGain(); osc1.type = 'sine'; osc1.frequency.setValueAtTime(880, ctx.currentTime); gain1.gain.setValueAtTime(0.1, ctx.currentTime); osc1.connect(gain1); gain1.connect(ctx.destination); osc1.start(); osc1.stop(ctx.currentTime + 0.15); setTimeout(() => { const osc2 = ctx.createOscillator(); const gain2 = ctx.createGain(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(1108.73, ctx.currentTime); gain2.gain.setValueAtTime(0.1, ctx.currentTime); osc2.connect(gain2); gain2.connect(ctx.destination); osc2.start(); osc2.stop(ctx.currentTime + 0.3); }, 150); } catch(e){} }
@@ -526,9 +516,6 @@
       }
     }
 
-    // ----------------------------------------------------
-    // 其餘系統功能 (防呆重構)
-    // ----------------------------------------------------
     function loadAlgorithmParams() {
       const params = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
       if (params.baseWear) document.getElementById('param-base-wear').value = params.baseWear;
