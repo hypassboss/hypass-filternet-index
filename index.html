@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.25 Tesla 極簡座艙 (真實大數據均值版)
+       💎 V4.26 Tesla 極簡座艙 (防彈容錯版)
        ========================================= */
     :root {
       --bg-color: #000000; --surface-color: #111111; --border-color: #333333;
@@ -234,14 +234,14 @@
         <select id="history-type" onchange="loadHistory(this.value)" style="margin-bottom:15px;">
           <option value="filter">🔄 濾網更換與啟用紀錄</option><option value="book">📍 保修廠預約紀錄</option>
         </select>
-        <div id="history-container" style="max-height: 350px; overflow-y: auto;">載入中...</div>
+        <div id="history-container" style="max-height: 350px; overflow-y: auto;">讀取中...</div>
       </div>
     </div>
     
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--accent-color); font-size:18px;">📄 HYPASS 數位保固</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--text-primary); font-weight:bold; font-size:16px;"></span></p></div>
     </div>
-    <div class="version-tag">System Ver. V4.25</div>
+    <div class="version-tag">System Ver. V4.26 (防護升級版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -253,7 +253,12 @@
   </div>
 
   <script>
-    window.onerror = function(msg, url, line) { console.log("Error:", msg, "at line:", line); return false; };
+    // 🛡️ 軍規級錯誤捕捉，避免白畫面
+    window.onerror = function(msg, url, line) { 
+        console.error("System Error:", msg, "at line:", line); 
+        alert("系統發生暫時性異常，正在為您嘗試恢復，請稍後再試。 (" + msg + ")");
+        return false; 
+    };
 
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null; let currentLocName = '台灣'; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
@@ -261,17 +266,14 @@
     const carData = { "Toyota": ["RAV4", "Corolla Cross", "Altis", "其他"], "Honda": ["CR-V", "HR-V", "Fit", "其他"], "Tesla": ["Model Y", "Model 3", "其他"], "Other": ["其他品牌"] };
 
     function normalizeCityName(cityStr) { return cityStr ? cityStr.replace(/臺/g, '台') : ''; }
-    function formatTaipeiTime(dateString) { return dateString ? new Date(dateString).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }) : '-'; }
-    function getCarSizeRate(model) {
-        if (!model) return 1.0; 
-        const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V']; const sModels = ['Yaris', 'Fit', 'Swift'];
-        if (lModels.includes(model)) return 1.3; if (sModels.includes(model)) return 0.8; return 1.0;
-    }
+    function formatTaipeiTime(dateString) { try { if (!dateString) return '-'; const d = new Date(dateString); if (isNaN(d.getTime())) return '-'; return d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }); } catch(e){ return '-';} }
+    function getCarSizeRate(model) { if (!model) return 1.0; const lModels = ['Model X', 'Model Y', 'RAV4', 'CR-V']; const sModels = ['Yaris', 'Fit', 'Swift']; if (lModels.includes(model)) return 1.3; if (sModels.includes(model)) return 0.8; return 1.0; }
 
     function updateCarModels(brandId, modelId) { 
       const bSelect = document.getElementById(brandId).value; const mSelect = document.getElementById(modelId); mSelect.innerHTML = '<option value="">* 選擇車型</option>'; 
       if (carData[bSelect]) carData[bSelect].forEach(item => { mSelect.innerHTML += `<option value="${item}">${item}</option>`; });
     }
+
     function showForm(role) { document.getElementById('form-customer').style.display = (role === 'customer') ? 'block' : 'none'; }
     function switchPage(id, el) { 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
@@ -284,48 +286,57 @@
     function switchSetTab(t) { ['a','b','c'].forEach(tab => { document.getElementById(`set-content-${tab}`).style.display = (t === tab) ? 'block' : 'none'; document.getElementById(`tab-set-${tab}`).className = `tab-btn ${t === tab ? 'active' : ''}`; }); }
     function switchBookingTab(t) { document.getElementById('booking-smart').style.display = (t === 'smart') ? 'block' : 'none'; document.getElementById('booking-manual').style.display = (t === 'manual') ? 'block' : 'none'; document.getElementById('tab-btn-smart').className = `tab-btn ${t === 'smart' ? 'active' : ''}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t === 'manual' ? 'active' : ''}`; }
 
+    // 🛡️ API 防護包覆 
     async function updateProfile() {
-      const payload = { name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, license_plate: document.getElementById('edit-plate').value, yearly_mileage: parseInt(document.getElementById('edit-mileage').value) };
-      if (!payload.name || !payload.phone || !payload.license_plate) return alert("姓名、電話、車牌不可為空！");
-      const { error } = await supabaseClient.from('users').update(payload).eq('line_uid', currentUser.line_uid); 
-      if (error) alert("更新失敗：" + error.message); else { alert('✅ 成功更新！'); location.reload(); }
+      try {
+          const payload = { name: document.getElementById('edit-name').value, phone: document.getElementById('edit-phone').value, license_plate: document.getElementById('edit-plate').value, yearly_mileage: parseInt(document.getElementById('edit-mileage').value) };
+          if (!payload.name || !payload.phone || !payload.license_plate) return alert("姓名、電話、車牌不可為空！");
+          const { error } = await supabaseClient.from('users').update(payload).eq('line_uid', currentUser.line_uid); 
+          if (error) throw new Error(error.message); 
+          alert('✅ 成功更新資料！'); location.reload();
+      } catch (err) { alert("更新失敗：" + err.message); }
     }
 
     async function loadHistory(type) {
       const container = document.getElementById('history-container'); container.innerHTML = '讀取中...';
-      if (type === 'filter') {
-        const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
-        let html = '';
-        if (data && data.length > 0) {
-           data.forEach(d => { html += `<div class="log-item"><b>📦 濾網 UID：${d.uid}</b><br><span style="color:var(--accent-color);">啟用時間：${formatTaipeiTime(d.activated_at)}</span><br>狀態：${d.status === 'activated' ? '🟢 服役中' : '⚪️ 已替換'}</div>`; });
-        } else { html = '<div class="log-item">尚無紀錄</div>'; }
-        container.innerHTML = html;
-      } else if (type === 'book') {
-        try {
-            const { data } = await supabaseClient.from('bookings').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
+      try {
+          if (type === 'filter') {
+            const { data, error } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
+            if (error) throw new Error(error.message);
+            let html = '';
+            if (data && data.length > 0) {
+               data.forEach(d => { html += `<div class="log-item"><b>📦 濾網 UID：${d.uid}</b><br><span style="color:var(--accent-color);">啟用時間：${formatTaipeiTime(d.activated_at)}</span><br>狀態：${d.status === 'activated' ? '🟢 服役中' : '⚪️ 已替換'}</div>`; });
+            } else { html = '<div class="log-item">尚無更換紀錄</div>'; }
+            container.innerHTML = html;
+          } else if (type === 'book') {
+            const { data, error } = await supabaseClient.from('bookings').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
+            if (error) throw new Error(error.message);
             let html = '';
             if (data && data.length > 0) {
                data.forEach(d => { html += `<div class="log-item"><b>📍 ${d.garages?.name || '保修廠'}</b><br>預約時間：${d.book_date}<br>狀態：${d.status}</div>`; });
             } else { html = '<div class="log-item">尚無預約紀錄</div>'; }
             container.innerHTML = html;
-        } catch(e) { container.innerHTML = '<div class="log-item">目前暫無預約服務資料</div>'; }
-      }
+          }
+      } catch(e) { container.innerHTML = `<div class="log-item" style="color:red;">載入失敗：${e.message}</div>`; }
     }
 
     async function loadGarages() {
-      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
-      let html = '';
-      if (data && data.length > 0) {
-        document.getElementById('smart-match-result').innerHTML = `為您配對到最近的保修廠：<br><h3 style="color:var(--accent-color);">${data[0].name}</h3><p>${data[0].city}${data[0].address}</p><button class="btn-main" onclick="bookGarage(${data[0].id})">立即預約</button>`;
-        data.forEach(g => {
-          html += `<div class="card" style="margin-bottom:10px;">
-            <h4 style="margin:0 0 5px 0; color:var(--text-primary);">${g.name}</h4>
-            <p style="font-size:13px; color:var(--text-secondary); margin:0 0 10px 0;">${g.city}${g.address}</p>
-            <button class="btn-main" style="padding:10px; font-size:14px;" onclick="bookGarage(${g.id})">預約此廠</button>
-          </div>`;
-        });
-      } else { html = '目前尚無合作保修廠'; document.getElementById('smart-match-result').innerHTML = '目前尚無配對結果'; }
-      document.getElementById('garage-list').innerHTML = html;
+      try {
+          const { data, error } = await supabaseClient.from('garages').select('*').eq('status', 'active');
+          if (error) throw new Error(error.message);
+          let html = '';
+          if (data && data.length > 0) {
+            document.getElementById('smart-match-result').innerHTML = `為您配對到最近的保修廠：<br><h3 style="color:var(--accent-color);">${data[0].name}</h3><p>${data[0].city}${data[0].address}</p><button class="btn-main" onclick="bookGarage(${data[0].id})">立即預約</button>`;
+            data.forEach(g => {
+              html += `<div class="card" style="margin-bottom:10px;">
+                <h4 style="margin:0 0 5px 0; color:var(--text-primary);">${g.name}</h4>
+                <p style="font-size:13px; color:var(--text-secondary); margin:0 0 10px 0;">${g.city}${g.address}</p>
+                <button class="btn-main" style="padding:10px; font-size:14px;" onclick="bookGarage(${g.id})">預約此廠</button>
+              </div>`;
+            });
+          } else { html = '目前尚無合作保修廠'; document.getElementById('smart-match-result').innerHTML = '目前尚無配對結果'; }
+          document.getElementById('garage-list').innerHTML = html;
+      } catch(e) { document.getElementById('garage-list').innerHTML = `<div style="color:red;">清單載入失敗</div>`; }
     }
 
     async function bookGarage(garageId) {
@@ -335,21 +346,26 @@
           const { error } = await supabaseClient.from('bookings').insert([{ user_uid: currentUser.line_uid, garage_id: garageId, book_date: date, status: 'pending' }]);
           if (error) throw error;
           alert("✅ 預約請求已送出，請等候保修廠聯絡確認！");
-      } catch(e) { alert("系統暫未開放預約功能"); }
+      } catch(e) { alert("系統異常：" + e.message); }
     }
 
     function generateMGM() {
-        if(!currentUser) return;
+        if(!currentUser) return alert("請先登入");
         const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
         alert("複製成功！請將以下專屬連結傳給車友：\n\n" + link + "\n\n車友透過此連結啟用濾網，您即可獲得獎金！");
     }
     
-    async function redeemPoints() {
-        alert("提領申請已送出！總部審核後將會派發 LINE Points 給您。");
-    }
+    async function redeemPoints() { alert("提領申請已送出！總部審核後將會派發 LINE Points 給您。"); }
 
+    // 🌟 一維條碼掃描與雲端防呆
     async function scanFilter() {
       try {
+          // 判斷是否在電腦瀏覽器打開 (防呆)
+          if (!liff.isInClient()) {
+              alert("⚠️ 掃描功能限定於手機 LINE App 內使用！\n請將此網址貼在 LINE 聊天室中點開。");
+              return;
+          }
+
           const res = await liff.scanCodeV2(); 
           if (!res || !res.value) return;
           const scannedUid = res.value.trim();
@@ -359,15 +375,10 @@
           }
 
           const { data: filterData, error: checkErr } = await supabaseClient.from('filters_uid').select('status, activated_by_uid').eq('uid', scannedUid).maybeSingle();
-          
-          if (checkErr || !filterData) {
-              return alert("❌ 查無此濾網條碼，請確認是否為 HYPASS 原廠正品！");
-          }
-          
-          if (filterData.status === 'activated' || filterData.status === 'replaced') {
-              return alert("❌ 攔截！此濾網已經被啟用過了，無法重複綁定！");
-          }
+          if (checkErr || !filterData) return alert("❌ 查無此濾網條碼，請確認是否為原廠正品！");
+          if (filterData.status === 'activated' || filterData.status === 'replaced') return alert("❌ 攔截！此濾網已經被啟用過了，無法重複綁定！");
 
+          // 啟用程序
           await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
           
           const { error } = await supabaseClient.from('filters_uid').update({ 
@@ -378,53 +389,56 @@
               installed_car_model: currentUser.car_brand, 
               installed_location: currentLocName 
           }).eq('uid', scannedUid);
-          
           if (error) throw error;
           
-          alert(`✅ 恭喜！新濾網 [${scannedUid}] 已成功綁定並啟用，智能座艙開始為您防護！`); 
+          alert(`✅ 恭喜！新濾網 [${scannedUid}] 已成功綁定並啟用！`); 
           location.reload();
           
       } catch (err) {
-          if(err.message !== "scanCode:fail cancel") { alert("掃描發生異常：" + err.message); }
+          if(err.message !== "scanCode:fail cancel" && !err.message.includes("cancel")) { 
+              alert("掃描發生異常：" + err.message); 
+          }
       }
     }
 
     async function calculateDashboardStats() {
-      if (!currentUser) return;
-      const badge = document.getElementById('ui-shield-badge'); const badgeText = document.getElementById('ui-shield-text'); const pulseDot = document.getElementById('ui-pulse-dot');
-      
-      const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
-      
-      if (filter && filter.activated_at) {
-        const actDate = new Date(filter.activated_at); document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
-        const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
-        const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
-        
-        let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
-        let aqiRate = (envData.aqi > 150) ? 1.8 : (envData.aqi > 100 ? 1.4 : 1.0);
-        let carSizeRate = getCarSizeRate(currentUser.car_model);
-        let tempRate = envData.temp > 28 ? 1.2 : (envData.temp < 20 ? 0.8 : 1.0);
-        let totalMultiplier = mileageRate * aqiRate * carSizeRate * tempRate;
+      try {
+          if (!currentUser) return;
+          const badge = document.getElementById('ui-shield-badge'); const badgeText = document.getElementById('ui-shield-text'); const pulseDot = document.getElementById('ui-pulse-dot');
+          
+          const { data: filter, error } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).maybeSingle();
+          if (error) throw error;
+          
+          if (filter && filter.activated_at) {
+            const actDate = new Date(filter.activated_at); document.getElementById('ui-filter-date').innerText = actDate.getFullYear() + '/' + String(actDate.getMonth()+1).padStart(2, '0') + '/' + String(actDate.getDate()).padStart(2, '0');
+            const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
+            const algoParams = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
+            
+            let mileageRate = currentUser.yearly_mileage ? (currentUser.yearly_mileage / 20000) : 1.0;
+            let aqiRate = (envData.aqi > 150) ? 1.8 : (envData.aqi > 100 ? 1.4 : 1.0);
+            let carSizeRate = getCarSizeRate(currentUser.car_model);
+            let tempRate = envData.temp > 28 ? 1.2 : (envData.temp < 20 ? 0.8 : 1.0);
+            let totalMultiplier = mileageRate * aqiRate * carSizeRate * tempRate;
 
-        let baseWear = parseFloat(algoParams.baseWear || 0.27);
-        let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
-        document.getElementById('ui-health').innerText = `${health}%`;
-        
-        if (health >= 60) { badgeText.innerText = '極效防護中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
-        else if (health >= 30) { badgeText.innerText = '穩定監控中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
-        else if (health > 0) { badge.style.setProperty('--accent-color', '#f59e0b'); badgeText.innerText = '效能衰退中'; document.getElementById('ui-health').style.color = '#f59e0b';} 
-        else { badge.style.setProperty('--accent-color', '#ef4444'); badgeText.innerText = '請即刻更換'; document.getElementById('ui-health').style.color = '#ef4444'; pulseDot.style.animation = 'none';}
-        
-        let totalKwhSaved = (days * parseFloat(algoParams.kwhPerDay || 0.25) * mileageRate).toFixed(1);
-        document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
-        let totalCo2 = (totalKwhSaved * parseFloat(algoParams.co2Factor || 0.5)).toFixed(1);
-        document.getElementById('ui-esg-co2').innerText = totalCo2;
-
-      } else {
-        document.getElementById('ui-filter-date').innerText = '尚未啟用';
-        document.getElementById('ui-health').innerText = '--%';
-        badge.style.setProperty('--accent-color', '#555555'); badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
-      }
+            let baseWear = parseFloat(algoParams.baseWear || 0.27);
+            let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
+            document.getElementById('ui-health').innerText = `${health}%`;
+            
+            if (health >= 60) { badgeText.innerText = '極效防護中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
+            else if (health >= 30) { badgeText.innerText = '穩定監控中'; document.getElementById('ui-health').style.color = 'var(--accent-color)';} 
+            else if (health > 0) { badge.style.setProperty('--accent-color', '#f59e0b'); badgeText.innerText = '效能衰退中'; document.getElementById('ui-health').style.color = '#f59e0b';} 
+            else { badge.style.setProperty('--accent-color', '#ef4444'); badgeText.innerText = '請即刻更換'; document.getElementById('ui-health').style.color = '#ef4444'; pulseDot.style.animation = 'none';}
+            
+            let totalKwhSaved = (days * parseFloat(algoParams.kwhPerDay || 0.25) * mileageRate).toFixed(1);
+            document.getElementById('ui-esg-kwh').innerText = totalKwhSaved;
+            let totalCo2 = (totalKwhSaved * parseFloat(algoParams.co2Factor || 0.5)).toFixed(1);
+            document.getElementById('ui-esg-co2').innerText = totalCo2;
+          } else {
+            document.getElementById('ui-filter-date').innerText = '尚未啟用';
+            document.getElementById('ui-health').innerText = '--%';
+            badge.style.setProperty('--accent-color', '#555555'); badgeText.innerText = '系統待命'; pulseDot.style.animation = 'none';
+          }
+      } catch(e) { console.error(e); }
     }
 
     async function fetchEnvironmentalData(city, district) {
@@ -438,7 +452,7 @@
         
         let homeCityRaw = currentUser.city || '台北市'; document.getElementById('ui-home-city').innerText = homeCityRaw;
         
-        // 🌟 核心：直接讀取資料庫已算好的 aqi_7d_avg，若尚無則 fallback 到當前 AQI
+        // 🌟 讀取 7日均值 (若為空則用當下 AQI 代替防空白)
         let aqi7d = (data.aqi_7d_avg !== undefined && data.aqi_7d_avg !== null) ? data.aqi_7d_avg : data.aqi;
         document.getElementById('env-home-aqi').innerText = Math.round(aqi7d);
 
@@ -465,23 +479,34 @@
         await liff.init({ liffId: "2009187567-58hBrZRj" });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
+        
         const { data, error } = await supabaseClient.from('users').select('*').eq('line_uid', profile.userId).maybeSingle();
+        if (error) throw error;
+
         if (data && data.name) {
-          currentUser = data; document.getElementById('nav-bar').style.display = 'flex';
+          currentUser = data; 
+          document.getElementById('nav-bar').style.display = 'flex';
+          
           if (data.role === 'customer') {
             document.getElementById('ui-owner').innerText = `${data.name} 的專屬座艙`;
             document.getElementById('ui-plate-tag').innerText = data.license_plate || '未綁定車牌';
-            document.getElementById('edit-name').value = data.name; document.getElementById('edit-phone').value = data.phone; 
-            document.getElementById('edit-plate').value = data.license_plate; document.getElementById('contract-plate').innerText = data.license_plate;
+            document.getElementById('edit-name').value = data.name; 
+            document.getElementById('edit-phone').value = data.phone; 
+            document.getElementById('edit-plate').value = data.license_plate; 
+            document.getElementById('contract-plate').innerText = data.license_plate;
             if(data.yearly_mileage) document.getElementById('edit-mileage').value = data.yearly_mileage;
 
             switchPage('home', document.querySelector('.nav-item'));
             getGPS();
           }
         } else { switchPage('register', null); }
-      } catch (err) { console.log("LIFF 啟動失敗"); }
+      } catch (err) { 
+          console.error("LIFF/DB 啟動失敗", err); 
+          document.getElementById('ui-owner').innerText = "系統連線異常";
+      }
     }
     
+    // 系統啟動
     initApp();
   </script>
 </body>
