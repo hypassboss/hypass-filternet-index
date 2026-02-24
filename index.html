@@ -8,26 +8,28 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V4.14 Tesla 極簡中控設計系統 (特點文案優化版)
+       💎 V5.2 Tesla x Gogoro (電腦版完美手機比例)
        ========================================= */
        
     :root {
-      --bg-image: none; --bg-color: #000000; --surface-color: #111111; --border-color: #222222;
-      --text-primary: #ffffff; --text-secondary: #888888;
+      --bg-image: none; --bg-color: #000000; --surface-color: #161618; --border-color: #2c2c2e;
+      --text-primary: #ffffff; --text-secondary: #8e8e93;
       --accent-color: #00e676; --accent-gradient: linear-gradient(135deg, #00e676 0%, #00b85c 100%);
       --accent-glow: rgba(0, 230, 118, 0.2);
+      --chart-bar: #333333; --chart-active: #00e676;
       --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
-      --glass-bg: rgba(10, 10, 10, 0.85); --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-      --input-bg: #1a1a1a;
+      --glass-bg: rgba(10, 10, 10, 0.85); --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      --input-bg: #1c1c1e;
     }
 
     body.light-mode {
-      --bg-color: #f5f5f7; --surface-color: #ffffff; --border-color: #e5e5ea;
-      --text-primary: #1a1a1a; --text-secondary: #777777;
+      --bg-color: #f2f2f7; --surface-color: #ffffff; --border-color: #e5e5ea;
+      --text-primary: #1c1c1e; --text-secondary: #8e8e93;
       --accent-color: #10b981; --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
       --accent-glow: rgba(16, 185, 129, 0.15);
+      --chart-bar: #e5e5ea; --chart-active: #34c759;
       --gold-color: #d4af37; --gold-glow: rgba(212, 175, 55, 0.15);
-      --glass-bg: rgba(255, 255, 255, 0.9); --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+      --glass-bg: rgba(255, 255, 255, 0.9); --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
       --input-bg: #f9f9f9;
     }
 
@@ -37,74 +39,122 @@
       --border-color: #3a3a3c; --text-primary: #e5e5ea; --text-secondary: #98989d;
       --accent-color: #06b6d4; --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       --accent-glow: rgba(6, 182, 212, 0.25);
+      --chart-bar: #333; --chart-active: #06b6d4;
       --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
       --glass-bg: rgba(28, 28, 30, 0.9); --card-shadow: inset 0 1px 1px rgba(255,255,255,0.05), 0 8px 25px rgba(0,0,0,0.5);
       --input-bg: #111112;
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); background-image: var(--bg-image); color: var(--text-primary); padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); transition: background 0.4s ease, color 0.4s ease; min-height: 100vh; letter-spacing: 0.5px; -webkit-font-smoothing: antialiased;}
+    /* 🌟 修復核心：強制設定 HTML 為劇院黑，將 Body 鎖定為手機寬度並置中 */
+    html {
+      background-color: #000000;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      margin: 0; 
+      width: 100vw;
+      max-width: 430px; /* 鎖死最大寬度 (iPhone 15 Pro Max 尺寸) */
+      background-color: var(--bg-color); 
+      background-image: var(--bg-image); 
+      color: var(--text-primary); 
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); 
+      transition: background 0.4s ease, color 0.4s ease; 
+      min-height: 100vh; 
+      letter-spacing: 0.5px; 
+      -webkit-font-smoothing: antialiased;
+      box-shadow: 0 0 40px rgba(0,0,0,0.8); /* 在電腦上營造手機浮空立體感 */
+      position: relative;
+      overflow-x: hidden;
+    }
     
     .page { display: none; padding: 16px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .card { background: var(--surface-color); padding: 20px; border-radius: 24px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: all 0.4s ease; }
+    .g-card { background: var(--surface-color); border-radius: 20px; padding: 18px; box-shadow: var(--card-shadow); margin-bottom: 16px; border: 1px solid var(--border-color); }
     
     .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 600; width: 100%; cursor: pointer; margin-bottom: 10px; font-size: 16px; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 4px 15px var(--accent-glow); letter-spacing: 1px;}
     .btn-main:active { transform: scale(0.96); box-shadow: 0 2px 8px var(--accent-glow); }
     
-    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none;}
+    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; transition: all 0.3s; outline: none; -webkit-appearance: none; box-sizing: border-box;}
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px var(--accent-glow); }
     
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 -4px 20px rgba(0,0,0,0.2); }
+    /* 🌟 修復核心：底部導覽列絕對跟隨手機寬度 */
+    .bottom-nav { 
+      position: fixed; 
+      bottom: 0; 
+      left: 50%; 
+      transform: translateX(-50%); /* 確保完美置中 */
+      width: 100%; 
+      max-width: 430px; /* 緊貼上方 body 的最大寬度 */
+      background: var(--glass-bg); 
+      display: flex; justify-content: space-between; align-items: flex-end; 
+      padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; 
+      border-top: 1px solid var(--border-color); 
+      z-index: 999; 
+      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.2); 
+    }
     .nav-item { color: var(--text-secondary); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex: 1; height: 42px; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
     .nav-item:active { transform: scale(0.9); }
     .nav-item.active { color: var(--accent-color); font-weight: 700; transform: none; }
     .nav-icon { font-size: 22px; display: flex; align-items: center; justify-content: center; height: 24px; margin: 0; line-height: 1; }
     .nav-text { font-size: 11px; line-height: 1; display: block; margin-top: 2px;}
 
-    .header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; }
+    .header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .shield-badge { flex-shrink: 0; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 14px; border-radius: 30px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; animation: badgePulse 2.5s infinite alternate ease-in-out; transition: all 0.5s ease;}
     
+    .plate-tag { background: var(--input-bg); color: var(--text-secondary); padding: 6px 12px; border-radius: 16px; font-family: monospace; font-size: 13px; font-weight: 700; border: 1px solid var(--border-color); letter-spacing: 1px;}
+    
+    .shield-badge { display:inline-flex; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; align-items: center; gap: 6px; animation: badgePulse 2.5s infinite alternate ease-in-out; transition: all 0.5s ease; margin-top:6px;}
     @keyframes badgePulse { 0% { box-shadow: 0 0 5px var(--accent-glow); border-color: transparent; } 100% { box-shadow: 0 0 20px var(--accent-color); border-color: var(--accent-color); } }
-    .pulse-dot { display: inline-block; width: 10px; height: 10px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); transition: background 0.5s ease;}
-    @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 10px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+    .pulse-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1); transition: background 0.5s ease;}
+    @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 8px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     
-    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 30px 0; }
+    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 20px 0; }
     .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
     .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
-    .pm25-badge { color: var(--gold-color); font-size: 13px; margin-top: -20px; font-weight: 700; background: var(--surface-color); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--gold-color); box-shadow: 0 5px 15px var(--gold-glow); z-index: 3; position: relative;}
+    
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .chart-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+    .chart-content { display: flex; justify-content: space-between; align-items: flex-end; }
+    .chart-number-box { display:flex; align-items:baseline; gap:4px; }
+    .chart-number { font-size: 42px; font-weight: 900; letter-spacing: -2px; color: var(--text-primary); line-height: 1;}
+    .chart-unit { font-size: 12px; font-weight: 600; color: var(--text-secondary); padding-bottom: 6px;}
+    
+    .bars-container { display: flex; align-items: flex-end; gap: 6px; height: 45px; }
+    .bar { width: 10px; border-radius: 5px; background: var(--chart-bar); transition: height 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .bar.active { background: var(--accent-gradient); }
 
-    /* 🌟 修復：6大特點 獨立字體微縮排版 */
-    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 20px; }
-    .tech-tag { 
-      background: var(--input-bg); color: var(--text-primary); 
-      padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); 
-      display: flex; align-items: center; justify-content: center; gap: 2px; 
-      font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-    }
+    .level-row { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-color); margin-top: 15px; }
+    .level-badge { background: var(--input-bg); color: var(--accent-color); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 16px; border: 1px solid var(--border-color); display:flex; align-items:center; gap:6px;}
+    
+    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
+    .tech-tag { background: var(--input-bg); color: var(--text-primary); padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 600; text-align: center; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .t-icon { font-size: 13px; opacity: 0.9; flex-shrink: 0;}
     
-    .dynamic-msg-bar { background: var(--input-bg); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 14px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
+    .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: var(--card-shadow); }
     .dynamic-msg-icon { margin-right: 12px; font-size: 18px; flex-shrink: 0; display:flex; align-items:center; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; line-height: 1; padding-top: 2px;} 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .env-box { background: var(--input-bg); border-radius: 16px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 105px; }
-    .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 10px; line-height: 1.4;}
-    .env-subtitle { font-size: 10px; opacity: 0.8; font-weight: 400;}
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .env-box { background: var(--input-bg); border-radius: 14px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 90px; }
+    .env-title { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; line-height: 1.4;}
     .aqi-container { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
     .aqi-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 2px; }
-    .env-val { font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; }
+    .env-val { font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 0; font-family: -apple-system, sans-serif; letter-spacing: -1px; line-height: 1; }
 
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;}
-    .esg-box { text-align: center; padding: 16px 6px; background: var(--input-bg); border-radius: 16px; border: 1px solid var(--border-color); position: relative; }
-    .esg-badge { position: absolute; top: -10px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 10px var(--accent-glow);}
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px;}
+    .esg-box { text-align: center; padding: 12px 6px; background: var(--input-bg); border-radius: 14px; border: 1px solid var(--border-color); position: relative; }
+    .esg-badge { position: absolute; top: -8px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 9px; padding: 3px 6px; border-radius: 10px; font-weight: 700; white-space: nowrap;}
     
     .tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
     .tab-btn { padding: 14px 10px; margin: 0; font-size: 13px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
@@ -242,7 +292,7 @@
     <div class="card" style="text-align:center; padding: 40px 20px;">
       <p style="color:var(--text-secondary); font-size:15px; margin-bottom:15px;">您的專屬隱藏優惠碼：</p>
       <h2 style="color:var(--accent-color); letter-spacing: 4px; border: 2px dashed var(--accent-color); padding: 18px; border-radius: 16px; margin-bottom:30px; font-size:28px;">AIRPLUS2026</h2>
-      <button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw/categories/replace-filters-all?srsltid=AfmBOooj2xVe0YRRhwwtUs-DXWufMvnWl7NJlD-nrNwE96Wxw1jVUxr6'">前往商城選購專屬濾網</button>
+      <button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw/categories/replace-filters-all'">前往商城選購專屬濾網</button>
     </div>
   </div>
 
@@ -355,7 +405,7 @@
     <div id="set-content-c" style="display:none;">
       <div class="card"><h4 style="margin:0 0 10px 0; color:var(--text-primary); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div>
     </div>
-    <div class="version-tag">4.14</div>
+    <div class="version-tag">5.2</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
