@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V5.8 Tesla x Gogoro (全功能回歸 + GPS 秒開)
+       💎 V5.8 Tesla x Gogoro (背景靜態打卡秒開版)
        ========================================= */
     :root {
       --bg-image: none; --bg-color: #000000; --surface-color: #161618; --border-color: #2c2c2e;
@@ -325,34 +325,43 @@
       }
     }
 
-    // 🌟 終極秒開定位法 (Cache-First)
+    // 🌟 一次性背景靜態 GPS 打卡引擎 (無縫秒開)
     async function fetchEnv(city, district) {
       let { data } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
       if(!data) { const { data: fb } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fb; }
       if(data) {
-        envData = data; setElText('env-aqi', data.aqi); setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
+        envData = data; 
+        setElText('env-aqi', data.aqi); 
+        setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
         calculateDashboardStats();
       }
     }
 
-    function getGPS() {
-      // 1. 瞬間渲染快取墊檔
-      let lastCity = localStorage.getItem('hp_last_city'); let lastDist = localStorage.getItem('hp_last_dist');
-      if(lastCity && lastDist) { setElText('ui-loc-name', lastCity+lastDist); fetchEnv(lastCity, lastDist); }
+    function getSnapshotGPS() {
+      // 1. 瞬間渲染快取墊檔，讓畫面絕對不轉圈圈
+      let lastCity = localStorage.getItem('hp_last_city') || (currentUser ? currentUser.city : '台北市'); 
+      let lastDist = localStorage.getItem('hp_last_dist') || (currentUser ? currentUser.district : '');
       
-      // 2. 背景真實獲取
+      setElText('ui-loc-name', lastCity + lastDist);
+      fetchEnv(lastCity, lastDist); 
+
+      // 2. 背景靜態打卡 (只抓取打開當下的位置，不耗電不追蹤)
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
           fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
-            .then(r => r.json()).then(d => {
-              let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
+            .then(r => r.json())
+            .then(d => {
+              let city = d.address.city || d.address.county || '';
+              let district = d.address.suburb || d.address.town || '';
               if(city) {
-                setElText('ui-loc-name', city+district);
-                localStorage.setItem('hp_last_city', city); localStorage.setItem('hp_last_dist', district);
-                fetchEnv(city, district);
+                // 3. 拿到真實位置後，無縫替換畫面
+                setElText('ui-loc-name', city + district);
+                localStorage.setItem('hp_last_city', city); 
+                localStorage.setItem('hp_last_dist', district);
+                fetchEnv(city, district); 
               }
-            }).catch(e=>{});
-        }, ()=>{}, { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }); 
+            }).catch(e => console.log("翻譯伺服器忙碌"));
+        }, () => { console.log("未授權或無訊號"); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }); 
       }
     }
 
@@ -371,7 +380,7 @@
         setElText('reward-balance', `$${tot}`);
         setElText('ui-dynamic-msg', '系統連線正常，持續防護中...');
         
-        getGPS();
+        getSnapshotGPS(); // 啟動背景靜態打卡引擎
       } else { document.getElementById('page-register').classList.add('active'); }
     }
     init();
