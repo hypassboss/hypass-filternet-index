@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V5.12 Tesla x Gogoro (UI 對齊與圓環優化版)
+       💎 V5.13 Tesla x Gogoro (150px圓環 + 電子布告欄)
        ========================================= */
        
     :root {
@@ -71,7 +71,7 @@
     .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; cursor: pointer; font-size: 16px; box-shadow: 0 4px 15px var(--accent-glow); transition: 0.2s; letter-spacing: 1px;}
     .btn-main:active { transform: scale(0.96); }
 
-    /* 🌟 底部導航 - 嚴格對齊修正 */
+    /* 底部導航 */
     .bottom-nav { 
         position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); 
         width: 100%; max-width: 430px; background: var(--glass-bg); 
@@ -96,9 +96,9 @@
     .pulse-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite; }
     @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 8px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
 
-    /* 🌟 大圓環 - 尺寸縮小優化視線 */
-    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 5px 0 15px 0; }
-    .ring { width: 170px; height: 170px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
+    /* 🌟 大圓環再次縮小優化 (150px) */
+    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 0 15px 0; }
+    .ring { width: 150px; height: 150px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
     .ring::after { content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     
@@ -120,12 +120,13 @@
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; } 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 
+    /* 表單元件 */
     input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; box-sizing: border-box; outline: none; }
     input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-glow); }
     label { font-size: 13px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: block; padding-left: 4px; }
 
-    .tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-    .tab-btn { padding: 14px 10px; font-size: 13px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
+    .tab-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; margin-bottom: 24px; }
+    .tab-btn { padding: 10px 5px; font-size: 11px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; border: 1px solid var(--border-color); white-space: nowrap; transition: all 0.3s; background: var(--input-bg); color: var(--text-secondary);}
     .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: var(--accent-color); box-shadow: 0 6px 15px var(--accent-glow);}
     
     .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
@@ -212,8 +213,8 @@
 
     <div class="main-visual-container" style="text-align:center;">
       <div class="ring">
-        <div style="font-size:52px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">--%</div>
-        <div style="font-size:12px; color:var(--text-secondary); font-weight:700; margin-top:5px;">動態壽命推估</div>
+        <div style="font-size:46px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">--%</div>
+        <div style="font-size:11px; color:var(--text-secondary); font-weight:700; margin-top:5px;">動態壽命推估</div>
       </div>
       <div class="pm25-badge">🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
       <div style="font-size:11px; color:var(--text-secondary); margin-top:12px; letter-spacing: 0.5px;">濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
@@ -261,6 +262,8 @@
       <div class="tech-tag">🇹🇼 台灣製造</div><div class="tech-tag">⚡ 靜電過濾</div><div class="tech-tag">🥥 活性碳</div>
       <div class="tech-tag">📡 空汙雷達</div><div class="tech-tag">🧠 AI 演算</div><div class="tech-tag">🌱 ESG 減碳</div>
     </div>
+
+    <div id="bulletin-board-container"></div>
 
     <button class="btn-main" onclick="openFrontendScanner()" style="margin-top:5px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描一維條碼 (UID) 啟用濾網</button>
   </div>
@@ -375,7 +378,7 @@
       </div>
     </div>
 
-    <div class="version-tag">System Ver. V5.12 (全功能完整不刪減版)</div>
+    <div class="version-tag">System Ver. V5.13 (150px圓環+布告欄完整版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -633,7 +636,23 @@
       container.innerHTML = html || '<div class="log-item">尚無相關紀錄</div>';
     }
 
-    // 🌟 嚴格日曆天演算法
+    // 🌟 載入電子布告欄 (只顯示啟用中)
+    async function loadBulletins() {
+      const { data, error } = await supabaseClient.from('bulletins').select('*').eq('is_active', true).order('created_at', { ascending: false });
+      let html = '';
+      if (!error && data && data.length > 0) {
+          html += '<h4 style="color:var(--accent-color); font-size:16px; margin: 15px 0 10px 0;">📢 系統公告</h4>';
+          data.forEach(b => {
+              html += `<div class="g-card" style="padding:15px; border-left:4px solid var(--accent-color); text-align:left;">
+                          <div style="font-size:11px; color:var(--text-secondary); margin-bottom:5px;">${new Date(b.created_at).toLocaleDateString()}</div>
+                          <div style="font-weight:bold; font-size:15px; color:var(--text-primary); margin-bottom:6px;">${b.title}</div>
+                          <div style="font-size:13px; color:var(--text-secondary); line-height:1.5; white-space:pre-wrap;">${b.content}</div>
+                       </div>`;
+          });
+      }
+      document.getElementById('bulletin-board-container').innerHTML = html;
+    }
+
     async function calculateDashboardStats() {
       const badgeText = document.getElementById('ui-shield-text');
       const pulseDot = document.getElementById('ui-pulse-dot');
@@ -644,7 +663,6 @@
       if (filter && filter.activated_at) {
         setElText('ui-filter-date', formatTaipeiTime(filter.activated_at));
         
-        // 改用嚴格日曆天數計算 (忽略幾點啟用的，只要跨過 23:59 就是 1 天)
         const today = new Date();
         const actDate = new Date(filter.activated_at);
         const utc1 = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
@@ -662,8 +680,6 @@
         
         let cRate = getCarSizeRate(currentUser.car_model);
         let baseWear = parseFloat(params.baseWear || 0.27);
-        
-        // 核心公式
         let health = Math.max(0, Math.round(100 - (days * baseWear * aRate * cRate)));
         
         if(healthEl) healthEl.innerText = `${health}%`;
@@ -809,6 +825,7 @@
         setElText('reward-balance', `$${tot}`);
         
         getSnapshotGPS(); 
+        loadBulletins(); // 呼叫電子布告欄
       } else { 
           document.getElementById('page-register').classList.add('active'); 
       }
