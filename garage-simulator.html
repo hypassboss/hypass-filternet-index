@@ -2,92 +2,63 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>濾聯網 - 廠長接單模擬器 V2.2</title>
+  <title>保修廠端 - 施工核銷系統</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background: #121212; color: #fff; padding: 20px; max-width: 600px; margin: 0 auto; }
-    h2 { color: #FF9800; border-bottom: 1px solid #333; padding-bottom: 10px; }
-    .card { background: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; }
-    select { width: 100%; padding: 12px; margin-bottom: 20px; background: #000; color: #00D100; border: 1px solid #444; border-radius: 8px; font-size: 16px; font-weight: bold; }
-    .btn { padding: 10px 15px; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; margin-right: 10px; font-size: 14px; }
-    .btn-confirm { background: #FF9800; color: #fff; }
-    .btn-complete { background: #00D100; color: #000; }
-    .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
+    body { font-family: sans-serif; background: #222; color: #fff; margin: 0; padding: 20px; text-align: center; }
+    .card { background: #333; padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: left; }
+    .btn { background: #FF9800; color: #000; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer;}
   </style>
 </head>
 <body>
-
-  <h2>👨‍🔧 廠長接單模擬器 (V2.2 含車主評鑑)</h2>
-  <label style="color:#888; font-size:14px;">請選擇您要模擬的保修廠：</label>
-  <select id="garage-select" onchange="loadOrders()">
-    <option value="">-- 讀取店家中 --</option>
-  </select>
-
-  <div id="orders-container"><p style="color:#888;">請先從上方選擇店家</p></div>
+  <h2 style="color:#FF9800;">👨‍🔧 保修廠接單核銷系統</h2>
+  <div id="login-box">
+    <p>請輸入您的保修廠專屬授權碼 (ID)</p>
+    <input type="number" id="garage-id" placeholder="輸入 ID (例如: 1)" style="width:100%; padding:15px; font-size:18px; box-sizing:border-box; border-radius:8px; margin-bottom:15px;">
+    <button class="btn" onclick="login()">登入系統</button>
+  </div>
+  <div id="dashboard" style="display:none;">
+    <h3 id="garage-name"></h3>
+    <hr style="border-color:#444; margin-bottom:20px;">
+    <h4>待處理的預約單</h4>
+    <div id="booking-list"></div>
+  </div>
 
   <script>
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
+    let gid = null;
 
-    async function initSimulator() {
-      const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
-      const select = document.getElementById('garage-select');
-      if (data && data.length > 0) {
-        select.innerHTML = '<option value="">-- 選擇模擬保修廠 --</option>';
-        data.forEach(g => select.innerHTML += `<option value="${g.id}">${g.name}</option>`);
-      }
+    async function login() {
+        gid = document.getElementById('garage-id').value;
+        const { data } = await supabaseClient.from('garages').select('*').eq('id', gid).maybeSingle();
+        if(data) {
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('garage-name').innerText = `店名：${data.name}`;
+            loadBookings();
+        } else alert("查無此保修廠！");
     }
 
-    async function loadOrders() {
-      const gId = document.getElementById('garage-select').value;
-      const container = document.getElementById('orders-container');
-      if (!gId) { container.innerHTML = '<p style="color:#888;">請選擇店家</p>'; return; }
-      
-      container.innerHTML = '<p style="color:#888;">讀取中...</p>';
-      const { data } = await supabaseClient.from('appointments').select('*, users(name, license_plate, phone, car_brand, car_model, city)').eq('garage_id', gId).order('appointment_time', { ascending: true });
-
-      if (!data || data.length === 0) { container.innerHTML = '<div class="card"><p style="color:#888; text-align:center;">無預約單</p></div>'; return; }
-
-      let html = '';
-      data.forEach(order => {
-        let statusHtml = order.status === 'pending' ? '<span class="status-badge" style="background:#444; color:#fff;">待確認</span>' : 
-                         order.status === 'confirmed' ? '<span class="status-badge" style="background:#FF9800; color:#fff;">已接單</span>' : 
-                         '<span class="status-badge" style="background:#00D100; color:#000;">已完工</span>';
-                         
-        let buttonsHtml = order.status === 'pending' ? `<button class="btn btn-confirm" onclick="updateOrderStatus(${order.id}, 'confirmed')">確認接單</button>` :
-                          order.status === 'confirmed' ? `<button class="btn btn-complete" onclick="completeAndRate(${order.id}, '${order.user_uid}', '${order.users.car_brand} ${order.users.car_model}', '${order.users.city}', ${gId})">完工核銷並評分</button>` : 
-                          `<span style="color:#888; font-size:12px;">(給車主的評分: ${order.user_rating || '未評'} 星)</span>`;
-
-        html += `<div class="card">${statusHtml}<h4 style="margin: 0 0 10px 0; color: #fff;">🕒 ${new Date(order.appointment_time).toLocaleString()}</h4>
-                 <p style="margin: 5px 0; color: #aaa;">👤 ${order.users.name} | 📞 ${order.users.phone}</p>
-                 <p style="margin: 5px 0 15px 0; color: #aaa;">🚗 ${order.users.car_brand} ${order.users.car_model} (${order.users.license_plate})</p>
-                 <div>${buttonsHtml}</div></div>`;
-      });
-      container.innerHTML = html;
+    async function loadBookings() {
+        const { data } = await supabaseClient.from('bookings').select('*, users(name, car_brand, license_plate)').eq('garage_id', gid).eq('status', 'pending');
+        let html = '';
+        if(data) data.forEach(b => {
+            html += `<div class="card">
+                <b>車主：${b.users.name}</b><br>車款：${b.users.car_brand} (${b.users.license_plate})<br>預約日：${b.book_date}
+                <button class="btn" style="background:#00e676;" onclick="completeBooking(${b.id}, '${b.user_uid}')">✅ 確認施工完畢</button>
+            </div>`;
+        });
+        document.getElementById('booking-list').innerHTML = html || '目前無預約';
     }
 
-    async function updateOrderStatus(orderId, newStatus) {
-      await supabaseClient.from('appointments').update({ status: newStatus }).eq('id', orderId); loadOrders(); 
+    async function completeBooking(bid, uid) {
+        if(confirm("確定車輛已完工並更換濾網？")) {
+            await supabaseClient.from('bookings').update({status: 'completed'}).eq('id', bid);
+            // 寫入施工費 100 點給保修廠
+            await supabaseClient.from('rewards').insert([{ user_uid: uid, type: 'garage_install', points: 100, status: 'completed', details: `廠端施工費 (單號:${bid})` }]);
+            alert("結單成功！施工獎勵金已入帳。"); loadBookings();
+        }
     }
-
-    async function completeAndRate(orderId, userUid, carModel, city, gId) {
-      let uidCode = prompt("請輸入車主的新濾網 UID (模擬廠長掃碼，例: HP-12345678)：");
-      if(!uidCode) return alert("必須輸入 UID 才能核銷！");
-
-      let score = prompt("請為此車主評分 (1-5星)：\n(若低於3顆星，總部將審核是否列為黑名單)", "5");
-      if(!score || score < 1 || score > 5) return alert("請輸入 1-5 之間的數字");
-
-      await supabaseClient.from('appointments').update({ status: 'completed', user_rating: parseInt(score) }).eq('id', orderId);
-      await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', userUid).eq('status', 'activated');
-      await supabaseClient.from('filters_uid').update({ 
-        status: 'activated', activated_by_uid: userUid, activated_at: new Date(),
-        activation_type: 'Garage', installed_garage_id: gId, installed_car_model: carModel, installed_location: city
-      }).eq('uid', uidCode);
-
-      alert('✅ 核銷與評分完成！'); loadOrders();
-    }
-
-    initSimulator();
   </script>
 </body>
 </html>
