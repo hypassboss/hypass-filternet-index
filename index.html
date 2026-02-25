@@ -9,32 +9,55 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V5.11 Tesla x Gogoro (全功能絕對不刪減版)
+       💎 V5.12 Tesla x Gogoro (UI 對齊與圓環優化版)
        ========================================= */
        
     :root {
-      --bg-image: none; --bg-color: #000000; --surface-color: #161618; --border-color: #2c2c2e;
-      --text-primary: #ffffff; --text-secondary: #8e8e93;
-      --accent-color: #00e676; --accent-gradient: linear-gradient(135deg, #00e676 0%, #00b85c 100%);
-      --accent-glow: rgba(0, 230, 118, 0.2); --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
-      --glass-bg: rgba(10, 10, 10, 0.85); --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); --input-bg: #1c1c1e;
+      --bg-image: none; 
+      --bg-color: #000000; 
+      --surface-color: #161618; 
+      --border-color: #2c2c2e;
+      --text-primary: #ffffff; 
+      --text-secondary: #8e8e93;
+      --accent-color: #00e676; 
+      --accent-gradient: linear-gradient(135deg, #00e676 0%, #00b85c 100%);
+      --accent-glow: rgba(0, 230, 118, 0.2);
+      --gold-color: #FFD700; 
+      --gold-glow: rgba(255, 215, 0, 0.15);
+      --glass-bg: rgba(10, 10, 10, 0.85); 
+      --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      --input-bg: #1c1c1e;
     }
 
     body.light-mode {
-      --bg-color: #f2f2f7; --surface-color: #ffffff; --border-color: #e5e5ea;
-      --text-primary: #1c1c1e; --text-secondary: #8e8e93;
-      --accent-color: #10b981; --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      --accent-glow: rgba(16, 185, 129, 0.15); --gold-color: #d4af37; --gold-glow: rgba(212, 175, 55, 0.15);
-      --glass-bg: rgba(255, 255, 255, 0.9); --input-bg: #f9f9f9;
+      --bg-color: #f2f2f7; 
+      --surface-color: #ffffff; 
+      --border-color: #e5e5ea;
+      --text-primary: #1c1c1e; 
+      --text-secondary: #8e8e93;
+      --accent-color: #10b981; 
+      --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --gold-color: #d4af37; 
+      --gold-glow: rgba(212, 175, 55, 0.15);
+      --glass-bg: rgba(255, 255, 255, 0.9); 
+      --input-bg: #f9f9f9;
     }
 
     body.metal-mode {
       --bg-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 4px);
-      --bg-color: #151515; --surface-color: linear-gradient(145deg, #262628 0%, #1c1c1e 100%);
-      --border-color: #3a3a3c; --text-primary: #e5e5ea; --text-secondary: #98989d;
-      --accent-color: #06b6d4; --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-      --accent-glow: rgba(6, 182, 212, 0.25); --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
-      --glass-bg: rgba(28, 28, 30, 0.9); --input-bg: #111112;
+      --bg-color: #151515; 
+      --surface-color: linear-gradient(145deg, #262628 0%, #1c1c1e 100%);
+      --border-color: #3a3a3c; 
+      --text-primary: #e5e5ea; 
+      --text-secondary: #98989d;
+      --accent-color: #06b6d4; 
+      --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      --accent-glow: rgba(6, 182, 212, 0.25);
+      --gold-color: #FFD700; 
+      --gold-glow: rgba(255, 215, 0, 0.15);
+      --glass-bg: rgba(28, 28, 30, 0.9); 
+      --input-bg: #111112;
     }
 
     html { background-color: #000000; display: flex; justify-content: center; min-height: 100vh; }
@@ -48,38 +71,51 @@
     .btn-main { background: var(--accent-gradient); color: #fff; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; cursor: pointer; font-size: 16px; box-shadow: 0 4px 15px var(--accent-glow); transition: 0.2s; letter-spacing: 1px;}
     .btn-main:active { transform: scale(0.96); }
 
-    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--glass-bg); display: flex; padding: 6px 5px calc(4px + env(safe-area-inset-bottom, 0px)) 5px; border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); }
-    .nav-item { color: var(--text-secondary); cursor: pointer; display: flex; flex-direction: column; align-items: center; flex: 1; height: 42px; transition: 0.2s;}
+    /* 🌟 底部導航 - 嚴格對齊修正 */
+    .bottom-nav { 
+        position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); 
+        width: 100%; max-width: 430px; background: var(--glass-bg); 
+        display: flex; align-items: center; justify-content: space-around; 
+        height: 60px; padding-bottom: env(safe-area-inset-bottom, 0px); 
+        border-top: 1px solid var(--border-color); z-index: 999; backdrop-filter: blur(25px); 
+    }
+    .nav-item { 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        flex: 1; height: 100%; cursor: pointer; color: var(--text-secondary); transition: 0.2s; 
+    }
     .nav-item:active { transform: scale(0.9); }
     .nav-item.active { color: var(--accent-color); font-weight: 700; }
-    .nav-icon { font-size: 22px; } .nav-text { font-size: 11px; margin-top: 2px;}
+    .nav-icon { font-size: 24px; line-height: 1; margin-bottom: 3px; }
+    .nav-text { font-size: 10px; line-height: 1; }
 
-    .header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 25px; }
+    .header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 15px; }
     .header-title-box { flex: 1; min-width: 0; } 
     #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); }
-    .shield-badge { display:inline-flex; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; align-items: center; gap: 6px; }
+    
+    .shield-badge { display:inline-flex; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; align-items: center; gap: 6px; height: fit-content;}
     .pulse-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; animation: heartBeat 1.8s infinite; }
     @keyframes heartBeat { 0% { transform: scale(0.8); box-shadow: 0 0 0 0 var(--accent-color); } 50% { transform: scale(1.6); box-shadow: 0 0 0 8px rgba(0,0,0,0); } 100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
 
-    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0 20px 0; }
-    .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
-    .ring::after { content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
+    /* 🌟 大圓環 - 尺寸縮小優化視線 */
+    .main-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 5px 0 15px 0; }
+    .ring { width: 170px; height: 170px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); position: relative; background: var(--surface-color); z-index: 2;}
+    .ring::after { content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; border-radius: 50%; border: 1px dashed var(--text-secondary); animation: rotate 25s linear infinite; opacity: 0.2; z-index: 1;}
     @keyframes rotate { 100% { transform: rotate(360deg); } }
     
-    .pm25-badge { background: rgba(255,255,255,0.05); border: 1px solid var(--gold-color); color: var(--gold-color); padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 25px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.15); }
+    .pm25-badge { background: rgba(255,255,255,0.05); border: 1px solid var(--gold-color); color: var(--gold-color); padding: 6px 16px; border-radius: 25px; font-weight: bold; font-size: 13px; margin-top: 15px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.15); }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-    .env-box { background: var(--input-bg); border-radius: 14px; padding: 16px 10px; text-align: center; border: 1px solid var(--border-color); }
-    .env-val { font-size: 32px; font-weight: 800; line-height: 1; margin: 8px 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .env-box { background: var(--input-bg); border-radius: 14px; padding: 12px 10px; text-align: center; border: 1px solid var(--border-color); }
+    .env-val { font-size: 28px; font-weight: 800; line-height: 1; margin: 8px 0; }
     
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px;}
-    .esg-box { text-align: center; padding: 12px 6px; background: var(--input-bg); border-radius: 14px; border: 1px solid var(--border-color); position: relative; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px;}
+    .esg-box { text-align: center; padding: 10px 4px; background: var(--input-bg); border-radius: 14px; border: 1px solid var(--border-color); position: relative; }
     .esg-badge { position: absolute; top: -8px; right: 50%; transform: translateX(50%); background: var(--accent-gradient); color: #fff; font-size: 9px; padding: 3px 6px; border-radius: 10px; font-weight: 700; white-space: nowrap;}
     
-    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 20px 0; }
+    .tech-tag-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 15px 0; }
     .tech-tag { background: var(--input-bg); padding: 8px 2px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 600; }
     
-    .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: var(--card-shadow); }
+    .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 0 16px; height: 44px; border-radius: 16px; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; transition: all 0.4s ease; box-shadow: var(--card-shadow); }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; } 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
@@ -176,11 +212,11 @@
 
     <div class="main-visual-container" style="text-align:center;">
       <div class="ring">
-        <div style="font-size:64px; font-weight:900; color:var(--accent-color); letter-spacing:-2px;" id="ui-health">--%</div>
-        <div style="font-size:12px; color:var(--text-secondary); font-weight:700;">動態壽命推估</div>
+        <div style="font-size:52px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">--%</div>
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:700; margin-top:5px;">動態壽命推估</div>
       </div>
       <div class="pm25-badge">🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
-      <div style="font-size:11px; color:var(--text-secondary); margin-top:15px; letter-spacing: 0.5px;">濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:12px; letter-spacing: 0.5px;">濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
     </div>
 
     <div class="dynamic-msg-bar" id="dynamic-msg-box">
@@ -192,12 +228,12 @@
 
     <div class="grid-2">
       <div class="env-box">
-        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">📍 即時所在地<br><span id="ui-loc-name" style="color:var(--text-primary); font-size:14px;">定位中...</span></div>
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">📍 即時所在地<br><span id="ui-loc-name" style="color:var(--text-primary); font-size:13px;">定位中...</span></div>
         <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
         <div style="font-size:10px; font-weight:800; color:var(--text-secondary); letter-spacing:1px;">AQI</div>
       </div>
       <div class="env-box" style="border-color:var(--gold-color);">
-        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">🏠 7日居住地<br><span id="ui-home-city" style="color:var(--text-primary); font-size:14px;">讀取中...</span></div>
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">🏠 7日居住地<br><span id="ui-home-city" style="color:var(--text-primary); font-size:13px;">讀取中...</span></div>
         <div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div>
         <div style="font-size:10px; font-weight:800; color:var(--text-secondary); letter-spacing:1px;">AQI</div>
       </div>
@@ -205,19 +241,19 @@
 
     <div class="grid-3">
       <div class="esg-box">
-        <div class="esg-badge">極致低風阻</div><div style="font-size:24px; margin-top:15px;">🌱</div>
-        <div style="font-size:20px; font-weight:700; margin:6px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:11px; color:var(--text-secondary);">kg</span></div>
-        <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
+        <div class="esg-badge">極致低風阻</div><div style="font-size:20px; margin-top:12px;">🌱</div>
+        <div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:10px; color:var(--text-secondary);">kg</span></div>
+        <div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
       </div>
       <div class="esg-box">
-        <div class="esg-badge">冷氣輕負載</div><div style="font-size:24px; margin-top:15px;">⚡️</div>
-        <div style="font-size:20px; font-weight:700; margin:6px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:11px; color:var(--text-secondary);">kWh</span></div>
-        <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">省電效能</div>
+        <div class="esg-badge">冷氣輕負載</div><div style="font-size:20px; margin-top:12px;">⚡️</div>
+        <div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:10px; color:var(--text-secondary);">kWh</span></div>
+        <div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省電效能</div>
       </div>
       <div class="esg-box">
-        <div class="esg-badge">強效大風量</div><div style="font-size:24px; margin-top:15px;">⛽️</div>
-        <div style="font-size:20px; font-weight:700; margin:6px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:11px; color:var(--text-secondary);">%</span></div>
-        <div style="font-size:11px; color:var(--text-secondary); font-weight:600;">空調節能</div>
+        <div class="esg-badge">強效大風量</div><div style="font-size:20px; margin-top:12px;">⛽️</div>
+        <div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:10px; color:var(--text-secondary);">%</span></div>
+        <div style="font-size:10px; color:var(--text-secondary); font-weight:600;">空調節能</div>
       </div>
     </div>
 
@@ -226,7 +262,7 @@
       <div class="tech-tag">📡 空汙雷達</div><div class="tech-tag">🧠 AI 演算</div><div class="tech-tag">🌱 ESG 減碳</div>
     </div>
 
-    <button class="btn-main" onclick="openFrontendScanner()" style="margin-top:10px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描一維條碼 (UID) 啟用濾網</button>
+    <button class="btn-main" onclick="openFrontendScanner()" style="margin-top:5px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描一維條碼 (UID) 啟用濾網</button>
   </div>
 
   <div id="page-shop" class="page">
@@ -260,7 +296,7 @@
     <div class="g-card" style="border-color:var(--accent-color); text-align:center; padding: 25px 20px;">
        <h3 style="margin-top:0;">🚀 邀請車友加入座艙</h3>
        <p style="font-size:13px; color:var(--text-secondary); line-height: 1.6;">註冊送 <b style="color:var(--accent-color);">10</b> 點，首掃再送 <b style="color:var(--gold-color);">100</b> 點！</p>
-       <button class="btn-main" onclick="shareToLine()">🟢 直接分享給 LINE 好友</button>
+       <button class="btn-main" onclick="shareToLine()">🟢 點擊直接分享給 LINE 好友</button>
     </div>
   </div>
 
@@ -339,15 +375,25 @@
       </div>
     </div>
 
-    <div class="version-tag">System Ver. V5.11 (全功能完整不刪減版)</div>
+    <div class="version-tag">System Ver. V5.12 (全功能完整不刪減版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
-    <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span><span class="nav-text">座艙</span></div>
-    <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span><span class="nav-text">商城</span></div>
-    <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
-    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span><span class="nav-text">任務</span></div>
-    <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
+    <div class="nav-item active" onclick="switchPage('home', this)">
+        <span class="nav-icon">◓</span><span class="nav-text">座艙</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('shop', this)">
+        <span class="nav-icon">🛒</span><span class="nav-text">商城</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('book', this)">
+        <span class="nav-icon">📍</span><span class="nav-text">預約</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('rewards', this)">
+        <span class="nav-icon">🎁</span><span class="nav-text">任務</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('settings', this)">
+        <span class="nav-icon">⚙️</span><span class="nav-text">設定</span>
+    </div>
   </div>
 
   <div class="scanner-modal" id="scanner-modal">
@@ -587,6 +633,7 @@
       container.innerHTML = html || '<div class="log-item">尚無相關紀錄</div>';
     }
 
+    // 🌟 嚴格日曆天演算法
     async function calculateDashboardStats() {
       const badgeText = document.getElementById('ui-shield-text');
       const pulseDot = document.getElementById('ui-pulse-dot');
@@ -597,12 +644,16 @@
       if (filter && filter.activated_at) {
         setElText('ui-filter-date', formatTaipeiTime(filter.activated_at));
         
-        const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
+        // 改用嚴格日曆天數計算 (忽略幾點啟用的，只要跨過 23:59 就是 1 天)
+        const today = new Date();
+        const actDate = new Date(filter.activated_at);
+        const utc1 = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+        const utc2 = Date.UTC(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
+        const days = Math.max(0, Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24)));
+        
         const params = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
         
         let aqi = envData.aqi || 50; 
-        
-        // 使用後台設定的加權參數 (若無則使用預設值)
         let weightRed = parseFloat(params.weightRed || 1.8);
         let weightOrange = parseFloat(params.weightOrange || 1.4);
         let aRate = 1.0;
@@ -611,6 +662,8 @@
         
         let cRate = getCarSizeRate(currentUser.car_model);
         let baseWear = parseFloat(params.baseWear || 0.27);
+        
+        // 核心公式
         let health = Math.max(0, Math.round(100 - (days * baseWear * aRate * cRate)));
         
         if(healthEl) healthEl.innerText = `${health}%`;
@@ -648,7 +701,7 @@
         setElText('ui-pm25', Math.round(days * basePm25 * aRate * cRate).toLocaleString());
         setElText('ui-esg-kwh', (days * kwhPerDay).toFixed(1));
         setElText('ui-esg-co2', (days * kwhPerDay * co2Factor).toFixed(1));
-        setElText('ui-esg-ac', Math.round(((paOther - paHypass) / paOther) * 30)); // 簡易省電百分比展示
+        setElText('ui-esg-ac', Math.round(((paOther - paHypass) / paOther) * 30)); 
         
       } else {
         setElText('ui-filter-date', '尚未啟用');
@@ -762,7 +815,7 @@
     }
     
     init();
-    async function redeemPoints() { alert("提領申請已送出！"); }
+    async function redeemPoints() { alert("提領申請已送出！總部將盡快為您處理。"); }
   </script>
 </body>
 </html>
