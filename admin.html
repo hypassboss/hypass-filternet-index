@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>HYPASS V5.11 總部戰情室 (參數不隱藏完整版)</title>
+  <title>HYPASS V5.12 總部戰情室 (上帝模式終極版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -79,7 +79,7 @@
     
     <div id="panel-crm" class="panel active">
       <h2>👥 濾網客人 CRM (上帝模式版)</h2>
-      <p style="color:#64748b; font-size:14px; margin-top:-10px;">總覽所有註冊車主，具備最高權限修改與刪除功能。</p>
+      <p style="color:#64748b; font-size:14px; margin-top:-10px;">總覽所有註冊車主，具備最高權限修改與連鎖刪除功能。</p>
       <table id="crm-table">
         <thead>
           <tr>
@@ -118,7 +118,7 @@
     </div>
 
     <div id="panel-uid" class="panel">
-      <h2>🏷️ UID 庫存管理</h2>
+      <h2>🏷️ UID 庫存管理 (含上帝模式)</h2>
       <button class="btn" style="padding:12px 20px;" onclick="generateSequentialUIDs()">⚙️ 一鍵產生 50 組全新 UID</button>
       <table id="uid-table">
         <thead>
@@ -309,24 +309,36 @@
             </td>
             <td style="text-align:center;">
               <button class="btn btn-edit" style="width:100%; margin-bottom:5px;" onclick="openGodModeEdit('${u.line_uid}')">✏️ 深度修改</button>
-              <button class="btn btn-danger" style="width:100%;" onclick="godModeDelete('${u.line_uid}', '${u.name}')">🗑️ 銷毀</button>
+              <button class="btn btn-danger" style="width:100%;" onclick="godModeDelete('${u.line_uid}', '${u.name}')">🗑️ 徹底銷毀</button>
             </td>
           </tr>`; 
       }); 
       document.getElementById('crm-table').querySelector('tbody').innerHTML = html;
     }
 
-    // 🛡️ 上帝模式：徹底銷毀客戶
+    // 🛡️ 上帝模式：連鎖銷毀客戶機制
     async function godModeDelete(uid, name) {
-        if(prompt(`⚠️ 您即將永久刪除客戶【${name}】的資料。\n此動作將解除他綁定的所有濾網，並刪除他的帳號。\n\n請輸入最高權限密碼：`) !== "hypass888") {
+        if(prompt(`⚠️ 您即將永久刪除客戶【${name}】的資料。\n此動作將解除他綁定的所有濾網，並刪除相關的獎勵、預約等一切足跡！\n\n請輸入最高權限密碼：`) !== "hypass888") {
             return alert("❌ 密碼錯誤，存取被拒！");
         }
         
         if(confirm(`最終確認：確定要讓【${name}】從資料庫徹底消失嗎？此動作無法復原！`)) {
-            await supabaseClient.from('filters_uid').update({activated_by_uid: null}).eq('activated_by_uid', uid);
-            const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
-            if (error) alert("刪除失敗：" + error.message); 
-            else { alert("✅ 目標客戶資料已徹底銷毀！"); loadCRM(); }
+            try {
+                // 1. 解除濾網綁定 (保留庫存紀錄)
+                await supabaseClient.from('filters_uid').update({activated_by_uid: null}).eq('activated_by_uid', uid);
+                // 2. 清除該車主的預約紀錄
+                await supabaseClient.from('bookings').delete().eq('user_uid', uid);
+                // 3. 清除該車主的獎勵金紀錄
+                await supabaseClient.from('rewards').delete().eq('user_uid', uid);
+                // 4. 清除使用者本體
+                const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
+                if (error) throw error;
+                
+                alert("✅ 目標客戶的所有關聯資料已徹底銷毀！"); 
+                loadCRM(); 
+            } catch(err) {
+                alert("刪除失敗：" + err.message);
+            }
         }
     }
 
@@ -454,7 +466,7 @@
     }
 
     // ==============================================
-    // 🌟 UID 庫存管理模組
+    // 🌟 UID 庫存管理模組 (上帝模式銷毀)
     // ==============================================
     async function loadUIDs() {
         const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('uid', { ascending: false }).limit(100);
@@ -466,13 +478,16 @@
                 <td style="color:${statusColor}; font-weight:bold;">${d.status.toUpperCase()}</td>
                 <td>${d.users?.name || '-'}</td>
                 <td>${d.activated_at ? new Date(d.activated_at).toLocaleString() : '-'}</td>
-                <td><button class="btn btn-danger" onclick="deleteUID('${d.uid}', '${d.status}')">刪除</button></td>
+                <td style="text-align:center;">
+                  <button class="btn btn-danger" onclick="godModeDeleteUID('${d.uid}', '${d.status}')">🗑️ 銷毀</button>
+                </td>
             </tr>`; 
         });
         document.getElementById('uid-table').querySelector('tbody').innerHTML = html;
     }
 
     async function generateSequentialUIDs() {
+        document.querySelector('#panel-uid button').innerText = "產生中...";
         const { data } = await supabaseClient.from('filters_uid').select('uid').order('uid', {ascending: false}).limit(1);
         let maxNum = data && data.length > 0 ? parseInt(data[0].uid.replace('HP-','')) : 0;
         let ins = []; 
@@ -480,14 +495,25 @@
         
         await supabaseClient.from('filters_uid').insert(ins); 
         alert("✅ 成功產生 50 組全新 UID！"); 
+        document.querySelector('#panel-uid button').innerText = "⚙️ 一鍵產生 50 組全新 UID";
         loadUIDs();
     }
 
-    async function deleteUID(uid, status) {
-        if(status !== 'produced') return alert("❌ 此濾網已出貨或啟用，嚴禁刪除以免破壞履歷！");
-        if(prompt(`請輸入密碼以刪除 ${uid}：`) === 'hypass888') {
-            await supabaseClient.from('filters_uid').delete().eq('uid', uid);
-            loadUIDs();
+    // 🛡️ UID 上帝模式刪除
+    async function godModeDeleteUID(uid, status) {
+        let warnMsg = `⚠️ 您準備刪除 UID [${uid}]。`;
+        if (status !== 'produced') {
+            warnMsg = `🚨 嚴重警告：UID [${uid}] 目前狀態為【${status}】！\n刪除它可能會破壞車主的保固履歷與資料庫關聯！`;
+        }
+        
+        if(prompt(`${warnMsg}\n\n請輸入老闆專屬密碼確認強制刪除：`) !== 'hypass888') {
+            return alert("❌ 密碼錯誤，操作取消！");
+        }
+        
+        if(confirm(`最終確認：真的要將 UID [${uid}] 從系統中永久抹除嗎？`)) {
+            const { error } = await supabaseClient.from('filters_uid').delete().eq('uid', uid);
+            if (error) alert("刪除失敗：" + error.message);
+            else { alert("✅ UID 徹底銷毀成功！"); loadUIDs(); }
         }
     }
 
@@ -594,6 +620,7 @@
         document.getElementById('garage-table').querySelector('tbody').innerHTML = html;
     }
 
+    // 系統啟動，預設載入 CRM
     loadCRM();
   </script>
 </body>
