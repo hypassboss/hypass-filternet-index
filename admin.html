@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS V8.1 總部戰情室 (終極破障與大數據版)</title>
+  <title>HYPASS V8.2 總部戰情室 (全功能響應式版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -20,7 +20,8 @@
     .panel.active { display: block; }
     h2 { margin-top: 0; color: #111; font-size: 22px; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;}
     
-    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px;}
+    .table-container { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; min-width: 600px;}
     th, td { border: 1px solid #eee; padding: 12px 15px; text-align: left; vertical-align: middle;}
     th { background: #f8f9fa; color: #555; font-weight: 600; white-space: nowrap;}
     tr:hover { background: #fcfcfc; }
@@ -40,10 +41,21 @@
     .recording-dot { color: #ef4444; font-weight: bold; animation: blink 1s infinite; display: none; margin-left: 10px;}
     @keyframes blink { 50% { opacity: 0; } }
 
-    .env-stats { display: flex; gap: 15px; margin-bottom: 20px; }
-    .env-card { background: #f8f9fa; border: 1px solid #eee; padding: 15px; border-radius: 8px; flex: 1; text-align: center; }
+    .env-stats { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;}
+    .env-card { background: #f8f9fa; border: 1px solid #eee; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px; text-align: center; }
     .env-card h3 { margin: 0 0 5px 0; font-size: 14px; color: #555; }
     .env-card p { margin: 0; font-size: 24px; font-weight: bold; color: #00e676; }
+
+    /* 📱 解決手機版比例破版問題 */
+    @media (max-width: 768px) {
+        body { flex-direction: column; height: auto; }
+        .sidebar { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; height: auto; padding-bottom: 10px; border-bottom: 2px solid #333;}
+        .sidebar-title { width: 100%; text-align: center; padding: 15px; }
+        .nav-btn { width: auto; flex: 1 1 45%; font-size: 12px; padding: 10px; text-align: center; border-left: none; border-bottom: 2px solid transparent; }
+        .nav-btn.active { border-left: none; border-bottom-color: #00e676; }
+        .main-content { padding: 15px; }
+        .panel { padding: 15px; }
+    }
   </style>
 </head>
 <body>
@@ -56,8 +68,8 @@
     <button class="nav-btn" onclick="switchTab('rewards', this)">🎁 獎勵金審核</button>
     <button class="nav-btn" onclick="switchTab('garages', this)">🏪 保修廠審核</button>
     <button class="nav-btn" onclick="switchTab('bookings', this)">📅 預約單總表</button>
-    <button class="nav-btn" onclick="switchTab('bulletins', this)">📢 電子布告欄發布</button>
-    <button class="nav-btn" onclick="switchTab('env', this)">🌍 環境大數據與演算法</button>
+    <button class="nav-btn" onclick="switchTab('bulletins', this)">📢 布告欄發布</button>
+    <button class="nav-btn" onclick="switchTab('env', this)">🌍 環境與演算法</button>
   </div>
 
   <div class="main-content">
@@ -69,9 +81,9 @@
         <video id="video-box" autoplay muted playsinline></video>
         <h3 id="flow-status" style="text-align:center; color:#00e676; margin-bottom:20px; font-size:18px;">請點擊下方按鈕啟動作業</h3>
         
-        <div style="display:flex; gap:15px; margin-bottom:15px;">
-            <div style="flex:1;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📝 Shopline 訂單號碼</label><input type="text" id="inp-order" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
-            <div style="flex:1;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📦 濾網 UID</label><input type="text" id="inp-uid" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
+        <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:200px;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📝 Shopline 訂單號碼</label><input type="text" id="inp-order" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
+            <div style="flex:1; min-width:200px;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📦 濾網 UID</label><input type="text" id="inp-uid" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
         </div>
 
         <div style="text-align:center; margin-top: 10px;">
@@ -85,53 +97,53 @@
 
     <div id="panel-crm" class="panel">
       <h2>👥 濾網客人 CRM (上帝模式：強制連鎖拔除)</h2>
-      <table id="crm-table">
-        <thead>
-          <tr><th>客戶資訊</th><th>車輛配置</th><th>系統數據</th><th style="text-align:center;">上帝操作 (需密碼)</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="crm-table">
+          <thead><tr><th>客戶資訊</th><th>車輛配置</th><th>系統數據</th><th style="text-align:center;">上帝操作 (需密碼)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div id="panel-uid" class="panel">
       <h2>🏷️ UID 庫存管理 (生產與上帝銷毀)</h2>
       <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="generateSequentialUIDs()">⚙️ 一鍵產生 50 組新 UID (工廠入庫)</button>
-      <table id="uid-table">
-        <thead>
-          <tr><th>UID 條碼</th><th>目前狀態</th><th>綁定擁有者</th><th>啟用時間</th><th style="text-align:center;">上帝操作 (需密碼)</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="uid-table">
+          <thead><tr><th>UID 條碼</th><th>目前狀態</th><th>綁定擁有者</th><th>啟用時間</th><th style="text-align:center;">上帝操作 (需密碼)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div id="panel-rewards" class="panel">
       <h2>🎁 LINE Points 兌換審核</h2>
-      <table id="reward-table">
-        <thead>
-          <tr><th>申請車主</th><th>申請扣除點數</th><th>申請時間</th><th style="text-align:center;">審核操作</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="reward-table">
+          <thead><tr><th>申請車主</th><th>申請扣除點數</th><th>申請時間</th><th style="text-align:center;">審核操作</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div id="panel-garages" class="panel">
       <h2>🏪 保修廠加盟審核管理</h2>
-      <table id="garage-table">
-        <thead>
-          <tr><th>保修廠資訊</th><th>聯絡人</th><th>目前狀態</th><th style="text-align:center;">審核操作</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="garage-table">
+          <thead><tr><th>保修廠資訊</th><th>聯絡人</th><th>目前狀態</th><th style="text-align:center;">審核操作</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div id="panel-bookings" class="panel">
       <h2>📅 全台預約單總表</h2>
-      <table id="booking-table">
-        <thead>
-          <tr><th>預約車主</th><th>指定保修廠</th><th>預約日期</th><th>訂單狀態</th><th style="text-align:center;">操作</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="booking-table">
+          <thead><tr><th>預約車主</th><th>指定保修廠</th><th>預約日期</th><th>訂單狀態</th><th style="text-align:center;">操作</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div id="panel-bulletins" class="panel">
@@ -142,29 +154,36 @@
           <textarea id="bul-content" rows="3" placeholder="公告內容..."></textarea>
           <button class="btn btn-primary" style="margin-top:10px;" onclick="createBulletin()">發布至前台</button>
       </div>
-      <table id="bulletin-table">
-        <thead>
-          <tr><th>公告標題</th><th>發布時間</th><th>狀態</th><th style="text-align:center;">操作</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="bulletin-table">
+          <thead><tr><th>公告標題</th><th>發布時間</th><th>狀態</th><th style="text-align:center;">操作</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div id="panel-env" class="panel">
       <h2>🌍 台灣 368 鄉鎮環境大數據與 AI 演算法中控台</h2>
       
       <div style="background:#1e1e1e; padding:20px; border-radius:8px; margin-bottom:25px; color:white;">
-        <h3 style="margin-top:0; color:#00e676; border-bottom:1px solid #444; padding-bottom:10px;">🧠 壽命演算 AI 參數中控台</h3>
-        <p style="font-size:12px; color:#aaa;">設定後將即時同步至全台車主 App 的壽命演算引擎。(基礎里程加權已預設啟動)</p>
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-top:15px;">
-           <div><label style="font-size:12px;color:#aaa;">基礎日耗損率 (%)</label><input type="number" id="algo-baseWear" step="0.01" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#f59e0b;">AQI 橘害 (100-150) 倍數</label><input type="number" id="algo-aqiOrange" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#ef4444;">AQI 紅害 (>150) 倍數</label><input type="number" id="algo-aqiRed" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#ef4444;">高溫 (>30°C) 倍數</label><input type="number" id="algo-tempHigh" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#3b82f6;">低溫 (<15°C) 倍數</label><input type="number" id="algo-tempLow" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#3b82f6;">高濕 (>80%) 倍數</label><input type="number" id="algo-humHigh" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#aaa;">大型車輛 倍數</label><input type="number" id="algo-carLarge" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#aaa;">小型車輛 倍數</label><input type="number" id="algo-carSmall" step="0.1" class="scan-input"></div>
+        <h3 style="margin-top:0; color:#00e676; border-bottom:1px solid #444; padding-bottom:10px;">🧠 壽命演算 AI 參數中控台 (13項全開)</h3>
+        <p style="font-size:12px; color:#aaa;">設定後將即時同步至全台車主 App 的演算引擎。(基礎里程加權已預設啟動)</p>
+        
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top:15px;">
+           <div><label style="font-size:11px;color:#aaa;">基礎日耗損 (%)</label><input type="number" id="algo-baseWear" step="0.01" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#f59e0b;">橘害 (100-150) 倍數</label><input type="number" id="algo-aqiOrange" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#ef4444;">紅害 (>150) 倍數</label><input type="number" id="algo-aqiRed" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#ef4444;">高溫 (>30°C) 倍數</label><input type="number" id="algo-tempHigh" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#3b82f6;">低溫 (<15°C) 倍數</label><input type="number" id="algo-tempLow" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#3b82f6;">高濕 (>80%) 倍數</label><input type="number" id="algo-humHigh" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#aaa;">大型車輛 倍數</label><input type="number" id="algo-carLarge" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#aaa;">小型車輛 倍數</label><input type="number" id="algo-carSmall" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           
+           <div><label style="font-size:11px;color:#00e676;">每日 PM2.5 (µg)</label><input type="number" id="algo-basePm25" step="10" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#00e676;">日均省電 (kWh)</label><input type="number" id="algo-kwhPerDay" step="0.01" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#00e676;">減碳轉換係數</label><input type="number" id="algo-co2Factor" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#00e676;">HYPASS 風阻 (Pa)</label><input type="number" id="algo-paHypass" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#00e676;">他牌風阻 (Pa)</label><input type="number" id="algo-paOther" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
         </div>
         <button class="btn btn-primary" style="margin-top:15px; width:100%; font-size:15px; padding:12px;" onclick="saveAlgoParams()">💾 儲存並發布至全台座艙</button>
       </div>
@@ -174,17 +193,17 @@
         <div class="env-card"><h3>環境部與氣象署 - 最後同步</h3><p id="env-last-update" style="font-size:16px;">--</p></div>
       </div>
 
-      <div style="margin-bottom: 20px; display:flex; gap:10px;">
+      <div style="margin-bottom: 20px; display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-primary" onclick="triggerEnvUpdate()">⚡ 手動觸發雲端爬蟲 (更新 368 鄉鎮資料)</button>
         <button class="btn btn-dark" onclick="downloadEnvCSV()">📥 匯出【環境部 x 氣象署】雙數據庫整合包 (CSV)</button>
       </div>
 
-      <table id="env-table">
-        <thead>
-          <tr><th>縣市</th><th>鄉鎮市區</th><th>溫度 (°C)</th><th>濕度 (%)</th><th>即時 AQI</th><th>PM 2.5</th><th>7日均值 (演算法)</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="env-table">
+          <thead><tr><th>縣市</th><th>鄉鎮市區</th><th>溫度 (°C)</th><th>濕度 (%)</th><th>即時 AQI</th><th>PM 2.5</th><th>7日均值 (演算法)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
@@ -195,8 +214,7 @@
     function switchTab(id, btn) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('panel-' + id).classList.add('active'); 
-      btn.classList.add('active');
+      document.getElementById('panel-' + id).classList.add('active'); btn.classList.add('active');
       
       if (id === 'crm') loadCRM(); 
       if (id === 'uid') loadUIDs();
@@ -207,147 +225,80 @@
       if (id === 'env') { loadEnvData(); loadAlgoParams(); }
     }
 
-    // ==============================================
-    // 1. 出貨錄影與掃描系統
-    // ==============================================
-    let html5QrcodeScanner = null;
-    let mediaRecorder = null;
-    let recordedChunks = [];
-    let currentOrder = "";
-    let currentUID = "";
-    let videoStream = null;
+    let html5QrcodeScanner = null; let mediaRecorder = null; let recordedChunks = []; let currentOrder = ""; let currentUID = ""; let videoStream = null;
 
     function startScanFlow() {
         currentOrder = ""; currentUID = "";
         document.getElementById('inp-order').value = ""; document.getElementById('inp-uid').value = "";
-        document.getElementById('btn-scan').style.display = 'none';
-        document.getElementById('scanner-box').style.display = 'block';
+        document.getElementById('btn-scan').style.display = 'none'; document.getElementById('scanner-box').style.display = 'block';
         document.getElementById('flow-status').innerText = "第一步：請將鏡頭對準 Shopline 訂單條碼";
         
         html5QrcodeScanner = new Html5Qrcode("scanner-box");
-        html5QrcodeScanner.start(
-            { facingMode: "environment" }, { fps: 10, qrbox: { width: 280, height: 100 } }, 
+        html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 280, height: 100 } }, 
             (text) => {
                 const scannedText = text.trim();
                 if (!currentOrder) {
-                    if(!scannedText.startsWith('HP-')) {
-                        currentOrder = scannedText; document.getElementById('inp-order').value = currentOrder;
-                        document.getElementById('flow-status').innerText = "✅ 訂單 OK！第二步：請掃描濾網 UID (HP- 開頭)";
-                    }
+                    if(!scannedText.startsWith('HP-')) { currentOrder = scannedText; document.getElementById('inp-order').value = currentOrder; document.getElementById('flow-status').innerText = "✅ 訂單 OK！第二步：請掃描濾網 UID (HP- 開頭)"; }
                 } else if (!currentUID) {
                     if(scannedText.startsWith('HP-')) {
                         currentUID = scannedText; document.getElementById('inp-uid').value = currentUID;
                         html5QrcodeScanner.stop().then(() => {
-                            document.getElementById('scanner-box').style.display = 'none';
-                            document.getElementById('flow-status').innerText = "✅ 掃描完成！請點擊『開始包裝錄影』進行裝箱";
-                            document.getElementById('btn-record').style.display = 'inline-block';
+                            document.getElementById('scanner-box').style.display = 'none'; document.getElementById('flow-status').innerText = "✅ 掃描完成！請點擊『開始包裝錄影』進行裝箱"; document.getElementById('btn-record').style.display = 'inline-block';
                         });
                     }
                 }
             }, (err) => { }
-        ).catch(err => {
-            alert("相機啟動失敗，請允許權限！");
-            document.getElementById('btn-scan').style.display = 'inline-block'; document.getElementById('scanner-box').style.display = 'none';
-        });
+        ).catch(err => { alert("相機啟動失敗，請允許權限！"); document.getElementById('btn-scan').style.display = 'inline-block'; document.getElementById('scanner-box').style.display = 'none'; });
     }
 
     async function startRecording() {
         try {
             videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-            const videoElement = document.getElementById('video-box');
-            videoElement.style.display = 'block'; videoElement.srcObject = videoStream;
-            mediaRecorder = new MediaRecorder(videoStream);
-            mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) recordedChunks.push(e.data); };
-            mediaRecorder.start();
-            document.getElementById('btn-record').style.display = 'none';
-            document.getElementById('btn-stop').style.display = 'inline-block';
-            document.getElementById('rec-dot').style.display = 'inline';
-            document.getElementById('flow-status').innerText = "🎥 錄影中... 請開始包貨。完成後點擊結束";
+            const videoElement = document.getElementById('video-box'); videoElement.style.display = 'block'; videoElement.srcObject = videoStream;
+            mediaRecorder = new MediaRecorder(videoStream); mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.start(); document.getElementById('btn-record').style.display = 'none'; document.getElementById('btn-stop').style.display = 'inline-block';
+            document.getElementById('rec-dot').style.display = 'inline'; document.getElementById('flow-status').innerText = "🎥 錄影中... 請開始包貨。完成後點擊結束";
         } catch (err) { alert("無法取得相機權限錄影：" + err.message); }
     }
 
     async function stopAndSave() {
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            document.getElementById('flow-status').innerText = "🔄 處理影片與寫入資料庫中...";
-            document.getElementById('btn-stop').style.display = 'none'; document.getElementById('rec-dot').style.display = 'none';
+            document.getElementById('flow-status').innerText = "🔄 處理影片與寫入資料庫中..."; document.getElementById('btn-stop').style.display = 'none'; document.getElementById('rec-dot').style.display = 'none';
             mediaRecorder.stop();
             mediaRecorder.onstop = async function() {
-                const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; 
-                a.download = `${currentOrder}_${currentUID}.webm`; a.click(); recordedChunks = [];
-                videoStream.getTracks().forEach(track => track.stop()); document.getElementById('video-box').style.display = 'none';
-
+                const blob = new Blob(recordedChunks, { type: 'video/webm' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; 
+                a.download = `${currentOrder}_${currentUID}.webm`; a.click(); recordedChunks = []; videoStream.getTracks().forEach(track => track.stop()); document.getElementById('video-box').style.display = 'none';
                 try {
                     const { data: user } = await supabaseClient.from('users').select('line_uid').eq('phone', currentOrder).maybeSingle(); 
-                    const payload = { status: 'sold', shopline_order_id: currentOrder };
-                    if(user) payload.activated_by_uid = user.line_uid;
-                    const { error } = await supabaseClient.from('filters_uid').update(payload).eq('uid', currentUID);
-                    if (error) throw error; alert("✅ 出貨成功！影片已下載。");
+                    const payload = { status: 'sold', shopline_order_id: currentOrder }; if(user) payload.activated_by_uid = user.line_uid;
+                    const { error } = await supabaseClient.from('filters_uid').update(payload).eq('uid', currentUID); if (error) throw error; alert("✅ 出貨成功！影片已下載。");
                 } catch(dbErr) { alert("⚠️ 影片已下載，但資料庫更新失敗：" + dbErr.message); }
-                
-                document.getElementById('btn-scan').style.display = 'inline-block';
-                document.getElementById('flow-status').innerText = "準備就緒。請啟動鏡頭掃描下一筆";
-                document.getElementById('inp-order').value = ""; document.getElementById('inp-uid').value = "";
+                document.getElementById('btn-scan').style.display = 'inline-block'; document.getElementById('flow-status').innerText = "準備就緒。請啟動鏡頭掃描下一筆"; document.getElementById('inp-order').value = ""; document.getElementById('inp-uid').value = "";
             };
         }
     }
 
-    // ==============================================
-    // 2. CRM 上帝模式 (終極暴力破障版)
-    // ==============================================
     async function loadCRM() {
       document.getElementById('crm-table').querySelector('tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">讀取中...</td></tr>';
-      const [resUsers, resFilters, resRewards] = await Promise.all([
-          supabaseClient.from('users').select('*').eq('role', 'customer').order('created_at', { ascending: false }),
-          supabaseClient.from('filters_uid').select('activated_by_uid'),
-          supabaseClient.from('rewards').select('user_uid')
-      ]);
-      
+      const [resUsers, resFilters, resRewards] = await Promise.all([ supabaseClient.from('users').select('*').eq('role', 'customer').order('created_at', { ascending: false }), supabaseClient.from('filters_uid').select('activated_by_uid'), supabaseClient.from('rewards').select('user_uid') ]);
       let pCounts = {}; resFilters.data?.forEach(f => { if(f.activated_by_uid) pCounts[f.activated_by_uid] = (pCounts[f.activated_by_uid] || 0) + 1; });
       let rCounts = {}; resRewards.data?.forEach(r => { if(r.user_uid) rCounts[r.user_uid] = (rCounts[r.user_uid] || 0) + 1; });
-
       let html = '';
       resUsers.data?.forEach(u => {
-          html += `<tr>
-            <td><div style="font-weight:bold; color:#1976d2; font-size:16px;">${u.name}</div><div style="color:#666; margin-top:4px;">${u.phone}</div></td>
-            <td><b>${u.car_brand}</b><br><span style="color:#f59e0b; font-family:monospace; font-size:16px;">${u.license_plate}</span></td>
-            <td>濾網: <b>${pCounts[u.line_uid]||0}</b><br>獎勵: <b>${rCounts[u.line_uid]||0}</b></td>
-            <td style="text-align:center;">
-              <button class="btn btn-warn" onclick="godModeEdit('${u.line_uid}', '${u.name}')">修改</button>
-              <button class="btn btn-danger" onclick="godModeDelete('${u.line_uid}', '${u.name}')">銷毀</button>
-            </td>
-          </tr>`; 
-      }); 
-      document.getElementById('crm-table').querySelector('tbody').innerHTML = html;
+          html += `<tr><td><div style="font-weight:bold; color:#1976d2; font-size:16px;">${u.name}</div><div style="color:#666; margin-top:4px;">${u.phone}</div></td><td><b>${u.car_brand}</b><br><span style="color:#f59e0b; font-family:monospace; font-size:16px;">${u.license_plate}</span></td><td>濾網: <b>${pCounts[u.line_uid]||0}</b><br>獎勵: <b>${rCounts[u.line_uid]||0}</b></td><td style="text-align:center;"><button class="btn btn-warn" onclick="godModeEdit('${u.line_uid}', '${u.name}')">修改</button> <button class="btn btn-danger" onclick="godModeDelete('${u.line_uid}', '${u.name}')">銷毀</button></td></tr>`; 
+      }); document.getElementById('crm-table').querySelector('tbody').innerHTML = html;
     }
 
     async function godModeDelete(uid, name) {
         if (prompt(`【最高權限】永久銷毀客戶【${name}】。\n請輸入上帝密碼：`) !== "hypass888") return alert("密碼錯誤！");
         if (confirm(`⚠️ 確定要摧毀 ${name} 嗎？此動作將連鎖拔除他所有紀錄！`)) {
             try {
-                // 🚨 第一階段：無差別連鎖拔除 (捕獲錯誤但不中斷)
-                console.log("開始執行連鎖拔除...");
-                await supabaseClient.from('rewards').delete().eq('user_uid', uid);
-                await supabaseClient.from('bookings').delete().eq('user_uid', uid);
-                
-                // 🚨 第二階段：強制解除濾網綁定
+                await supabaseClient.from('rewards').delete().eq('user_uid', uid); await supabaseClient.from('bookings').delete().eq('user_uid', uid);
                 await supabaseClient.from('filters_uid').update({ activated_by_uid: null, status: 'sold' }).eq('activated_by_uid', uid);
-                
-                // 🚨 第三階段 (破障核心)：解除作為「推薦人」的關係鎖定！
-                // 如果這個人推薦了別人，把別人的 referrer_uid 清空，否則 PostgreSQL 絕對不准刪除他。
                 await supabaseClient.from('users').update({ referrer_uid: null }).eq('referrer_uid', uid);
-                
-                // 🚨 最終階段：刪除本體
-                const { error, statusText } = await supabaseClient.from('users').delete().eq('line_uid', uid);
-                
-                if (error) {
-                    throw new Error(`資料庫阻擋。\n錯誤碼: ${error.code}\n詳情: ${error.message}\n(請確認已執行 SQL 終極解除鎖定指令)`);
-                } 
-                alert("✅ 障礙排除！目標已徹底銷毀！"); loadCRM();
-            } catch (err) { 
-                alert("❌ 摧毀失敗！\n\n" + err.message); 
-                console.error("刪除失敗完整日誌:", err);
-            }
+                const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
+                if (error) throw error; alert("✅ 目標已徹底銷毀！"); loadCRM();
+            } catch (err) { alert("❌ 摧毀失敗！\n\n" + err.message); }
         }
     }
 
@@ -358,159 +309,95 @@
         if (Object.keys(updates).length > 0) { await supabaseClient.from('users').update(updates).eq('line_uid', uid); alert("修改成功！"); loadCRM(); }
     }
 
-    // ==============================================
-    // 3. UID 庫存管理
-    // ==============================================
     async function loadUIDs() {
-        const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('uid', { ascending: false }).limit(50);
-        let html = '';
-        if(data) {
-            data.forEach(d => { 
-                html += `<tr><td style="font-family:monospace; font-size:16px;"><b>${d.uid}</b></td><td><span style="background:#eee; padding:4px 8px; border-radius:4px; font-size:12px;">${d.status}</span></td>
-                <td>${d.users?.name || '-'}</td><td>${d.activated_at ? new Date(d.activated_at).toLocaleDateString() : '-'}</td>
-                <td style="text-align:center;"><button class="btn btn-warn" onclick="godModeEditUID('${d.uid}')">修改</button> <button class="btn btn-danger" onclick="godModeDeleteUID('${d.uid}')">刪除</button></td></tr>`; 
-            });
-        }
+        const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('uid', { ascending: false }).limit(50); let html = '';
+        if(data) { data.forEach(d => { html += `<tr><td style="font-family:monospace; font-size:16px;"><b>${d.uid}</b></td><td><span style="background:#eee; padding:4px 8px; border-radius:4px; font-size:12px;">${d.status}</span></td><td>${d.users?.name || '-'}</td><td>${d.activated_at ? new Date(d.activated_at).toLocaleDateString() : '-'}</td><td style="text-align:center;"><button class="btn btn-warn" onclick="godModeEditUID('${d.uid}')">修改</button> <button class="btn btn-danger" onclick="godModeDeleteUID('${d.uid}')">刪除</button></td></tr>`; }); }
         document.getElementById('uid-table').querySelector('tbody').innerHTML = html;
     }
 
     async function generateSequentialUIDs() {
         const { data } = await supabaseClient.from('filters_uid').select('uid').order('uid', {ascending: false}).limit(1);
-        let maxNum = data && data.length > 0 ? parseInt(data[0].uid.replace('HP-','')) : 0;
-        let ins = []; for(let i=1; i<=50; i++) ins.push({ uid: 'HP-' + String(maxNum + i).padStart(6, '0') });
+        let maxNum = data && data.length > 0 ? parseInt(data[0].uid.replace('HP-','')) : 0; let ins = []; for(let i=1; i<=50; i++) ins.push({ uid: 'HP-' + String(maxNum + i).padStart(6, '0') });
         await supabaseClient.from('filters_uid').insert(ins); alert("✅ 50 組 UID 已入庫！"); loadUIDs();
     }
     async function godModeDeleteUID(uid) { if(prompt(`密碼強制刪除 UID [${uid}]：`) !== "hypass888") return; await supabaseClient.from('filters_uid').delete().eq('uid', uid); alert("✅ 強制刪除成功！"); loadUIDs(); }
     async function godModeEditUID(uid) { if(prompt(`密碼修改 UID [${uid}]：`) !== "hypass888") return; const newStatus = prompt("輸入新狀態 (produced/sold/activated/replaced)："); if(newStatus) { await supabaseClient.from('filters_uid').update({status: newStatus}).eq('uid', uid); loadUIDs(); } }
 
-    // ==============================================
-    // 4. 獎勵金審核
-    // ==============================================
     async function loadRewards() {
-        const { data } = await supabaseClient.from('rewards').select('*, users(name)').eq('type', 'redeem').eq('status', 'pending');
-        let html = ''; 
+        const { data } = await supabaseClient.from('rewards').select('*, users(name)').eq('type', 'redeem').eq('status', 'pending'); let html = ''; 
         if(data) { data.forEach(r => { html += `<tr><td><b>${r.users?.name}</b></td><td style="color:#ef4444; font-weight:bold;">-${r.points} 點</td><td>${new Date(r.created_at).toLocaleString()}</td><td style="text-align:center;"><button class="btn" onclick="approveReward(${r.id})">✅ 核發</button></td></tr>`; }); }
         document.getElementById('reward-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4" style="text-align:center;">無待審核申請</td></tr>';
     }
     async function approveReward(id) { if(confirm("確認已匯出 LINE Points 給該車主？")) { await supabaseClient.from('rewards').update({status:'completed'}).eq('id',id); loadRewards(); } }
 
-    // ==============================================
-    // 5. 保修廠審核管理
-    // ==============================================
     async function loadGarages() {
-        const { data } = await supabaseClient.from('garages').select('*').order('created_at', { ascending: false });
-        let html = '';
-        if(data) {
-            data.forEach(g => { html += `<tr><td><b>${g.name}</b><br><span style="font-size:12px;">${g.city}${g.address}</span></td><td>${g.contact_name||'-'}<br>${g.phone||'-'}</td><td>${g.status === 'active' ? '<span style="color:green;font-weight:bold;">營運中</span>' : '<span style="color:#f59e0b;">待審核</span>'}</td><td style="text-align:center;">${g.status !== 'active' ? `<button class="btn" onclick="approveGarage(${g.id})">✅ 上架</button>` : ''} <button class="btn btn-danger" onclick="deleteGarage(${g.id})">🗑️ 刪除</button></td></tr>`; });
-        }
+        const { data } = await supabaseClient.from('garages').select('*').order('created_at', { ascending: false }); let html = '';
+        if(data) { data.forEach(g => { html += `<tr><td><b>${g.name}</b><br><span style="font-size:12px;">${g.city}${g.address}</span></td><td>${g.contact_name||'-'}<br>${g.phone||'-'}</td><td>${g.status === 'active' ? '<span style="color:green;font-weight:bold;">營運中</span>' : '<span style="color:#f59e0b;">待審核</span>'}</td><td style="text-align:center;">${g.status !== 'active' ? `<button class="btn" onclick="approveGarage(${g.id})">✅ 上架</button>` : ''} <button class="btn btn-danger" onclick="deleteGarage(${g.id})">🗑️ 刪除</button></td></tr>`; }); }
         document.getElementById('garage-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4">尚無保修廠資料</td></tr>';
     }
     async function approveGarage(id) { await supabaseClient.from('garages').update({status:'active'}).eq('id',id); loadGarages(); }
     async function deleteGarage(id) { if(confirm("確定刪除此保修廠？")) { await supabaseClient.from('garages').delete().eq('id',id); loadGarages(); } }
 
-    // ==============================================
-    // 6. 預約單總表
-    // ==============================================
     async function loadBookings() {
-        const { data } = await supabaseClient.from('bookings').select('*, users(name), garages(name)').order('created_at', { ascending: false });
-        let html = '';
+        const { data } = await supabaseClient.from('bookings').select('*, users(name), garages(name)').order('created_at', { ascending: false }); let html = '';
         if(data) { data.forEach(b => { html += `<tr><td><b>${b.users?.name||'未知車主'}</b></td><td>${b.garages?.name||'未知廠'}</td><td>${b.book_date}</td><td>${b.status}</td><td style="text-align:center;"><button class="btn btn-danger" style="padding:4px 8px;" onclick="cancelBooking(${b.id})">作廢</button></td></tr>`; }); }
         document.getElementById('booking-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="5">尚無預約紀錄</td></tr>';
     }
     async function cancelBooking(id) { if(confirm("確定作廢此預約單？")) { await supabaseClient.from('bookings').update({status:'cancelled'}).eq('id',id); loadBookings(); } }
 
-    // ==============================================
-    // 7. 電子布告欄
-    // ==============================================
     async function loadBulletins() {
-        const { data } = await supabaseClient.from('bulletins').select('*').order('created_at', { ascending: false });
-        let html = '';
+        const { data } = await supabaseClient.from('bulletins').select('*').order('created_at', { ascending: false }); let html = '';
         if(data) { data.forEach(b => { html += `<tr><td><b>${b.title}</b></td><td>${new Date(b.created_at).toLocaleString()}</td><td>${b.is_active ? '<span style="color:green;">顯示中</span>' : '<span style="color:#aaa;">已隱藏</span>'}</td><td style="text-align:center;"><button class="btn btn-warn" onclick="toggleBulletin(${b.id}, ${!b.is_active})">${b.is_active ? '隱藏' : '顯示'}</button> <button class="btn btn-danger" onclick="deleteBulletin(${b.id})">刪除</button></td></tr>`; }); }
         document.getElementById('bulletin-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4">無公告</td></tr>';
     }
-    async function createBulletin() {
-        const title = document.getElementById('bul-title').value; const content = document.getElementById('bul-content').value;
-        if(!title || !content) return alert("請填寫完整公告！");
-        await supabaseClient.from('bulletins').insert([{ title, content, is_active: true }]);
-        document.getElementById('bul-title').value = ''; document.getElementById('bul-content').value = ''; alert("發布成功！"); loadBulletins();
-    }
+    async function createBulletin() { const title = document.getElementById('bul-title').value; const content = document.getElementById('bul-content').value; if(!title || !content) return alert("請填寫完整公告！"); await supabaseClient.from('bulletins').insert([{ title, content, is_active: true }]); document.getElementById('bul-title').value = ''; document.getElementById('bul-content').value = ''; alert("發布成功！"); loadBulletins(); }
     async function toggleBulletin(id, status) { await supabaseClient.from('bulletins').update({is_active: status}).eq('id',id); loadBulletins(); }
     async function deleteBulletin(id) { if(confirm("確定刪除公告？")) { await supabaseClient.from('bulletins').delete().eq('id',id); loadBulletins(); } }
 
-    // ==============================================
-    // 🌟 8. 演算法中控台與環境大數據整合下載
-    // ==============================================
     let globalEnvData = [];
 
-    // 載入雲端演算法參數
     async function loadAlgoParams() {
         const { data } = await supabaseClient.from('system_settings').select('value').eq('key', 'algo_params').maybeSingle();
-        const p = data ? data.value : { baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, carLarge: 1.3, carSmall: 0.8 };
-        document.getElementById('algo-baseWear').value = p.baseWear;
-        document.getElementById('algo-aqiOrange').value = p.aqiOrange;
-        document.getElementById('algo-aqiRed').value = p.aqiRed;
-        document.getElementById('algo-tempHigh').value = p.tempHigh;
-        document.getElementById('algo-tempLow').value = p.tempLow;
-        document.getElementById('algo-humHigh').value = p.humHigh;
-        document.getElementById('algo-carLarge').value = p.carLarge;
-        document.getElementById('algo-carSmall').value = p.carSmall;
+        const p = data ? data.value : { baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, carLarge: 1.3, carSmall: 0.8, basePm25: 1250, kwhPerDay: 0.25, co2Factor: 0.5, paHypass: 4, paOther: 8 };
+        document.getElementById('algo-baseWear').value = p.baseWear; document.getElementById('algo-aqiOrange').value = p.aqiOrange; document.getElementById('algo-aqiRed').value = p.aqiRed;
+        document.getElementById('algo-tempHigh').value = p.tempHigh; document.getElementById('algo-tempLow').value = p.tempLow; document.getElementById('algo-humHigh').value = p.humHigh;
+        document.getElementById('algo-carLarge').value = p.carLarge; document.getElementById('algo-carSmall').value = p.carSmall;
+        document.getElementById('algo-basePm25').value = p.basePm25; document.getElementById('algo-kwhPerDay').value = p.kwhPerDay; document.getElementById('algo-co2Factor').value = p.co2Factor;
+        document.getElementById('algo-paHypass').value = p.paHypass; document.getElementById('algo-paOther').value = p.paOther;
     }
 
-    // 儲存雲端演算法參數
     async function saveAlgoParams() {
         const p = {
-            baseWear: parseFloat(document.getElementById('algo-baseWear').value),
-            aqiOrange: parseFloat(document.getElementById('algo-aqiOrange').value),
-            aqiRed: parseFloat(document.getElementById('algo-aqiRed').value),
-            tempHigh: parseFloat(document.getElementById('algo-tempHigh').value),
-            tempLow: parseFloat(document.getElementById('algo-tempLow').value),
-            humHigh: parseFloat(document.getElementById('algo-humHigh').value),
-            carLarge: parseFloat(document.getElementById('algo-carLarge').value),
-            carSmall: parseFloat(document.getElementById('algo-carSmall').value)
+            baseWear: parseFloat(document.getElementById('algo-baseWear').value), aqiOrange: parseFloat(document.getElementById('algo-aqiOrange').value), aqiRed: parseFloat(document.getElementById('algo-aqiRed').value),
+            tempHigh: parseFloat(document.getElementById('algo-tempHigh').value), tempLow: parseFloat(document.getElementById('algo-tempLow').value), humHigh: parseFloat(document.getElementById('algo-humHigh').value),
+            carLarge: parseFloat(document.getElementById('algo-carLarge').value), carSmall: parseFloat(document.getElementById('algo-carSmall').value),
+            basePm25: parseFloat(document.getElementById('algo-basePm25').value), kwhPerDay: parseFloat(document.getElementById('algo-kwhPerDay').value), co2Factor: parseFloat(document.getElementById('algo-co2Factor').value),
+            paHypass: parseFloat(document.getElementById('algo-paHypass').value), paOther: parseFloat(document.getElementById('algo-paOther').value)
         };
         const { error } = await supabaseClient.from('system_settings').upsert({ key: 'algo_params', value: p });
-        if(error) alert("儲存失敗: " + error.message);
-        else alert("✅ 演算法參數已更新！全台 App 車主將自動套用最新 AI 壽命演算。");
+        if(error) alert("儲存失敗: " + error.message); else alert("✅ 演算法參數已更新！全台 App 車主將自動套用最新 AI 壽命演算。");
     }
 
     async function loadEnvData() {
         document.getElementById('env-table').querySelector('tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;">載入大數據庫中...</td></tr>';
         const { data, error } = await supabaseClient.from('env_cache').select('*').order('city', { ascending: true }).order('district', { ascending: true });
         if (error) return alert("無法讀取環境數據：" + error.message);
-        
-        globalEnvData = data;
-        document.getElementById('env-total-count').innerText = data.length + " 筆";
+        globalEnvData = data; document.getElementById('env-total-count').innerText = data.length + " 筆";
         if(data.length > 0) document.getElementById('env-last-update').innerText = new Date(data[0].updated_at).toLocaleString();
-
         let html = '';
-        data.forEach(d => {
-            html += `<tr><td><b>${d.city}</b></td><td>${d.district}</td><td>${d.temp !== null ? d.temp : '--'}</td><td>${d.hum !== null ? d.hum : '--'}</td>
-                <td style="color:${d.aqi > 100 ? 'red' : 'green'}; font-weight:bold;">${d.aqi}</td><td>${d.pm25 !== null ? d.pm25 : '--'}</td><td style="color:#f59e0b; font-weight:bold;">${d.aqi_7d_avg !== null ? Math.round(d.aqi_7d_avg) : '--'}</td></tr>`;
-        });
+        data.forEach(d => { html += `<tr><td><b>${d.city}</b></td><td>${d.district}</td><td>${d.temp !== null ? d.temp : '--'}</td><td>${d.hum !== null ? d.hum : '--'}</td><td style="color:${d.aqi > 100 ? 'red' : 'green'}; font-weight:bold;">${d.aqi}</td><td>${d.pm25 !== null ? d.pm25 : '--'}</td><td style="color:#f59e0b; font-weight:bold;">${d.aqi_7d_avg !== null ? Math.round(d.aqi_7d_avg) : '--'}</td></tr>`; });
         document.getElementById('env-table').querySelector('tbody').innerHTML = html;
     }
 
     function downloadEnvCSV() {
         if(globalEnvData.length === 0) return alert("沒有資料可供下載");
-        // 標題明確顯示雙數據庫整合
         const headers = ["縣市", "鄉鎮市區", "中央氣象署(CWA)_溫度(°C)", "中央氣象署(CWA)_濕度(%)", "環境部(MOENV)_即時AQI", "環境部(MOENV)_PM2.5", "AI_7日均值演算", "最後同步時間"];
         let csvContent = "\uFEFF" + headers.join(",") + "\n"; 
-        globalEnvData.forEach(d => {
-            const row = [d.city, d.district, d.temp, d.hum, d.aqi, d.pm25, d.aqi_7d_avg ? Math.round(d.aqi_7d_avg) : '', new Date(d.updated_at).toLocaleString()];
-            csvContent += row.join(",") + "\n";
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a"); link.setAttribute("href", url);
-        link.setAttribute("download", `環境部與氣象署_雙數據庫整合包_${new Date().getTime()}.csv`);
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        globalEnvData.forEach(d => { const row = [d.city, d.district, d.temp, d.hum, d.aqi, d.pm25, d.aqi_7d_avg ? Math.round(d.aqi_7d_avg) : '', new Date(d.updated_at).toLocaleString()]; csvContent += row.join(",") + "\n"; });
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `環境部與氣象署_雙數據庫整合包_${new Date().getTime()}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
-    async function triggerEnvUpdate() {
-        alert("已經發送指令給 Supabase Edge Function。此過程可能需要 10~20 秒抓取政府資料，請稍後重整查看。");
-        try { await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/update_env', { method: 'POST' }); loadEnvData(); } catch(e) { console.error(e); }
-    }
+    async function triggerEnvUpdate() { alert("已經發送指令給雲端。此過程需要 10~20 秒抓取政府資料，請稍後重整查看。"); try { await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/update_env', { method: 'POST' }); loadEnvData(); } catch(e) { console.error(e); } }
   </script>
 </body>
 </html>
