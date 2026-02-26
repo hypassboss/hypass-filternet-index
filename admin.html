@@ -2,11 +2,13 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>HYPASS V6.0 總部戰情室 (上帝錄影版)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HYPASS V7.0 總部戰情室 (終極錄影與上帝模式)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body { font-family: sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
-    .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; }
+    .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; flex-shrink:0; }
     .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; border-left: 4px solid transparent; }
     .nav-btn.active { color: #00D100; border-left-color: #00D100; background: #1a1e1a; font-weight: bold; }
     .main-content { flex: 1; padding: 30px; overflow-y: auto; }
@@ -15,23 +17,23 @@
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
     th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     th { background: #f8f9fa; }
-    .btn { background: #00D100; color: #000; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight:bold; }
+    .btn { background: #00D100; color: #000; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight:bold; }
     .btn-danger { background: #ff4444; color: #fff; }
     .btn-warn { background: #ff9800; color: #fff; }
-    .scan-container { display: flex; gap: 20px; background: #1e1e1e; padding: 20px; border-radius: 8px; border-left: 5px solid #00D100; margin-top:20px;}
-    .scan-input { width: 100%; padding: 18px; font-size: 22px; border-radius: 5px; background: #000; color: #00D100; text-align: center;}
     
-    /* 🌟 錄影機 UI */
-    .video-container { background: #222; padding: 15px; border-radius: 8px; color: white; display: flex; align-items: center; gap: 20px; margin-top: 20px;}
-    #live-video { width: 320px; height: 180px; background: #000; border-radius: 8px; border: 2px solid #555; }
-    .recording-dot { display: none; color: red; font-weight: bold; animation: blink 1s infinite; }
+    /* 掃描與錄影區塊 */
+    .dispatch-container { background: #1e1e1e; padding: 25px; border-radius: 12px; color: white; margin-top:20px; }
+    .scan-input { width: 100%; padding: 15px; font-size: 20px; border-radius: 5px; background: #000; color: #00D100; text-align: center; border:1px solid #555; margin-bottom:15px; box-sizing:border-box;}
+    #scanner-box { width: 100%; max-width: 400px; margin: 0 auto 20px auto; overflow: hidden; border-radius: 10px; display:none; }
+    #video-box { width: 100%; max-width: 400px; background: #000; border-radius: 8px; border: 2px solid #555; display:none; margin: 0 auto 20px auto;}
+    .recording-dot { color: red; font-weight: bold; animation: blink 1s infinite; display:none; }
     @keyframes blink { 50% { opacity: 0; } }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <div style="padding-top: 20px;"><h2 style="color:#00D100; padding: 0 20px;">HYPASS ADMIN</h2>
-      <button class="nav-btn active" onclick="switchTab('dispatch', this)">📦 倉儲出貨站</button>
+      <button class="nav-btn active" onclick="switchTab('dispatch', this)">📦 出貨錄影站</button>
       <button class="nav-btn" onclick="switchTab('crm', this)">👥 客戶管理</button>
       <button class="nav-btn" onclick="switchTab('uid', this)">🏷️ UID 庫存</button>
     </div>
@@ -40,32 +42,35 @@
   <div class="main-content">
     
     <div id="panel-dispatch" class="panel active">
-      <h2>📦 B2C 無間斷掃描出貨站 (含錄影防偽)</h2>
-      
-      <div class="video-container">
-        <video id="live-video" autoplay muted></video>
-        <div>
-            <h3 style="margin:0 0 10px 0;">🎥 裝箱錄影機 <span class="recording-dot" id="rec-dot">⏺ 錄影中</span></h3>
-            <button class="btn" style="background:#1976d2; color:white;" onclick="startRecording()">1. 開啟鏡頭並開始錄影</button>
-            <button class="btn btn-danger" onclick="stopRecording()">2. 停止並下載存檔</button>
-            <p style="font-size:12px; color:#aaa; margin-top:10px;">操作說明：包貨前點擊開始，包裝封箱後點擊停止並下載影片作為存證。</p>
-        </div>
-      </div>
+      <h2>📦 B2C 自動掃描與出貨錄影</h2>
+      <div class="dispatch-container">
+        
+        <div id="scanner-box"></div>
+        <video id="video-box" autoplay muted playsinline></video>
 
-      <div class="scan-container">
-        <div style="flex:1;"><label style="color:#aaa;">1. 掃描 UID</label><input type="text" id="scan-uid-input" class="scan-input" onkeypress="handleScan(event, 'uid')"></div>
-        <div style="flex:1;"><label style="color:#aaa;">2. 掃描 Shopline 訂單</label><input type="text" id="scan-order-input" class="scan-input" disabled onkeypress="handleScan(event, 'order')"></div>
+        <h3 id="flow-status" style="text-align:center; color:#00D100; margin-bottom:20px;">第一步：請掃描 Shopline 訂單條碼</h3>
+        
+        <div style="display:flex; gap:15px; margin-bottom:15px;">
+            <div style="flex:1;"><label>訂單號碼</label><input type="text" id="inp-order" class="scan-input" readonly placeholder="等待掃描..."></div>
+            <div style="flex:1;"><label>濾網 UID</label><input type="text" id="inp-uid" class="scan-input" readonly placeholder="等待掃描..."></div>
+        </div>
+
+        <div style="text-align:center;">
+            <button id="btn-scan" class="btn" style="background:#1976d2; color:white; font-size:18px;" onclick="startScanFlow()">1. 啟動鏡頭掃描條碼</button>
+            <button id="btn-record" class="btn-warn" style="font-size:18px; display:none;" onclick="startRecording()">🎥 2. 開始包裝錄影 <span class="recording-dot" id="rec-dot">⏺ 錄影中</span></button>
+            <button id="btn-stop" class="btn-danger" style="font-size:18px; display:none;" onclick="stopAndSave()">📦 3. 結束錄影並下載存檔</button>
+        </div>
+        <p style="text-align:center; color:#888; font-size:12px; margin-top:15px;">系統限制提醒：錄影檔將以「訂單_UID.webm」命名，點擊結束後會觸發瀏覽器下載至手機或電腦中，請自行分類保管。</p>
       </div>
-      <h3 id="scan-status-msg" style="color:#333; margin-top:15px;">等待掃描...</h3>
     </div>
 
     <div id="panel-crm" class="panel">
-      <h2>👥 濾網客人 CRM</h2>
-      <table id="crm-table"><thead><tr><th>客戶資訊</th><th>車輛</th><th>操作</th></tr></thead><tbody></tbody></table>
+      <h2>👥 濾網客人 CRM (上帝模式：強制連鎖拔除)</h2>
+      <table id="crm-table"><thead><tr><th>客戶資訊</th><th>車輛</th><th>統計</th><th>上帝操作</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="panel-uid" class="panel">
-      <h2>🏷️ UID 庫存 (上帝模式)</h2>
+      <h2>🏷️ UID 庫存 (上帝模式：無條件銷毀)</h2>
       <button class="btn" onclick="generateSequentialUIDs()">⚙️ 產生 50 組新 UID</button>
       <table id="uid-table"><thead><tr><th>UID</th><th>狀態</th><th>擁有者</th><th>上帝操作</th></tr></thead><tbody></tbody></table>
     </div>
@@ -83,47 +88,118 @@
     }
 
     // ==============================================
-    // 🌟 3. 出貨錄影功能 (Web API)
+    // 🌟 1. 出貨流程 (掃訂單 -> 掃UID -> 錄影 -> 下載)
     // ==============================================
-    let mediaRecorder; let recordedChunks = [];
+    let html5QrcodeScanner = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let currentOrder = "";
+    let currentUID = "";
+    let videoStream = null;
+
+    function startScanFlow() {
+        currentOrder = ""; currentUID = "";
+        document.getElementById('inp-order').value = ""; document.getElementById('inp-uid').value = "";
+        document.getElementById('btn-scan').style.display = 'none';
+        document.getElementById('scanner-box').style.display = 'block';
+        document.getElementById('flow-status').innerText = "請將鏡頭對準 Shopline 訂單條碼";
+        
+        html5QrcodeScanner = new Html5Qrcode("scanner-box");
+        html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 100 } }, 
+        (text) => {
+            if (!currentOrder) {
+                // 假設訂單不是 HP- 開頭
+                if(!text.startsWith('HP-')) {
+                    currentOrder = text;
+                    document.getElementById('inp-order').value = currentOrder;
+                    document.getElementById('flow-status').innerText = "✅ 訂單掃描成功！請接著掃描濾網 UID (HP-開頭)";
+                }
+            } else if (!currentUID) {
+                if(text.startsWith('HP-')) {
+                    currentUID = text;
+                    document.getElementById('inp-uid').value = currentUID;
+                    html5QrcodeScanner.stop().then(() => {
+                        document.getElementById('scanner-box').style.display = 'none';
+                        document.getElementById('flow-status').innerText = "✅ 掃描完成！請點擊『開始包裝錄影』";
+                        document.getElementById('btn-record').style.display = 'inline-block';
+                    });
+                }
+            }
+        }, (err) => {});
+    }
+
     async function startRecording() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            document.getElementById('live-video').srcObject = stream;
-            mediaRecorder = new MediaRecorder(stream);
+            videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            const videoElement = document.getElementById('video-box');
+            videoElement.style.display = 'block';
+            videoElement.srcObject = videoStream;
+            
+            mediaRecorder = new MediaRecorder(videoStream);
             mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) recordedChunks.push(e.data); };
-            mediaRecorder.onstop = function() {
+            mediaRecorder.start();
+            
+            document.getElementById('btn-record').style.display = 'none';
+            document.getElementById('btn-stop').style.display = 'inline-block';
+            document.getElementById('rec-dot').style.display = 'inline';
+            document.getElementById('flow-status').innerText = "🎥 錄影中，請進行包裝...";
+        } catch (err) { alert("無法取得相機權限錄影：" + err.message); }
+    }
+
+    async function stopAndSave() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            mediaRecorder.onstop = async function() {
+                // 1. 觸發影片下載
                 const blob = new Blob(recordedChunks, { type: 'video/webm' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url; 
-                // 檔名加上時間戳記防撞名
-                a.download = `出貨錄影_${new Date().getTime()}.webm`; 
+                a.download = `${currentOrder}_${currentUID}.webm`; // 檔名：訂單號碼_UID
                 a.click();
                 recordedChunks = [];
+                
+                // 關閉相機
+                videoStream.getTracks().forEach(track => track.stop());
+                document.getElementById('video-box').style.display = 'none';
+                document.getElementById('rec-dot').style.display = 'none';
+
+                // 2. 寫入資料庫
+                document.getElementById('flow-status').innerText = "🔄 寫入資料庫中...";
+                const { data: user } = await supabaseClient.from('users').select('line_uid').eq('phone', currentOrder).maybeSingle(); // 假設訂單條碼是手機號，或需替換邏輯
+                const payload = { status: 'sold', shopline_order_id: currentOrder };
+                if(user) payload.activated_by_uid = user.line_uid;
+                await supabaseClient.from('filters_uid').update(payload).eq('uid', currentUID);
+
+                alert("✅ 出貨與錄影存檔完成！");
+                
+                // 重置 UI
+                document.getElementById('btn-stop').style.display = 'none';
+                document.getElementById('btn-scan').style.display = 'inline-block';
+                document.getElementById('flow-status').innerText = "第一步：請掃描 Shopline 訂單條碼";
+                document.getElementById('inp-order').value = ""; document.getElementById('inp-uid').value = "";
             };
-            mediaRecorder.start();
-            document.getElementById('rec-dot').style.display = 'inline';
-        } catch (err) { alert("無法取得相機權限：" + err.message); }
-    }
-    function stopRecording() {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-            document.getElementById('rec-dot').style.display = 'none';
-            document.getElementById('live-video').srcObject.getTracks().forEach(track => track.stop()); // 關閉相機燈號
         }
     }
 
+
     // ==============================================
-    // 🌟 2. CRM 上帝模式 (解決刪除失敗)
+    // 🌟 2. CRM 上帝模式 (解決刪除失敗，強制連鎖拔除)
     // ==============================================
     async function loadCRM() {
-      const { data } = await supabaseClient.from('users').select('*').eq('role', 'customer');
+      document.getElementById('crm-table').querySelector('tbody').innerHTML = '<tr><td colspan="4">讀取中...</td></tr>';
+      const [resUsers, resFilters] = await Promise.all([
+          supabaseClient.from('users').select('*').eq('role', 'customer'),
+          supabaseClient.from('filters_uid').select('activated_by_uid')
+      ]);
+      let pCounts = {}; resFilters.data?.forEach(f => { if(f.activated_by_uid) pCounts[f.activated_by_uid] = (pCounts[f.activated_by_uid] || 0) + 1; });
+
       let html = '';
-      data.forEach(u => {
+      resUsers.data?.forEach(u => {
           html += `<tr>
             <td><b>${u.name}</b><br>${u.phone}</td>
             <td>${u.car_brand} (${u.license_plate})</td>
+            <td>濾網: ${pCounts[u.line_uid]||0}</td>
             <td><button class="btn btn-danger" onclick="godModeDelete('${u.line_uid}', '${u.name}')">🗑️ 銷毀</button></td>
           </tr>`; 
       }); 
@@ -132,28 +208,33 @@
 
     async function godModeDelete(uid, name) {
         const pwd = prompt(`【最高權限】您將徹底摧毀 ${name} 的資料。\n請輸入密碼：`);
-        if (pwd !== "hypass888") return alert("密碼錯誤！");
+        if (pwd !== "hypass888") return alert("❌ 密碼錯誤！");
         
-        if (confirm(`確定要摧毀 ${name} 嗎？`)) {
-            // 🚨 終極連鎖拔除術：清空所有關聯資料表
-            await supabaseClient.from('rewards').delete().eq('user_uid', uid);
-            await supabaseClient.from('bookings').delete().eq('user_uid', uid);
-            await supabaseClient.from('user_logs').delete().eq('user_uid', uid);
-            await supabaseClient.from('filters_uid').update({ activated_by_uid: null }).eq('activated_by_uid', uid);
-            
-            // 拔除完畢，正式刪除 User
-            const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
-            if (error) alert("摧毀失敗：" + error.message); else { alert("✅ 銷毀成功！"); loadCRM(); }
+        if (confirm(`確定要摧毀 ${name} 嗎？此動作將拔除他所有的歷史紀錄！`)) {
+            try {
+                // 🚨 終極連鎖拔除術
+                await supabaseClient.from('rewards').delete().eq('user_uid', uid);
+                await supabaseClient.from('bookings').delete().eq('user_uid', uid);
+                await supabaseClient.from('user_logs').delete().eq('user_uid', uid);
+                // 有些舊版可能叫 appointments，為了防呆也刪一下
+                try { await supabaseClient.from('appointments').delete().eq('user_uid', uid); } catch(e){}
+                
+                await supabaseClient.from('filters_uid').update({ activated_by_uid: null }).eq('activated_by_uid', uid);
+                
+                const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
+                if (error) throw error; 
+                alert("✅ 銷毀成功！"); loadCRM();
+            } catch (err) { alert("摧毀失敗，請檢查資料庫約束：" + err.message); }
         }
     }
 
     // ==============================================
-    // 🌟 4. UID 上帝模式 (強制銷毀與修改)
+    // 🌟 3. UID 上帝模式 (強制銷毀與修改)
     // ==============================================
     async function loadUIDs() {
         const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('uid', { ascending: false }).limit(50);
         let html = '';
-        data.forEach(d => { 
+        if(data) data.forEach(d => { 
             html += `<tr><td><b>${d.uid}</b></td><td>${d.status}</td><td>${d.users?.name||'-'}</td>
             <td>
               <button class="btn btn-warn" style="padding:4px;" onclick="godModeEditUID('${d.uid}')">✏️ 修改</button>
@@ -167,7 +248,7 @@
         const pwd = prompt(`輸入密碼以強制刪除 UID [${uid}]：`);
         if(pwd !== "hypass888") return;
         await supabaseClient.from('filters_uid').delete().eq('uid', uid);
-        alert("強制刪除成功！"); loadUIDs();
+        alert("✅ 強制刪除成功！"); loadUIDs();
     }
     
     async function godModeEditUID(uid) {
@@ -176,7 +257,7 @@
         const newStatus = prompt("請輸入新狀態 (produced / sold / activated / replaced)：");
         if(newStatus) {
             await supabaseClient.from('filters_uid').update({status: newStatus}).eq('uid', uid);
-            alert("修改成功！"); loadUIDs();
+            alert("✅ 修改成功！"); loadUIDs();
         }
     }
 
@@ -187,33 +268,7 @@
         await supabaseClient.from('filters_uid').insert(ins); alert("✅ 產生成功！"); loadUIDs();
     }
 
-    // ==============================================
-    // 出貨掃描邏輯
-    // ==============================================
-    let curUid = '';
-    function handleScan(e, type) {
-        if (e.key === 'Enter') {
-            const text = e.target.value.trim();
-            if (type === 'uid' && text.startsWith('HP-')) {
-                curUid = text; document.getElementById('scan-status-msg').innerText = "✅ UID OK，請掃描訂單";
-                document.getElementById('scan-uid-input').disabled = true; document.getElementById('scan-order-input').disabled = false; document.getElementById('scan-order-input').focus();
-            } else if (type === 'order' && text.length > 5) {
-                processOrder(curUid, text);
-            }
-        }
-    }
-    async function processOrder(uid, order) {
-        document.getElementById('scan-status-msg').innerText = "🔄 寫入中...";
-        const { data: user } = await supabaseClient.from('users').select('line_uid').eq('phone', order).maybeSingle();
-        const payload = { status: 'sold', shopline_order_id: order };
-        if(user) payload.activated_by_uid = user.line_uid;
-        await supabaseClient.from('filters_uid').update(payload).eq('uid', uid);
-        document.getElementById('scan-status-msg').innerHTML = `<span style="color:green;">✅ ${uid} 出貨成功！</span>`;
-        document.getElementById('scan-uid-input').value = ''; document.getElementById('scan-order-input').value = '';
-        document.getElementById('scan-uid-input').disabled = false; document.getElementById('scan-order-input').disabled = true; document.getElementById('scan-uid-input').focus();
-    }
-
-    loadCRM(); loadUIDs();
+    loadCRM(); 
   </script>
 </body>
 </html>
