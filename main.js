@@ -1,8 +1,45 @@
+// 🚨 防漏攔截器 (維持最高執行順序)
+(function captureReferral() {
+    try {
+        let urlStr = window.location.href;
+        let urlObj = new URL(urlStr);
+        let ref = urlObj.searchParams.get('ref');
+        
+        if (!ref) {
+            let liffState = urlObj.searchParams.get('liff.state');
+            if (liffState) {
+                let stateParams = new URLSearchParams(liffState.startsWith('?') ? liffState : '?' + liffState);
+                ref = stateParams.get('ref');
+            }
+        }
+        if (!ref) {
+            let match = urlStr.match(/[?&]ref=([^&#]+)/) || urlStr.match(/ref%3D([^&]+)/);
+            if (match && match[1]) ref = decodeURIComponent(match[1]);
+        }
+        if (ref && ref !== 'null' && ref !== 'undefined') {
+            localStorage.setItem('hypass_ref_code', ref);
+        }
+    } catch(e) {}
+})();
+
+// 🌟 開屏動畫運鏡邏輯 (淡入 -> 停1秒 -> 淡出)
 window.addEventListener('load', () => {
+    const splash = document.getElementById('splash-screen');
+    const splashImg = document.getElementById('splash-img');
+    
+    // 1. 稍微延遲後，讓圖片淡入
     setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        if(splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; }, 600); }
-    }, 1000); 
+        if(splashImg) splashImg.style.opacity = '1';
+    }, 100);
+    
+    // 2. 顯示 1 秒後 (包含淡入時間大約 1.5秒)，整個白底畫面淡出
+    setTimeout(() => {
+        if(splash) { 
+            splash.style.opacity = '0'; 
+            // 3. 淡出完成後，徹底關閉圖層，正式進入 App
+            setTimeout(() => { splash.style.display = 'none'; }, 600); 
+        }
+    }, 1500); 
 });
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -20,7 +57,7 @@ let algoParams = {
     carLarge: 1.3, carSmall: 0.8, basePm25: 1250, kwhPerDay: 0.25, co2Factor: 0.5, paHypass: 4, paOther: 8 
 };
 
-// 🌟 車單大擴充 (新增 MG, CMC, Peugeot, Land Rover, Mini 等)
+// 車單大擴充
 const carData = { 
   "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "Vios", "Sienta", "Town Ace", "其他"], 
   "Lexus": ["NX", "RX", "UX", "ES", "IS", "LM", "其他"], 
@@ -94,7 +131,6 @@ function switchBookingTab(t) {
     document.getElementById('tab-btn-smart').className = `tab-btn ${t==='smart' ? 'active' : ''}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t==='manual' ? 'active' : ''}`; 
 }
 
-// 🌟 優化註冊與獎勵金發放
 async function submitRegister(role) {
     try {
         const p = await liff.getProfile(); 
@@ -108,7 +144,6 @@ async function submitRegister(role) {
         
         const { error } = await supabaseClient.from('users').upsert(payload);
         if (!error) {
-            // 確認推薦金寫入
             if (refId && refId !== p.userId) {
                 await supabaseClient.from('rewards').insert([{ user_uid: refId, type: 'referral_register', points: 10, status: 'completed', details: `推薦註冊: ${n}` }]);
             }
@@ -217,4 +252,109 @@ async function calculateDashboardStats() {
     if(healthEl) healthEl.innerText = `${health}%`;
     
     if (health >= 60) {
-        if(badgeText) badgeText.innerText = '極效防護中'; if(healthEl) healthEl.style.color = 'var(--accent-color)'; if(pulseDot) pulseDot.
+        if(badgeText) badgeText.innerText = '極效防護中'; if(healthEl) healthEl.style.color = 'var(--accent-color)'; if(pulseDot) pulseDot.style.animationDuration = '1.8s';
+    } else if (health >= 30) {
+        if(badgeText) badgeText.innerText = '穩定監控中'; if(healthEl) healthEl.style.color = 'var(--accent-color)'; if(pulseDot) pulseDot.style.animationDuration = '2.5s';
+    } else if (health > 0) {
+        if(badgeText) badgeText.innerText = '效能衰退中'; if(healthEl) healthEl.style.color = '#f59e0b'; if(pulseDot) pulseDot.style.animationDuration = '1s';
+        document.getElementById('ui-shield-badge').style.borderColor = '#f59e0b'; document.getElementById('ui-shield-badge').style.color = '#f59e0b'; pulseDot.style.background = '#f59e0b';
+    } else {
+        if(badgeText) badgeText.innerText = '請即刻更換'; if(healthEl) healthEl.style.color = '#ef4444'; if(pulseDot) pulseDot.style.animationDuration = '0.4s';
+        document.getElementById('ui-shield-badge').style.borderColor = '#ef4444'; document.getElementById('ui-shield-badge').style.color = '#ef4444'; pulseDot.style.background = '#ef4444';
+    }
+    
+    setElText('ui-pm25', Math.round(days * algoParams.basePm25 * totalMultiplier).toLocaleString());
+    setElText('ui-esg-kwh', (days * algoParams.kwhPerDay * mileageRate).toFixed(1));
+    setElText('ui-esg-co2', (days * algoParams.kwhPerDay * mileageRate * algoParams.co2Factor).toFixed(1));
+    setElText('ui-esg-ac', Math.round(((algoParams.paOther - algoParams.paHypass) / algoParams.paOther) * 30)); 
+    
+  } else {
+    setElText('ui-filter-date', '尚未啟用'); if(healthEl) healthEl.innerText = '--%'; if(badgeText) badgeText.innerText = '系統待命'; if(pulseDot) pulseDot.style.animation = 'none';
+    let badge = document.getElementById('ui-shield-badge'); if(badge) { badge.style.borderColor = '#555'; badge.style.color = '#888'; badge.style.background = 'rgba(255,255,255,0.05)'; }
+    if(pulseDot) pulseDot.style.background = '#555';
+  }
+}
+
+async function fetchEnv(city, district) {
+  let { data } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
+  if(!data) { const { data: fb } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fb; }
+  
+  if(data) {
+    envData = data; setElText('env-aqi', data.aqi); setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
+    const msgBox = document.getElementById('dynamic-msg-box'); const rewardMsg = localStorage.getItem('hypass_temp_msg');
+    
+    if (rewardMsg) { setElText('ui-dynamic-msg', rewardMsg); if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; } 
+    else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI: ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
+    calculateDashboardStats();
+  }
+}
+
+function getSnapshotGPS() {
+  let lastCity = localStorage.getItem('hp_last_city') || (currentUser ? currentUser.city : '台北市'); let lastDist = localStorage.getItem('hp_last_dist') || (currentUser ? currentUser.district : '');
+  setElText('ui-loc-name', lastCity + lastDist); fetchEnv(lastCity, lastDist); 
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
+        .then(r => r.json()).then(d => {
+          let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
+          if(city) { setElText('ui-loc-name', city + district); localStorage.setItem('hp_last_city', city); localStorage.setItem('hp_last_dist', district); fetchEnv(city, district); }
+        }).catch(e => console.log("翻譯伺服器忙碌"));
+    }, () => { console.log("未授權定位"); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }); 
+  }
+}
+
+async function calculatePointsAndMarquee() {
+    const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
+    let total = 0; let hasRecentReward = false;
+    
+    if(data && data.length > 0) {
+        data.forEach(r => total += (r.type === 'redeem' ? -r.points : r.points));
+        const latestReward = data.find(r => r.type.includes('referral') && r.status === 'completed');
+        if (latestReward && (new Date().getTime() - new Date(latestReward.created_at).getTime()) < 86400000) { 
+            localStorage.setItem('hypass_temp_msg', `🎉 恭喜！您推薦的好友已成功加入，獲得 ${latestReward.points} 點獎勵！`);
+            hasRecentReward = true;
+        }
+    }
+    if (!hasRecentReward) localStorage.removeItem('hypass_temp_msg');
+    setElText('reward-balance', `$${total}`);
+}
+
+async function init() {
+  try {
+      await liff.init({ liffId: "2009187567-58hBrZRj" }); 
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      
+      const { data: st } = await supabaseClient.from('system_settings').select('value').eq('key', 'algo_params').maybeSingle();
+      if (st && st.value) { algoParams = { ...algoParams, ...st.value }; }
+
+      const p = await liff.getProfile(); 
+      const { data } = await supabaseClient.from('users').select('*').eq('line_uid', p.userId).maybeSingle();
+      
+      if (data) {
+        currentUser = data; 
+        setElText('ui-owner', `${data.name} 的專屬座艙`); let carString = (data.car_brand || '') + ' ' + (data.car_model || ''); setElText('ui-car-info', carString.trim() ? carString : '--');
+        document.getElementById('nav-bar').style.display = 'flex';
+        
+        setElVal('edit-name', data.name); setElVal('edit-phone', data.phone); setElVal('edit-email', data.email); if(data.gender) setElVal('edit-gender', data.gender);
+        if(data.city) { setElVal('edit-city', data.city); updateDistricts('edit-city', 'edit-district'); if(data.district) setElVal('edit-district', data.district); }
+        setElVal('edit-address', data.address);
+        if(data.car_brand) { setElVal('edit-brand', data.car_brand); updateCarModels('edit-brand', 'edit-model'); if(data.car_model) setElVal('edit-model', data.car_model); }
+        if(data.car_year) setElVal('edit-year', data.car_year); setElVal('edit-plate', data.license_plate); if(data.yearly_mileage) setElVal('edit-mileage', data.yearly_mileage);
+        
+        setElText('contract-plate', data.license_plate); setElText('ui-home-city', data.city || '台北市');
+        
+        switchPage('home', document.querySelector('.nav-item'));
+        await calculatePointsAndMarquee(); getSnapshotGPS(); loadBulletins(); 
+      } else { 
+        // 🌟 修復 UI 碰撞：強制隱藏首頁，顯示註冊頁
+        document.getElementById('page-home').classList.remove('active');
+        document.getElementById('page-register').classList.add('active'); 
+      }
+  } catch(e) {
+      console.error("Initialization error:", e);
+  }
+}
+
+init();
+async function redeemPoints() { alert("提領申請已送出！總部將盡快為您處理。"); }
