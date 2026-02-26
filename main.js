@@ -1,4 +1,3 @@
-// 🚨 防漏攔截器 (維持最高執行順序)
 (function captureReferral() {
     try {
         let rawUrl = window.location.href;
@@ -11,24 +10,15 @@
     } catch(e) {}
 })();
 
-// 🌟 開屏動畫運鏡邏輯 (淡入 -> 停1秒 -> 淡出)
+// 🌟 開屏動畫邏輯 (顯示 1.5 秒後淡出)
 window.addEventListener('load', () => {
     const splash = document.getElementById('splash-screen');
-    const splashImg = document.getElementById('splash-img');
-    
-    // 1. 圖片淡入 (0.5秒)
-    setTimeout(() => { if(splashImg) splashImg.style.opacity = '1'; }, 50);
-    
-    // 2. 顯示 1 秒後，圖片淡出 (0.5秒)
-    setTimeout(() => { if(splashImg) splashImg.style.opacity = '0'; }, 1550);
-    
-    // 3. 圖片淡出完畢後，白底背景淡出並隱藏圖層
     setTimeout(() => {
         if(splash) { 
             splash.style.opacity = '0'; 
-            setTimeout(() => { splash.style.display = 'none'; }, 500); 
+            setTimeout(() => { splash.style.display = 'none'; }, 600); 
         }
-    }, 2050); 
+    }, 1500); 
 });
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -40,13 +30,11 @@ const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supab
 let currentUser = null; 
 let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
-// 🌟 完整 13 項演算法參數
 let algoParams = { 
     baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, 
     carLarge: 1.3, carSmall: 0.8, basePm25: 1250, kwhPerDay: 0.25, co2Factor: 0.5, paHypass: 4, paOther: 8 
 };
 
-// 車單大擴充
 const carData = { 
   "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "Vios", "Sienta", "Town Ace", "其他"], 
   "Lexus": ["NX", "RX", "UX", "ES", "IS", "LM", "其他"], 
@@ -120,13 +108,12 @@ function switchBookingTab(t) {
     document.getElementById('tab-btn-smart').className = `tab-btn ${t==='smart' ? 'active' : ''}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t==='manual' ? 'active' : ''}`; 
 }
 
-// 🌟 雙重引擎防漏註冊，保證點數入帳
+// 🌟 恢復獎勵金發放 (推薦註冊 10 點)
 async function submitRegister(role) {
     try {
         const p = await liff.getProfile(); 
         let refId = localStorage.getItem('hypass_ref_code') || null; 
         
-        // 【雙重保險】如果在註冊當下 localStorage 空了，直接從 LIFF 底層再抓一次
         if (!refId && liff.getContext() && liff.getContext().endpointUrl) {
             let match = liff.getContext().endpointUrl.match(/ref=([^&#]+)/) || liff.getContext().endpointUrl.match(/ref%3D([^&#]+)/);
             if (match) refId = decodeURIComponent(match[1]);
@@ -140,8 +127,8 @@ async function submitRegister(role) {
         
         const { error } = await supabaseClient.from('users').upsert(payload);
         if (!error) {
+            // ✅ 恢復：發放註冊 10 點推薦金
             if (refId && refId !== p.userId) {
-                // 註冊成功，強制發放獎勵金
                 await supabaseClient.from('rewards').insert([{ user_uid: refId, type: 'referral_register', points: 10, status: 'completed', details: `推薦註冊: ${n}` }]);
             }
             localStorage.removeItem('hypass_ref_code'); location.reload();
@@ -163,6 +150,7 @@ function openFrontendScanner() {
 }
 function closeScanner() { if(scanner) scanner.stop(); document.getElementById('scanner-modal').style.display = 'none'; }
 
+// 🌟 恢復獎勵金發放 (首掃綁定 100 點)
 async function processUID(uid) {
     if (!uid.match(/^HP-\d+$/)) return alert("格式錯誤，請掃描 HP- 條碼");
     const { data } = await supabaseClient.from('filters_uid').select('*').eq('uid', uid).maybeSingle();
@@ -171,10 +159,12 @@ async function processUID(uid) {
     await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
     await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date() }).eq('uid', uid);
     
+    // ✅ 恢復：發放首掃 100 點獎勵
     if (currentUser.referrer_uid) {
         const { count } = await supabaseClient.from('filters_uid').select('*', { count: 'exact', head: true }).eq('activated_by_uid', currentUser.line_uid);
         if (count === 1) { await supabaseClient.from('rewards').insert([{ user_uid: currentUser.referrer_uid, type: 'referral_scan', points: 100, status: 'completed', details: `首掃獎勵` }]); }
     }
+    
     alert("✅ 濾網綁定啟用成功！"); location.reload();
 }
 
@@ -214,7 +204,6 @@ async function loadBulletins() {
   document.getElementById('bulletin-board-container').innerHTML = html;
 }
 
-// 🌟 終極加權演算法 (雲端參數版)
 async function calculateDashboardStats() {
   const badgeText = document.getElementById('ui-shield-text');
   const pulseDot = document.getElementById('ui-pulse-dot');
@@ -278,10 +267,18 @@ async function fetchEnv(city, district) {
   
   if(data) {
     envData = data; setElText('env-aqi', data.aqi); setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
-    const msgBox = document.getElementById('dynamic-msg-box'); const rewardMsg = localStorage.getItem('hypass_temp_msg');
+    const msgBox = document.getElementById('dynamic-msg-box'); 
     
-    if (rewardMsg) { setElText('ui-dynamic-msg', rewardMsg); if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; } 
-    else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI: ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
+    // 🌟 恢復：檢查是否有尚未顯示的獎勵金通知跑馬燈
+    const rewardMsg = localStorage.getItem('hypass_temp_msg');
+    if (rewardMsg) { 
+        setElText('ui-dynamic-msg', rewardMsg); 
+        if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; 
+    } else { 
+        setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI: ${data.aqi}，持續防護中...`); 
+        if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; 
+    }
+    
     calculateDashboardStats();
   }
 }
@@ -301,6 +298,7 @@ function getSnapshotGPS() {
   }
 }
 
+// 🌟 恢復獎勵金計算與跑馬燈觸發
 async function calculatePointsAndMarquee() {
     const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
     let total = 0; let hasRecentReward = false;
@@ -341,13 +339,13 @@ async function init() {
         
         setElText('contract-plate', data.license_plate); setElText('ui-home-city', data.city || '台北市');
         
-        // 確保成功登入時，註冊頁面被關閉
         document.getElementById('page-register').classList.remove('active');
         switchPage('home', document.querySelector('.nav-item'));
         
-        await calculatePointsAndMarquee(); getSnapshotGPS(); loadBulletins(); 
+        // 🌟 恢復：登入時呼叫獎勵金計算
+        await calculatePointsAndMarquee(); 
+        getSnapshotGPS(); loadBulletins(); 
       } else { 
-        // 🌟 修復 UI 碰撞：如果是新會員，強制隱藏首頁，顯示註冊頁
         document.getElementById('page-home').classList.remove('active');
         document.getElementById('page-register').classList.add('active'); 
       }
