@@ -2,626 +2,218 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>HYPASS V5.12 總部戰情室 (上帝模式終極版)</title>
+  <title>HYPASS V6.0 總部戰情室 (上帝錄影版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; overflow: hidden;}
+    body { font-family: sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
+    .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; }
+    .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 16px; border-left: 4px solid transparent; }
+    .nav-btn.active { color: #00D100; border-left-color: #00D100; background: #1a1e1a; font-weight: bold; }
+    .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+    .panel { display: none; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .panel.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background: #f8f9fa; }
+    .btn { background: #00D100; color: #000; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight:bold; }
+    .btn-danger { background: #ff4444; color: #fff; }
+    .btn-warn { background: #ff9800; color: #fff; }
+    .scan-container { display: flex; gap: 20px; background: #1e1e1e; padding: 20px; border-radius: 8px; border-left: 5px solid #00D100; margin-top:20px;}
+    .scan-input { width: 100%; padding: 18px; font-size: 22px; border-radius: 5px; background: #000; color: #00D100; text-align: center;}
     
-    /* 側邊欄設計 */
-    .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; box-shadow: 2px 0 15px rgba(0,0,0,0.1); z-index: 10;}
-    .nav-btn { display: block; width: 100%; padding: 16px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 15px; border-left: 4px solid transparent; transition: all 0.2s;}
-    .nav-btn:hover { color: #fff; background: #222; }
-    .nav-btn.active { color: #00e676; border-left-color: #00e676; background: #1a1e1a; font-weight: bold; }
-    
-    /* 主內容區 */
-    .main-content { flex: 1; padding: 30px; overflow-y: auto; background: #f8fafc; }
-    .panel { display: none; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-    .panel.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* 表格設計 */
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1px #eaedf1; }
-    th, td { border-bottom: 1px solid #eaedf1; padding: 14px 16px; text-align: left; vertical-align: middle;}
-    th { background: #f1f5f9; color: #475569; font-weight: 600; position: sticky; top: 0;}
-    tr:hover { background-color: #f8fafc; }
-    
-    /* 按鈕設計 */
-    .btn { background: #00e676; color: #000; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px;}
-    .btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
-    .btn-danger { background: #ef4444; color: #fff; }
-    .btn-edit { background: #3b82f6; color: #fff; }
-    
-    /* 上帝模式編輯視窗 Modal */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-    .modal-box { background: #fff; padding: 30px; border-radius: 16px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-    .modal-box h3 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .form-group { display: flex; flex-direction: column; }
-    .form-group label { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 5px; }
-    .form-group input, .form-group select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
-    .form-group input:focus, .form-group select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-    
-    /* 出貨掃描區 */
-    .scan-container { display: flex; gap: 20px; background: #1e293b; padding: 20px; border-radius: 12px; border-left: 5px solid #00e676; align-items: flex-start; margin-top: 15px;}
-    .scan-input { width: 100%; padding: 18px; font-size: 20px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; color: #00e676; font-family: monospace; text-align: center; outline: none;}
-    #reader-container { width: 100%; margin-top: 15px; display: none; background: #f8fafc; padding: 15px; border-radius: 12px; text-align: center; border: 1px dashed #cbd5e1; box-sizing: border-box;}
-    
-    /* ESG 數據卡片 */
-    .stat-card { background: #0f172a; color: #00e676; padding: 30px 20px; border-radius: 12px; text-align: center; flex: 1; border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.1);}
-    .stat-card h1 { font-size: 42px; margin: 10px 0; }
-    .stat-card p { color: #94a3b8; font-size: 14px; margin: 0; }
-
-    /* 演算法參數控制區 */
-    .param-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;}
-    .param-group { display: flex; flex-direction: column; }
-    .param-group label { font-size: 12px; color: #64748b; font-weight: bold; margin-bottom: 5px; }
-    .param-group input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
-    .param-group input:focus { border-color: #00e676; }
+    /* 🌟 錄影機 UI */
+    .video-container { background: #222; padding: 15px; border-radius: 8px; color: white; display: flex; align-items: center; gap: 20px; margin-top: 20px;}
+    #live-video { width: 320px; height: 180px; background: #000; border-radius: 8px; border: 2px solid #555; }
+    .recording-dot { display: none; color: red; font-weight: bold; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
   </style>
 </head>
 <body>
-
   <div class="sidebar">
-    <div style="padding-top: 20px;">
-      <h2 style="color:#00e676; padding: 0 20px; font-size: 22px; letter-spacing: 1px;">HYPASS<br><span style="color:#fff; font-size: 14px;">總部戰情室</span></h2>
-      <button class="nav-btn active" onclick="switchTab('crm', this)">👥 客戶管理 (CRM)</button>
-      <button class="nav-btn" onclick="switchTab('dispatch', this)">📦 倉儲出貨站</button>
-      <button class="nav-btn" onclick="switchTab('uid', this)">🏷️ UID 庫存管理</button>
-      <button class="nav-btn" onclick="switchTab('esg', this)">🌍 綠能減碳總覽</button>
-      <button class="nav-btn" onclick="switchTab('monitor', this)">⚙️ 演算法與環境</button>
-      <button class="nav-btn" onclick="switchTab('rewards', this)">🎁 獎勵金審核</button>
-      <button class="nav-btn" onclick="switchTab('garage', this)">👨‍🔧 合作保修廠</button>
+    <div style="padding-top: 20px;"><h2 style="color:#00D100; padding: 0 20px;">HYPASS ADMIN</h2>
+      <button class="nav-btn active" onclick="switchTab('dispatch', this)">📦 倉儲出貨站</button>
+      <button class="nav-btn" onclick="switchTab('crm', this)">👥 客戶管理</button>
+      <button class="nav-btn" onclick="switchTab('uid', this)">🏷️ UID 庫存</button>
     </div>
   </div>
 
   <div class="main-content">
     
-    <div id="panel-crm" class="panel active">
-      <h2>👥 濾網客人 CRM (上帝模式版)</h2>
-      <p style="color:#64748b; font-size:14px; margin-top:-10px;">總覽所有註冊車主，具備最高權限修改與連鎖刪除功能。</p>
-      <table id="crm-table">
-        <thead>
-          <tr>
-            <th>客戶資訊</th>
-            <th>車輛與車牌</th>
-            <th>居住地址</th>
-            <th>使用統計</th>
-            <th style="text-align:center;">上帝模式操作</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="panel-dispatch" class="panel">
-      <h2>📦 B2C 無間斷掃描出貨站</h2>
-      <p style="color:#64748b; font-size:14px; margin-top:-10px;">支援條碼槍或外接鏡頭，連續掃描綁定出貨。</p>
-      <button class="btn" style="background:#3b82f6; color:#fff; font-size:15px; padding:12px 20px;" onclick="startContinuousScanner()">🚀 啟動無間斷相機掃描</button>
+    <div id="panel-dispatch" class="panel active">
+      <h2>📦 B2C 無間斷掃描出貨站 (含錄影防偽)</h2>
       
-      <div id="reader-container">
-          <div id="reader" style="width:100%; max-width:400px; margin:0 auto; border-radius: 8px; overflow: hidden;"></div>
-          <button class="btn btn-danger" style="margin-top:15px;" onclick="stopCamera()">關閉相機</button>
+      <div class="video-container">
+        <video id="live-video" autoplay muted></video>
+        <div>
+            <h3 style="margin:0 0 10px 0;">🎥 裝箱錄影機 <span class="recording-dot" id="rec-dot">⏺ 錄影中</span></h3>
+            <button class="btn" style="background:#1976d2; color:white;" onclick="startRecording()">1. 開啟鏡頭並開始錄影</button>
+            <button class="btn btn-danger" onclick="stopRecording()">2. 停止並下載存檔</button>
+            <p style="font-size:12px; color:#aaa; margin-top:10px;">操作說明：包貨前點擊開始，包裝封箱後點擊停止並下載影片作為存證。</p>
+        </div>
       </div>
 
       <div class="scan-container">
-        <div style="flex:1;">
-          <label style="color:#94a3b8; font-size:13px; font-weight:bold;">1. 掃描濾網 UID 條碼</label>
-          <input type="text" id="scan-uid-input" class="scan-input" placeholder="等待掃描 HP-..." onkeypress="handleScan(event, 'uid')">
-        </div>
-        <div style="flex:1;">
-          <label style="color:#94a3b8; font-size:13px; font-weight:bold;">2. 掃描 Shopline 訂單 / 手機號碼</label>
-          <input type="text" id="scan-order-input" class="scan-input" placeholder="等待掃描..." disabled onkeypress="handleScan(event, 'order')">
-        </div>
+        <div style="flex:1;"><label style="color:#aaa;">1. 掃描 UID</label><input type="text" id="scan-uid-input" class="scan-input" onkeypress="handleScan(event, 'uid')"></div>
+        <div style="flex:1;"><label style="color:#aaa;">2. 掃描 Shopline 訂單</label><input type="text" id="scan-order-input" class="scan-input" disabled onkeypress="handleScan(event, 'order')"></div>
       </div>
-      <h3 id="scan-status-msg" style="color:#0f172a; margin-top:20px; font-weight:bold; background:#f1f5f9; padding:15px; border-radius:8px;">🟢 系統待命，等待掃描 UID...</h3>
+      <h3 id="scan-status-msg" style="color:#333; margin-top:15px;">等待掃描...</h3>
+    </div>
+
+    <div id="panel-crm" class="panel">
+      <h2>👥 濾網客人 CRM</h2>
+      <table id="crm-table"><thead><tr><th>客戶資訊</th><th>車輛</th><th>操作</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="panel-uid" class="panel">
-      <h2>🏷️ UID 庫存管理 (含上帝模式)</h2>
-      <button class="btn" style="padding:12px 20px;" onclick="generateSequentialUIDs()">⚙️ 一鍵產生 50 組全新 UID</button>
-      <table id="uid-table">
-        <thead>
-          <tr>
-            <th>一維條碼 (UID)</th>
-            <th>目前狀態</th>
-            <th>所屬車主</th>
-            <th>啟用時間</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <h2>🏷️ UID 庫存 (上帝模式)</h2>
+      <button class="btn" onclick="generateSequentialUIDs()">⚙️ 產生 50 組新 UID</button>
+      <table id="uid-table"><thead><tr><th>UID</th><th>狀態</th><th>擁有者</th><th>上帝操作</th></tr></thead><tbody></tbody></table>
     </div>
 
-    <div id="panel-esg" class="panel">
-      <h2>🌍 綠能減碳總覽 (全網累計)</h2>
-      <p style="color:#64748b; font-size:14px; margin-top:-10px;">系統根據所有服役中濾網的啟用天數自動累加計算。</p>
-      <div style="display:flex; gap:20px; margin-top:20px;">
-        <div class="stat-card">
-          <div style="font-size:36px;">🛡️</div>
-          <h1><span id="esg-pm25">0</span> <span style="font-size:16px;">µg</span></h1>
-          <p>全網累計攔截 PM2.5</p>
-        </div>
-        <div class="stat-card">
-          <div style="font-size:36px;">🌱</div>
-          <h1><span id="esg-co2">0</span> <span style="font-size:16px;">kg</span></h1>
-          <p>全網累計減少碳足跡</p>
-        </div>
-        <div class="stat-card">
-          <div style="font-size:36px;">⚡</div>
-          <h1><span id="esg-kwh">0</span> <span style="font-size:16px;">kWh</span></h1>
-          <p>全網累計節省冷氣電耗</p>
-        </div>
-      </div>
-    </div>
-
-    <div id="panel-monitor" class="panel">
-      <h2>⚙️ 演算法參數完整微調控制台</h2>
-      <p style="color:#64748b; font-size:14px; margin-top:-10px;">這裡修改的數值會直接影響全網車主前台的儀表板計算結果。</p>
-      
-      <div class="param-grid">
-        <div class="param-group"><label>每日基礎耗損率 (%)</label><input type="text" id="p-wear" value="0.27"></div>
-        <div class="param-group"><label>每日 PM2.5 攔截基準 (µg)</label><input type="text" id="p-pm25" value="1250"></div>
-        <div class="param-group"><label>AQI 橘害加權係數</label><input type="text" id="p-orange" value="1.4"></div>
-        
-        <div class="param-group"><label>AQI 紫爆加權係數</label><input type="text" id="p-red" value="1.8"></div>
-        <div class="param-group"><label>HYPASS 風阻 (mmH2O)</label><input type="text" id="p-hypass" value="4"></div>
-        <div class="param-group"><label>他牌平均風阻 (mmH2O)</label><input type="text" id="p-other" value="8"></div>
-        
-        <div class="param-group"><label>每日節省電耗 (kWh)</label><input type="text" id="p-kwh" value="0.25"></div>
-        <div class="param-group"><label>碳排換算係數 (kg/kWh)</label><input type="text" id="p-co2" value="0.5"></div>
-      </div>
-      <button class="btn" style="padding:12px 25px; font-size:15px; width:100%;" onclick="saveParams()">💾 儲存所有參數並發布至全網前台</button>
-
-      <h3 style="margin-top:40px; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">🇹🇼 全台 368 鄉鎮環境快取池 (Top 50 污染區)</h3>
-      <table id="env-table">
-        <thead>
-          <tr>
-            <th>縣市鄉鎮</th>
-            <th>即時 AQI</th>
-            <th style="color:#d97706;">7 日均值 (演算法採用)</th>
-            <th>最後更新時間</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="panel-rewards" class="panel">
-      <h2>🎁 LINE Points 兌換審核</h2>
-      <table id="reward-table">
-        <thead>
-          <tr>
-            <th>申請車主</th>
-            <th>申請項目</th>
-            <th>申請時間</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="panel-garage" class="panel">
-      <h2>👨‍🔧 合作保修廠清單</h2>
-      <table id="garage-table">
-        <thead>
-          <tr>
-            <th>店名</th>
-            <th>地址</th>
-            <th>聯絡人 / 電話</th>
-            <th>狀態</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-  </div>
-
-  <div class="modal-overlay" id="god-mode-modal">
-    <div class="modal-box">
-      <h3>🛠️ 上帝模式：編輯客戶資料</h3>
-      <input type="hidden" id="god-uid">
-      
-      <div class="form-grid">
-        <div class="form-group"><label>車主姓名</label><input type="text" id="god-name"></div>
-        <div class="form-group"><label>手機號碼</label><input type="text" id="god-phone"></div>
-        <div class="form-group"><label>電子郵件</label><input type="email" id="god-email"></div>
-        <div class="form-group">
-          <label>性別</label>
-          <select id="god-gender"><option value="M">男</option><option value="F">女</option></select>
-        </div>
-        <div class="form-group"><label>車牌號碼</label><input type="text" id="god-plate" style="color:#eab308; font-weight:bold;"></div>
-        <div class="form-group"><label>車輛品牌</label><input type="text" id="god-brand"></div>
-        <div class="form-group"><label>車型</label><input type="text" id="god-model"></div>
-        <div class="form-group"><label>出廠年份</label><input type="number" id="god-year"></div>
-        <div class="form-group"><label>居住縣市</label><input type="text" id="god-city"></div>
-        <div class="form-group"><label>鄉鎮市區</label><input type="text" id="god-district"></div>
-        <div class="form-group" style="grid-column: span 2;"><label>詳細地址</label><input type="text" id="god-address"></div>
-        <div class="form-group" style="grid-column: span 2;">
-          <label>年平均里程 (公里)</label>
-          <select id="god-mileage"><option value="10000">10,000 公里</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里</option></select>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:15px; margin-top:10px;">
-        <button class="btn" style="flex:1; padding:12px; font-size:16px;" onclick="submitGodModeEdit()">💾 儲存修改</button>
-        <button class="btn btn-danger" style="flex:1; padding:12px; font-size:16px;" onclick="closeGodModeEdit()">✖ 取消</button>
-      </div>
-    </div>
   </div>
 
   <script>
-    // 初始化 Supabase
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
-    // 面板切換系統
     function switchTab(id, btn) {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('panel-' + id).classList.add('active'); 
-      btn.classList.add('active');
-      
-      if(id === 'crm') loadCRM(); 
-      if(id === 'uid') loadUIDs(); 
-      if(id === 'esg') loadESG(); 
-      if(id === 'monitor') loadEnv(); 
-      if(id === 'rewards') loadRewards(); 
-      if(id === 'garage') loadGarages();
+      document.getElementById('panel-' + id).classList.add('active'); btn.classList.add('active');
+      if (id === 'crm') loadCRM(); if (id === 'uid') loadUIDs();
     }
 
     // ==============================================
-    // 🌟 CRM 模組 (極速讀取 + 完整上帝模式)
+    // 🌟 3. 出貨錄影功能 (Web API)
+    // ==============================================
+    let mediaRecorder; let recordedChunks = [];
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            document.getElementById('live-video').srcObject = stream;
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = function() {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; 
+                // 檔名加上時間戳記防撞名
+                a.download = `出貨錄影_${new Date().getTime()}.webm`; 
+                a.click();
+                recordedChunks = [];
+            };
+            mediaRecorder.start();
+            document.getElementById('rec-dot').style.display = 'inline';
+        } catch (err) { alert("無法取得相機權限：" + err.message); }
+    }
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            document.getElementById('rec-dot').style.display = 'none';
+            document.getElementById('live-video').srcObject.getTracks().forEach(track => track.stop()); // 關閉相機燈號
+        }
+    }
+
+    // ==============================================
+    // 🌟 2. CRM 上帝模式 (解決刪除失敗)
     // ==============================================
     async function loadCRM() {
-      document.getElementById('crm-table').querySelector('tbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">資料讀取中...</td></tr>';
-      
-      const [resUsers, resFilters, resBookings] = await Promise.all([
-          supabaseClient.from('users').select('*').eq('role', 'customer').order('created_at', { ascending: false }),
-          supabaseClient.from('filters_uid').select('activated_by_uid'),
-          supabaseClient.from('bookings').select('user_uid')
-      ]);
-
-      let pCounts = {}; resFilters.data?.forEach(f => { if(f.activated_by_uid) pCounts[f.activated_by_uid] = (pCounts[f.activated_by_uid] || 0) + 1; });
-      let bCounts = {}; resBookings.data?.forEach(b => { if(b.user_uid) bCounts[b.user_uid] = (bCounts[b.user_uid] || 0) + 1; });
-
+      const { data } = await supabaseClient.from('users').select('*').eq('role', 'customer');
       let html = '';
-      resUsers.data?.forEach(u => {
+      data.forEach(u => {
           html += `<tr>
-            <td>
-              <div style="font-weight:bold; color:#0f172a; font-size:15px;">${u.name || '未填寫'}</div>
-              <div style="font-size:12px; color:#64748b; margin-top:4px;">📱 ${u.phone || '無'}</div>
-              <div style="font-size:11px; color:#94a3b8; margin-top:2px;">註冊: ${new Date(u.created_at).toLocaleDateString()}</div>
-            </td>
-            <td>
-              <b>${u.car_brand || '-'} ${u.car_model || ''}</b><br>
-              <span style="display:inline-block; margin-top:4px; padding:2px 8px; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; background:#f8fafc;">${u.license_plate || '無車牌'}</span>
-            </td>
-            <td>
-              <span style="color:#334155;">${u.city || ''}${u.district || ''}</span><br>
-              <span style="font-size:12px; color:#94a3b8;">${u.address || '無詳細地址'}</span>
-            </td>
-            <td>
-               <span style="color:#059669; font-weight:bold;">✓ 啟用濾網: ${pCounts[u.line_uid] || 0} 片</span><br>
-               <span style="color:#3b82f6; font-size:12px;">📍 廠端預約: ${bCounts[u.line_uid] || 0} 次</span>
-            </td>
-            <td style="text-align:center;">
-              <button class="btn btn-edit" style="width:100%; margin-bottom:5px;" onclick="openGodModeEdit('${u.line_uid}')">✏️ 深度修改</button>
-              <button class="btn btn-danger" style="width:100%;" onclick="godModeDelete('${u.line_uid}', '${u.name}')">🗑️ 徹底銷毀</button>
-            </td>
+            <td><b>${u.name}</b><br>${u.phone}</td>
+            <td>${u.car_brand} (${u.license_plate})</td>
+            <td><button class="btn btn-danger" onclick="godModeDelete('${u.line_uid}', '${u.name}')">🗑️ 銷毀</button></td>
           </tr>`; 
       }); 
       document.getElementById('crm-table').querySelector('tbody').innerHTML = html;
     }
 
-    // 🛡️ 上帝模式：連鎖銷毀客戶機制
     async function godModeDelete(uid, name) {
-        if(prompt(`⚠️ 您即將永久刪除客戶【${name}】的資料。\n此動作將解除他綁定的所有濾網，並刪除相關的獎勵、預約等一切足跡！\n\n請輸入最高權限密碼：`) !== "hypass888") {
-            return alert("❌ 密碼錯誤，存取被拒！");
-        }
+        const pwd = prompt(`【最高權限】您將徹底摧毀 ${name} 的資料。\n請輸入密碼：`);
+        if (pwd !== "hypass888") return alert("密碼錯誤！");
         
-        if(confirm(`最終確認：確定要讓【${name}】從資料庫徹底消失嗎？此動作無法復原！`)) {
-            try {
-                // 1. 解除濾網綁定 (保留庫存紀錄)
-                await supabaseClient.from('filters_uid').update({activated_by_uid: null}).eq('activated_by_uid', uid);
-                // 2. 清除該車主的預約紀錄
-                await supabaseClient.from('bookings').delete().eq('user_uid', uid);
-                // 3. 清除該車主的獎勵金紀錄
-                await supabaseClient.from('rewards').delete().eq('user_uid', uid);
-                // 4. 清除使用者本體
-                const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
-                if (error) throw error;
-                
-                alert("✅ 目標客戶的所有關聯資料已徹底銷毀！"); 
-                loadCRM(); 
-            } catch(err) {
-                alert("刪除失敗：" + err.message);
-            }
-        }
-    }
-
-    // 🛡️ 上帝模式：開啟深度修改面板
-    async function openGodModeEdit(uid) {
-        if(prompt(`🛠️ 即將進入深度修改模式。\n請輸入老闆專屬密碼：`) !== "hypass888") {
-            return alert("❌ 密碼錯誤，存取被拒！");
-        }
-
-        const { data: user, error } = await supabaseClient.from('users').select('*').eq('line_uid', uid).maybeSingle();
-        if (error || !user) return alert("無法讀取此客戶資料");
-
-        document.getElementById('god-uid').value = user.line_uid;
-        document.getElementById('god-name').value = user.name || '';
-        document.getElementById('god-phone').value = user.phone || '';
-        document.getElementById('god-email').value = user.email || '';
-        document.getElementById('god-gender').value = user.gender || 'M';
-        document.getElementById('god-plate').value = user.license_plate || '';
-        document.getElementById('god-brand').value = user.car_brand || '';
-        document.getElementById('god-model').value = user.car_model || '';
-        document.getElementById('god-year').value = user.car_year || '';
-        document.getElementById('god-city').value = user.city || '';
-        document.getElementById('god-district').value = user.district || '';
-        document.getElementById('god-address').value = user.address || '';
-        document.getElementById('god-mileage').value = user.yearly_mileage || 10000;
-
-        document.getElementById('god-mode-modal').style.display = 'flex';
-    }
-
-    function closeGodModeEdit() {
-        document.getElementById('god-mode-modal').style.display = 'none';
-    }
-
-    // 🛡️ 上帝模式：儲存修改
-    async function submitGodModeEdit() {
-        const uid = document.getElementById('god-uid').value;
-        const payload = {
-            name: document.getElementById('god-name').value,
-            phone: document.getElementById('god-phone').value,
-            email: document.getElementById('god-email').value,
-            gender: document.getElementById('god-gender').value,
-            license_plate: document.getElementById('god-plate').value,
-            car_brand: document.getElementById('god-brand').value,
-            car_model: document.getElementById('god-model').value,
-            car_year: parseInt(document.getElementById('god-year').value) || null,
-            city: document.getElementById('god-city').value,
-            district: document.getElementById('god-district').value,
-            address: document.getElementById('god-address').value,
-            yearly_mileage: parseInt(document.getElementById('god-mileage').value)
-        };
-
-        const { error } = await supabaseClient.from('users').update(payload).eq('line_uid', uid);
-        
-        if (error) {
-            alert("修改失敗：" + error.message);
-        } else {
-            alert("✅ 所有資料已強制更新成功！");
-            closeGodModeEdit();
-            loadCRM(); 
+        if (confirm(`確定要摧毀 ${name} 嗎？`)) {
+            // 🚨 終極連鎖拔除術：清空所有關聯資料表
+            await supabaseClient.from('rewards').delete().eq('user_uid', uid);
+            await supabaseClient.from('bookings').delete().eq('user_uid', uid);
+            await supabaseClient.from('user_logs').delete().eq('user_uid', uid);
+            await supabaseClient.from('filters_uid').update({ activated_by_uid: null }).eq('activated_by_uid', uid);
+            
+            // 拔除完畢，正式刪除 User
+            const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
+            if (error) alert("摧毀失敗：" + error.message); else { alert("✅ 銷毀成功！"); loadCRM(); }
         }
     }
 
     // ==============================================
-    // 🌟 倉儲出貨掃描模組
+    // 🌟 4. UID 上帝模式 (強制銷毀與修改)
     // ==============================================
-    let html5QrCodeAdmin = null;
-    function startContinuousScanner() {
-        document.getElementById('reader-container').style.display = 'block';
-        html5QrCodeAdmin = new Html5Qrcode("reader");
-        html5QrCodeAdmin.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: { width: 250, height: 120 } },
-            (decodedText) => {
-                if (scanState === 'uid') {
-                    document.getElementById('scan-uid-input').value = decodedText;
-                    handleScan({key: 'Enter', target: {value: decodedText}}, 'uid');
-                } else if (scanState === 'order') {
-                    document.getElementById('scan-order-input').value = decodedText;
-                    handleScan({key: 'Enter', target: {value: decodedText}}, 'order');
-                }
-            }, (err) => {}
-        ).catch(e => alert("相機啟動失敗，請確認權限！"));
+    async function loadUIDs() {
+        const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('uid', { ascending: false }).limit(50);
+        let html = '';
+        data.forEach(d => { 
+            html += `<tr><td><b>${d.uid}</b></td><td>${d.status}</td><td>${d.users?.name||'-'}</td>
+            <td>
+              <button class="btn btn-warn" style="padding:4px;" onclick="godModeEditUID('${d.uid}')">✏️ 修改</button>
+              <button class="btn btn-danger" style="padding:4px;" onclick="godModeDeleteUID('${d.uid}')">🗑️ 強制刪除</button>
+            </td></tr>`; 
+        });
+        document.getElementById('uid-table').querySelector('tbody').innerHTML = html;
     }
-    function stopCamera() {
-        if(html5QrCodeAdmin) { 
-            html5QrCodeAdmin.stop(); 
-            document.getElementById('reader-container').style.display = 'none'; 
+
+    async function godModeDeleteUID(uid) {
+        const pwd = prompt(`輸入密碼以強制刪除 UID [${uid}]：`);
+        if(pwd !== "hypass888") return;
+        await supabaseClient.from('filters_uid').delete().eq('uid', uid);
+        alert("強制刪除成功！"); loadUIDs();
+    }
+    
+    async function godModeEditUID(uid) {
+        const pwd = prompt(`輸入密碼以修改 UID [${uid}]：`);
+        if(pwd !== "hypass888") return;
+        const newStatus = prompt("請輸入新狀態 (produced / sold / activated / replaced)：");
+        if(newStatus) {
+            await supabaseClient.from('filters_uid').update({status: newStatus}).eq('uid', uid);
+            alert("修改成功！"); loadUIDs();
         }
     }
 
-    let scanState = 'uid'; let curUid = '';
+    async function generateSequentialUIDs() {
+        const { data } = await supabaseClient.from('filters_uid').select('uid').order('uid', {ascending: false}).limit(1);
+        let maxNum = data && data.length > 0 ? parseInt(data[0].uid.replace('HP-','')) : 0;
+        let ins = []; for(let i=1; i<=50; i++) ins.push({ uid: 'HP-' + String(maxNum + i).padStart(6, '0') });
+        await supabaseClient.from('filters_uid').insert(ins); alert("✅ 產生成功！"); loadUIDs();
+    }
+
+    // ==============================================
+    // 出貨掃描邏輯
+    // ==============================================
+    let curUid = '';
     function handleScan(e, type) {
         if (e.key === 'Enter') {
             const text = e.target.value.trim();
             if (type === 'uid' && text.startsWith('HP-')) {
-                curUid = text; scanState = 'order'; 
-                document.getElementById('scan-status-msg').innerHTML = `📦 已鎖定 <b>${curUid}</b><br><span style="color:#ef4444;">👉 請掃描 Shopline 訂單或輸入客人手機！</span>`;
-                document.getElementById('scan-uid-input').disabled = true; 
-                document.getElementById('scan-order-input').disabled = false; 
-                document.getElementById('scan-order-input').focus();
+                curUid = text; document.getElementById('scan-status-msg').innerText = "✅ UID OK，請掃描訂單";
+                document.getElementById('scan-uid-input').disabled = true; document.getElementById('scan-order-input').disabled = false; document.getElementById('scan-order-input').focus();
             } else if (type === 'order' && text.length > 5) {
                 processOrder(curUid, text);
             }
         }
     }
-
     async function processOrder(uid, order) {
-        document.getElementById('scan-status-msg').innerText = "🔄 雲端寫入綁定中...";
-        
+        document.getElementById('scan-status-msg').innerText = "🔄 寫入中...";
         const { data: user } = await supabaseClient.from('users').select('line_uid').eq('phone', order).maybeSingle();
-        
         const payload = { status: 'sold', shopline_order_id: order };
-        if(user) payload.activated_by_uid = user.line_uid; 
-        
+        if(user) payload.activated_by_uid = user.line_uid;
         await supabaseClient.from('filters_uid').update(payload).eq('uid', uid);
-        
-        document.getElementById('scan-status-msg').innerHTML = `<span style="color:#059669;">✅ 成功！濾網 <b>${uid}</b> 已配對至訂單 <b>${order}</b><br>請直接掃描下一片濾網！</span>`;
-        
-        document.getElementById('scan-uid-input').value = ''; 
-        document.getElementById('scan-order-input').value = '';
-        document.getElementById('scan-uid-input').disabled = false; 
-        document.getElementById('scan-order-input').disabled = true; 
-        scanState = 'uid';
-        document.getElementById('scan-uid-input').focus();
+        document.getElementById('scan-status-msg').innerHTML = `<span style="color:green;">✅ ${uid} 出貨成功！</span>`;
+        document.getElementById('scan-uid-input').value = ''; document.getElementById('scan-order-input').value = '';
+        document.getElementById('scan-uid-input').disabled = false; document.getElementById('scan-order-input').disabled = true; document.getElementById('scan-uid-input').focus();
     }
 
-    // ==============================================
-    // 🌟 UID 庫存管理模組 (上帝模式銷毀)
-    // ==============================================
-    async function loadUIDs() {
-        const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('uid', { ascending: false }).limit(100);
-        let html = ''; 
-        data?.forEach(d => { 
-            let statusColor = d.status === 'produced' ? '#64748b' : (d.status === 'sold' ? '#f59e0b' : '#059669');
-            html += `<tr>
-                <td style="font-family:monospace; font-size:16px; font-weight:bold;">${d.uid}</td>
-                <td style="color:${statusColor}; font-weight:bold;">${d.status.toUpperCase()}</td>
-                <td>${d.users?.name || '-'}</td>
-                <td>${d.activated_at ? new Date(d.activated_at).toLocaleString() : '-'}</td>
-                <td style="text-align:center;">
-                  <button class="btn btn-danger" onclick="godModeDeleteUID('${d.uid}', '${d.status}')">🗑️ 銷毀</button>
-                </td>
-            </tr>`; 
-        });
-        document.getElementById('uid-table').querySelector('tbody').innerHTML = html;
-    }
-
-    async function generateSequentialUIDs() {
-        document.querySelector('#panel-uid button').innerText = "產生中...";
-        const { data } = await supabaseClient.from('filters_uid').select('uid').order('uid', {ascending: false}).limit(1);
-        let maxNum = data && data.length > 0 ? parseInt(data[0].uid.replace('HP-','')) : 0;
-        let ins = []; 
-        for(let i=1; i<=50; i++) ins.push({ uid: 'HP-' + String(maxNum + i).padStart(6, '0') });
-        
-        await supabaseClient.from('filters_uid').insert(ins); 
-        alert("✅ 成功產生 50 組全新 UID！"); 
-        document.querySelector('#panel-uid button').innerText = "⚙️ 一鍵產生 50 組全新 UID";
-        loadUIDs();
-    }
-
-    // 🛡️ UID 上帝模式刪除
-    async function godModeDeleteUID(uid, status) {
-        let warnMsg = `⚠️ 您準備刪除 UID [${uid}]。`;
-        if (status !== 'produced') {
-            warnMsg = `🚨 嚴重警告：UID [${uid}] 目前狀態為【${status}】！\n刪除它可能會破壞車主的保固履歷與資料庫關聯！`;
-        }
-        
-        if(prompt(`${warnMsg}\n\n請輸入老闆專屬密碼確認強制刪除：`) !== 'hypass888') {
-            return alert("❌ 密碼錯誤，操作取消！");
-        }
-        
-        if(confirm(`最終確認：真的要將 UID [${uid}] 從系統中永久抹除嗎？`)) {
-            const { error } = await supabaseClient.from('filters_uid').delete().eq('uid', uid);
-            if (error) alert("刪除失敗：" + error.message);
-            else { alert("✅ UID 徹底銷毀成功！"); loadUIDs(); }
-        }
-    }
-
-    // ==============================================
-    // 🌟 ESG 模組
-    // ==============================================
-    async function loadESG() {
-        const { data } = await supabaseClient.from('filters_uid').select('activated_at').eq('status','activated');
-        let totalDays = 0; 
-        data?.forEach(x => {
-            if(x.activated_at) totalDays += Math.floor((new Date() - new Date(x.activated_at)) / 86400000);
-        });
-        
-        const params = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
-        let basePm25 = parseFloat(params.basePm25 || 1250);
-        let kwhPerDay = parseFloat(params.kwhPerDay || 0.25);
-        let co2Factor = parseFloat(params.co2Factor || 0.5);
-
-        document.getElementById('esg-pm25').innerText = (totalDays * basePm25).toLocaleString(); 
-        document.getElementById('esg-kwh').innerText = (totalDays * kwhPerDay).toFixed(1); 
-        document.getElementById('esg-co2').innerText = (totalDays * kwhPerDay * co2Factor).toFixed(1);
-    }
-
-    // ==============================================
-    // 🌟 演算法與環境快取模組 (絕對不隱藏參數版)
-    // ==============================================
-    async function loadEnv() {
-        // 讀取目前的參數顯示在輸入框
-        const params = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
-        document.getElementById('p-wear').value = params.baseWear || '0.27';
-        document.getElementById('p-pm25').value = params.basePm25 || '1250';
-        document.getElementById('p-orange').value = params.weightOrange || '1.4';
-        document.getElementById('p-red').value = params.weightRed || '1.8';
-        document.getElementById('p-hypass').value = params.paHypass || '4';
-        document.getElementById('p-other').value = params.paOther || '8';
-        document.getElementById('p-kwh').value = params.kwhPerDay || '0.25';
-        document.getElementById('p-co2').value = params.co2Factor || '0.5';
-
-        // 讀取環境池
-        const { data } = await supabaseClient.from('env_cache').select('*').order('aqi', {ascending:false}).limit(50);
-        let html = ''; 
-        data?.forEach(d => { 
-            html += `<tr>
-                <td style="font-weight:bold;">${d.city}${d.district}</td>
-                <td><span style="background:#e2e8f0; padding:4px 8px; border-radius:4px;">${d.aqi}</span></td>
-                <td style="color:#d97706; font-weight:bold; font-size:16px;">${Math.round(d.aqi_7d_avg||d.aqi)}</td>
-                <td style="font-size:12px; color:#64748b;">${new Date(d.updated_at).toLocaleString()}</td>
-            </tr>`; 
-        });
-        document.getElementById('env-table').querySelector('tbody').innerHTML = html;
-    }
-
-    function saveParams() { 
-        localStorage.setItem('hypass_algo_params', JSON.stringify({
-            baseWear: document.getElementById('p-wear').value, 
-            basePm25: document.getElementById('p-pm25').value,
-            weightOrange: document.getElementById('p-orange').value,
-            weightRed: document.getElementById('p-red').value,
-            paHypass: document.getElementById('p-hypass').value,
-            paOther: document.getElementById('p-other').value,
-            kwhPerDay: document.getElementById('p-kwh').value,
-            co2Factor: document.getElementById('p-co2').value
-        })); 
-        alert("✅ 所有演算法參數已儲存，將即刻影響全網前台儀表板的計算結果！"); 
-    }
-
-    // ==============================================
-    // 🌟 獎勵金與保修廠模組
-    // ==============================================
-    async function loadRewards() {
-        const { data } = await supabaseClient.from('rewards').select('*, users(name)').eq('type', 'redeem').eq('status', 'pending');
-        let html = ''; 
-        data?.forEach(r => { 
-            html += `<tr>
-                <td style="font-weight:bold;">${r.users?.name || '未知車主'}</td>
-                <td style="color:#eab308; font-weight:bold;">申請兌換 ${r.points} 點</td>
-                <td>${new Date(r.created_at).toLocaleString()}</td>
-                <td><button class="btn" onclick="approveReward(${r.id})">✅ 人工結案發放</button></td>
-            </tr>`; 
-        });
-        document.getElementById('reward-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4" style="text-align:center;">目前無待處理案件</td></tr>';
-    }
-    
-    async function approveReward(id) {
-        if(confirm("確定已將 LINE Points 發給車主並結案嗎？")) {
-            await supabaseClient.from('rewards').update({status:'completed', details:'總部人工審核發放'}).eq('id',id); 
-            alert("✅ 結案成功！"); 
-            loadRewards(); 
-        }
-    }
-    
-    async function loadGarages() {
-        const { data } = await supabaseClient.from('garages').select('*').order('id');
-        let html = ''; 
-        data?.forEach(g => { 
-            let sBadge = g.status === 'active' ? '<span style="color:#059669; font-weight:bold;">營業中</span>' : '<span style="color:#ef4444;">審核中</span>';
-            html += `<tr>
-                <td style="font-weight:bold;">${g.name}</td>
-                <td>${g.city}${g.address}</td>
-                <td>${g.contact_name || ''} / ${g.phone || ''}</td>
-                <td>${sBadge}</td>
-            </tr>`; 
-        });
-        document.getElementById('garage-table').querySelector('tbody').innerHTML = html;
-    }
-
-    // 系統啟動，預設載入 CRM
-    loadCRM();
+    loadCRM(); loadUIDs();
   </script>
 </body>
 </html>
