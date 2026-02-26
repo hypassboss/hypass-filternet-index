@@ -7,25 +7,25 @@
     } catch(e) {}
 })();
 
-// 🌟 好萊塢科技級開屏運鏡邏輯 (淡入慢、停留、淡出快)
+// 🌟 絕對防卡死的開屏退場邏輯 (只負責關閉，不干涉圖片顯示)
 window.addEventListener('load', () => {
-    const splash = document.getElementById('splash-screen');
-    const splashImg = document.getElementById('splash-img');
-    
-    // 1. 載入後 0.1 秒，加上 boot-up 觸發「慢速淡入 + 微放大」(1.5秒)
-    setTimeout(() => { if(splashImg) splashImg.classList.add('boot-up'); }, 100);
-    
-    // 2. 顯示並停留 (1.5秒淡入 + 0.8秒停留 = 2.3秒後)，拔除 class 觸發「快速淡出」(0.3秒)
-    setTimeout(() => { if(splashImg) splashImg.classList.remove('boot-up'); }, 2400);
-    
-    // 3. 圖片淡出完成後 (2.7秒)，將白色背景快速淡出並關閉圖層
-    setTimeout(() => { 
-        if(splash) { 
-            splash.style.opacity = '0'; 
-            setTimeout(() => { splash.style.display = 'none'; }, 400); 
-        } 
-    }, 2700); 
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if(splash) {
+            splash.style.opacity = '0'; // 白底淡出 (0.4秒)
+            setTimeout(() => { splash.style.display = 'none'; }, 400); // 徹底關閉圖層
+        }
+    }, 2000); // 給 CSS 動畫 2 秒的完美表演時間
 });
+
+// 🚨 終極保命符：如果網路極差導致 load 沒觸發，3.5 秒一到強制撕掉白畫面，絕對不當機！
+setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if(splash && splash.style.display !== 'none') {
+        splash.style.opacity = '0';
+        setTimeout(() => { splash.style.display = 'none'; }, 400);
+    }
+}, 3500);
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 function setElVal(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
@@ -287,4 +287,24 @@ async function init() {
         setElText('ui-owner', `${data.name} 的專屬座艙`); let carString = (data.car_brand || '') + ' ' + (data.car_model || ''); setElText('ui-car-info', carString.trim() ? carString : '--');
         document.getElementById('nav-bar').style.display = 'flex';
         
-        setElVal('edit-name', data.name); setElVal('edit-phone', data.phone); setElVal('edit-email', data.email); if(data.gender
+        setElVal('edit-name', data.name); setElVal('edit-phone', data.phone); setElVal('edit-email', data.email); if(data.gender) setElVal('edit-gender', data.gender);
+        if(data.city) { setElVal('edit-city', data.city); updateDistricts('edit-city', 'edit-district'); if(data.district) setElVal('edit-district', data.district); }
+        setElVal('edit-address', data.address);
+        if(data.car_brand) { setElVal('edit-brand', data.car_brand); updateCarModels('edit-brand', 'edit-model'); if(data.car_model) setElVal('edit-model', data.car_model); }
+        if(data.car_year) setElVal('edit-year', data.car_year); setElVal('edit-plate', data.license_plate); if(data.yearly_mileage) setElVal('edit-mileage', data.yearly_mileage);
+        
+        setElText('contract-plate', data.license_plate); setElText('ui-home-city', data.city || '台北市');
+        
+        document.getElementById('page-register').classList.remove('active');
+        switchPage('home', document.querySelector('.nav-item'));
+        
+        await calculatePointsAndMarquee(); getSnapshotGPS(); loadBulletins(); 
+      } else { 
+        document.getElementById('page-home').classList.remove('active');
+        document.getElementById('page-register').classList.add('active'); 
+      }
+  } catch(e) { console.error("Initialization error:", e); }
+}
+
+init();
+async function redeemPoints() { alert("提領申請已送出！總部將盡快為您處理。"); }
