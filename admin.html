@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS V8.0 總部戰情室 (全功能演算法版)</title>
+  <title>HYPASS V8.1 總部戰情室 (終極破障與大數據版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -160,9 +160,9 @@
            <div><label style="font-size:12px;color:#aaa;">基礎日耗損率 (%)</label><input type="number" id="algo-baseWear" step="0.01" class="scan-input"></div>
            <div><label style="font-size:12px;color:#f59e0b;">AQI 橘害 (100-150) 倍數</label><input type="number" id="algo-aqiOrange" step="0.1" class="scan-input"></div>
            <div><label style="font-size:12px;color:#ef4444;">AQI 紅害 (>150) 倍數</label><input type="number" id="algo-aqiRed" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#aaa;">高溫 (>30°C) 倍數</label><input type="number" id="algo-tempHigh" step="0.1" class="scan-input"></div>
+           <div><label style="font-size:12px;color:#ef4444;">高溫 (>30°C) 倍數</label><input type="number" id="algo-tempHigh" step="0.1" class="scan-input"></div>
            <div><label style="font-size:12px;color:#3b82f6;">低溫 (<15°C) 倍數</label><input type="number" id="algo-tempLow" step="0.1" class="scan-input"></div>
-           <div><label style="font-size:12px;color:#aaa;">高濕 (>80%) 倍數</label><input type="number" id="algo-humHigh" step="0.1" class="scan-input"></div>
+           <div><label style="font-size:12px;color:#3b82f6;">高濕 (>80%) 倍數</label><input type="number" id="algo-humHigh" step="0.1" class="scan-input"></div>
            <div><label style="font-size:12px;color:#aaa;">大型車輛 倍數</label><input type="number" id="algo-carLarge" step="0.1" class="scan-input"></div>
            <div><label style="font-size:12px;color:#aaa;">小型車輛 倍數</label><input type="number" id="algo-carSmall" step="0.1" class="scan-input"></div>
         </div>
@@ -293,7 +293,7 @@
     }
 
     // ==============================================
-    // 2. CRM 上帝模式 (修復版：解除關聯)
+    // 2. CRM 上帝模式 (終極暴力破障版)
     // ==============================================
     async function loadCRM() {
       document.getElementById('crm-table').querySelector('tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">讀取中...</td></tr>';
@@ -325,20 +325,29 @@
         if (prompt(`【最高權限】永久銷毀客戶【${name}】。\n請輸入上帝密碼：`) !== "hypass888") return alert("密碼錯誤！");
         if (confirm(`⚠️ 確定要摧毀 ${name} 嗎？此動作將連鎖拔除他所有紀錄！`)) {
             try {
-                // 🚨 終極連鎖拔除術 (解決報錯問題)
+                // 🚨 第一階段：無差別連鎖拔除 (捕獲錯誤但不中斷)
+                console.log("開始執行連鎖拔除...");
                 await supabaseClient.from('rewards').delete().eq('user_uid', uid);
                 await supabaseClient.from('bookings').delete().eq('user_uid', uid);
-                try{ await supabaseClient.from('user_logs').delete().eq('user_uid', uid); }catch(e){}
+                
+                // 🚨 第二階段：強制解除濾網綁定
                 await supabaseClient.from('filters_uid').update({ activated_by_uid: null, status: 'sold' }).eq('activated_by_uid', uid);
                 
-                // 關鍵防呆：如果該用戶是別人的推薦人，把別人的 referrer_uid 清空，避免 Foreign Key 報錯
+                // 🚨 第三階段 (破障核心)：解除作為「推薦人」的關係鎖定！
+                // 如果這個人推薦了別人，把別人的 referrer_uid 清空，否則 PostgreSQL 絕對不准刪除他。
                 await supabaseClient.from('users').update({ referrer_uid: null }).eq('referrer_uid', uid);
                 
-                // 正式刪除
-                const { error } = await supabaseClient.from('users').delete().eq('line_uid', uid);
-                if (error) throw error; 
-                alert("✅ 目標已徹底銷毀！"); loadCRM();
-            } catch (err) { alert("❌ 摧毀失敗，詳細錯誤：" + err.message); console.error(err); }
+                // 🚨 最終階段：刪除本體
+                const { error, statusText } = await supabaseClient.from('users').delete().eq('line_uid', uid);
+                
+                if (error) {
+                    throw new Error(`資料庫阻擋。\n錯誤碼: ${error.code}\n詳情: ${error.message}\n(請確認已執行 SQL 終極解除鎖定指令)`);
+                } 
+                alert("✅ 障礙排除！目標已徹底銷毀！"); loadCRM();
+            } catch (err) { 
+                alert("❌ 摧毀失敗！\n\n" + err.message); 
+                console.error("刪除失敗完整日誌:", err);
+            }
         }
     }
 
