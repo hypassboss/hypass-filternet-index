@@ -7,10 +7,24 @@
     } catch(e) {}
 })();
 
-// 🌟 純 CSS 動畫運鏡 (停留 1.5 秒後淡出)
+// 🌟 好萊塢級開屏運鏡邏輯
 window.addEventListener('load', () => {
     const splash = document.getElementById('splash-screen');
-    setTimeout(() => { if(splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; }, 600); } }, 1500); 
+    const splashImg = document.getElementById('splash-img');
+    
+    // 1. 啟動後稍微延遲，讓圖片優雅淡入
+    setTimeout(() => { if(splashImg) splashImg.style.opacity = '1'; }, 100);
+    
+    // 2. 顯示 1 秒後，圖片開始淡出
+    setTimeout(() => { if(splashImg) splashImg.style.opacity = '0'; }, 1600);
+    
+    // 3. 圖片淡出完畢後，整個白底畫面淡出並進入 App
+    setTimeout(() => { 
+        if(splash) { 
+            splash.style.opacity = '0'; 
+            setTimeout(() => { splash.style.display = 'none'; }, 600); 
+        } 
+    }, 2200); 
 });
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -21,11 +35,9 @@ const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supab
 
 let currentUser = null; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
-// 🌟 14 項演算法參數 (新增年里程加權係數)
 let algoParams = { 
     baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, 
-    carLarge: 1.3, carSmall: 0.8, basePm25: 1500, kwhPerDay: 0.25, co2Factor: 0.495, paHypass: 4, paOther: 8,
-    mileageWeight: 0.5 // 新增：年里程每萬公里加權比率
+    carLarge: 1.3, carSmall: 0.8, basePm25: 1500, kwhPerDay: 0.25, co2Factor: 0.495, paHypass: 4, paOther: 8, mileageWeight: 0.5 
 };
 
 const carData = { 
@@ -184,9 +196,7 @@ async function calculateDashboardStats() {
     if(l.includes(currentUser.car_model)) cRate = algoParams.carLarge; 
     if(s.includes(currentUser.car_model)) cRate = algoParams.carSmall;
     
-    // 💡 導入後台自訂的里程權重算法
     let mileageRate = currentUser.yearly_mileage ? (1 + ((currentUser.yearly_mileage / 10000) - 1) * algoParams.mileageWeight) : 1.0;
-    
     let tempRate = envData.temp > 30 ? algoParams.tempHigh : (envData.temp < 15 ? algoParams.tempLow : 1.0);
     let humRate = envData.hum > 80 ? algoParams.humHigh : 1.0;
 
@@ -226,7 +236,6 @@ async function fetchEnv(city, district) {
   if(data) {
     envData = data; setElText('env-aqi', data.aqi); setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
     const msgBox = document.getElementById('dynamic-msg-box'); const rewardMsg = localStorage.getItem('hypass_temp_msg');
-    
     if (rewardMsg) { setElText('ui-dynamic-msg', rewardMsg); if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; } 
     else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI: ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
     calculateDashboardStats();
@@ -251,7 +260,6 @@ function getSnapshotGPS() {
 async function calculatePointsAndMarquee() {
     const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
     let total = 0; let hasRecentReward = false;
-    
     if(data && data.length > 0) {
         data.forEach(r => total += (r.type === 'redeem' ? -r.points : r.points));
         const latestReward = data.find(r => r.type.includes('referral') && r.status === 'completed');
