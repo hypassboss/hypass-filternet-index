@@ -1,21 +1,10 @@
 // 🚨 防漏攔截器 (維持最高執行順序)
 (function captureReferral() {
     try {
-        let urlStr = window.location.href;
-        let urlObj = new URL(urlStr);
-        let ref = urlObj.searchParams.get('ref');
-        
-        if (!ref) {
-            let liffState = urlObj.searchParams.get('liff.state');
-            if (liffState) {
-                let stateParams = new URLSearchParams(liffState.startsWith('?') ? liffState : '?' + liffState);
-                ref = stateParams.get('ref');
-            }
-        }
-        if (!ref) {
-            let match = urlStr.match(/[?&]ref=([^&#]+)/) || urlStr.match(/ref%3D([^&]+)/);
-            if (match && match[1]) ref = decodeURIComponent(match[1]);
-        }
+        let rawUrl = window.location.href;
+        let ref = null;
+        let match = rawUrl.match(/[?&]ref=([^&#]+)/) || rawUrl.match(/ref%3D([^&#]+)/);
+        if (match && match[1]) ref = decodeURIComponent(match[1]);
         if (ref && ref !== 'null' && ref !== 'undefined') {
             localStorage.setItem('hypass_ref_code', ref);
         }
@@ -27,19 +16,19 @@ window.addEventListener('load', () => {
     const splash = document.getElementById('splash-screen');
     const splashImg = document.getElementById('splash-img');
     
-    // 1. 稍微延遲後，讓圖片淡入
-    setTimeout(() => {
-        if(splashImg) splashImg.style.opacity = '1';
-    }, 100);
+    // 1. 圖片淡入 (0.5秒)
+    setTimeout(() => { if(splashImg) splashImg.style.opacity = '1'; }, 50);
     
-    // 2. 顯示 1 秒後 (包含淡入時間大約 1.5秒)，整個白底畫面淡出
+    // 2. 顯示 1 秒後，圖片淡出 (0.5秒)
+    setTimeout(() => { if(splashImg) splashImg.style.opacity = '0'; }, 1550);
+    
+    // 3. 圖片淡出完畢後，白底背景淡出並隱藏圖層
     setTimeout(() => {
         if(splash) { 
             splash.style.opacity = '0'; 
-            // 3. 淡出完成後，徹底關閉圖層，正式進入 App
-            setTimeout(() => { splash.style.display = 'none'; }, 600); 
+            setTimeout(() => { splash.style.display = 'none'; }, 500); 
         }
-    }, 1500); 
+    }, 2050); 
 });
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -131,10 +120,17 @@ function switchBookingTab(t) {
     document.getElementById('tab-btn-smart').className = `tab-btn ${t==='smart' ? 'active' : ''}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t==='manual' ? 'active' : ''}`; 
 }
 
+// 🌟 雙重引擎防漏註冊，保證點數入帳
 async function submitRegister(role) {
     try {
         const p = await liff.getProfile(); 
-        const refId = localStorage.getItem('hypass_ref_code') || null; 
+        let refId = localStorage.getItem('hypass_ref_code') || null; 
+        
+        // 【雙重保險】如果在註冊當下 localStorage 空了，直接從 LIFF 底層再抓一次
+        if (!refId && liff.getContext() && liff.getContext().endpointUrl) {
+            let match = liff.getContext().endpointUrl.match(/ref=([^&#]+)/) || liff.getContext().endpointUrl.match(/ref%3D([^&#]+)/);
+            if (match) refId = decodeURIComponent(match[1]);
+        }
         
         const n = document.getElementById('c-name').value; const ph = document.getElementById('c-phone').value; const e = document.getElementById('c-email').value; const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; const dist = document.getElementById('c-district').value; const addr = document.getElementById('c-address').value; const b = document.getElementById('c-brand').value; const m = document.getElementById('c-model').value; const y = document.getElementById('c-year').value; const pl = document.getElementById('c-plate').value; const mil = document.getElementById('c-mileage').value;
         
@@ -145,6 +141,7 @@ async function submitRegister(role) {
         const { error } = await supabaseClient.from('users').upsert(payload);
         if (!error) {
             if (refId && refId !== p.userId) {
+                // 註冊成功，強制發放獎勵金
                 await supabaseClient.from('rewards').insert([{ user_uid: refId, type: 'referral_register', points: 10, status: 'completed', details: `推薦註冊: ${n}` }]);
             }
             localStorage.removeItem('hypass_ref_code'); location.reload();
@@ -344,16 +341,17 @@ async function init() {
         
         setElText('contract-plate', data.license_plate); setElText('ui-home-city', data.city || '台北市');
         
+        // 確保成功登入時，註冊頁面被關閉
+        document.getElementById('page-register').classList.remove('active');
         switchPage('home', document.querySelector('.nav-item'));
+        
         await calculatePointsAndMarquee(); getSnapshotGPS(); loadBulletins(); 
       } else { 
-        // 🌟 修復 UI 碰撞：強制隱藏首頁，顯示註冊頁
+        // 🌟 修復 UI 碰撞：如果是新會員，強制隱藏首頁，顯示註冊頁
         document.getElementById('page-home').classList.remove('active');
         document.getElementById('page-register').classList.add('active'); 
       }
-  } catch(e) {
-      console.error("Initialization error:", e);
-  }
+  } catch(e) { console.error("Initialization error:", e); }
 }
 
 init();
