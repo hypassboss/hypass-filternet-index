@@ -181,6 +181,22 @@
     <div id="booking-manual" style="display:none;"><div id="garage-list">清單讀取中...</div></div>
   </div>
 
+  <div id="page-rewards" class="page">
+    <h3 style="color:var(--text-primary); font-size:22px;">🎁 任務與獎勵</h3>
+    <div class="g-card vip-card" style="text-align:center; padding:40px 20px;">
+      <p style="color:var(--gold-color); font-weight:bold; letter-spacing: 1px;">VIP 專屬獎勵金</p>
+      <h1 id="reward-balance" style="font-size:64px; text-shadow:0 4px 20px rgba(255,215,0,0.5); margin:20px 0;">$0</h1>
+      <p style="font-size:13px; color:#d4d4d4; margin-bottom: 20px; line-height:1.6;">累積滿 100 點即可兌換 LINE Points</p>
+      <button class="btn-main" style="background:linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color:#000;" onclick="redeemPoints()">申請提領點數</button>
+    </div>
+    
+    <div class="g-card" style="border-color:var(--accent-color); text-align:center; padding: 25px 20px;">
+       <h3 style="margin-top:0;">🚀 邀請車友加入座艙</h3>
+       <p style="font-size:13px; color:var(--text-secondary); line-height: 1.6;">註冊送 <b style="color:var(--accent-color);">10</b> 點，首掃再送 <b style="color:var(--gold-color);">100</b> 點！</p>
+       <button class="btn-main" onclick="shareToLine()">🟢 點擊直接分享給 LINE 好友</button>
+    </div>
+  </div>
+
   <div id="page-settings" class="page">
     <h3 style="color:var(--text-primary); font-size:22px;">⚙️ 設定與紀錄</h3>
     
@@ -259,13 +275,14 @@
       </div>
     </div>
 
-    <div class="version-tag">System Ver. V8.3 (動畫修復與獎勵暫停版)</div>
+    <div class="version-tag">System Ver. V8.4 (全功能解封版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
     <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span><span class="nav-text">座艙</span></div>
     <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span><span class="nav-text">商城</span></div>
     <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
+    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span><span class="nav-text">任務</span></div>
     <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
   </div>
 
