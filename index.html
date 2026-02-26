@@ -9,20 +9,44 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* =========================================
-       💎 V6.0 企業旗艦版 (開屏動畫 + 加權演算法)
+       💎 V7.0 終極霸王版 (全功能無刪減)
        ========================================= */
     :root {
       --bg-color: #000000; --surface-color: #161618; --border-color: #2c2c2e;
       --text-primary: #ffffff; --text-secondary: #8e8e93;
       --accent-color: #00e676; --accent-gradient: linear-gradient(135deg, #00e676 0%, #00b85c 100%);
-      --accent-glow: rgba(0, 230, 118, 0.2); --gold-color: #FFD700;
+      --accent-glow: rgba(0, 230, 118, 0.2); --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
       --glass-bg: rgba(10, 10, 10, 0.85); --input-bg: #1c1c1e;
     }
 
+    body.light-mode {
+      --bg-color: #f2f2f7; --surface-color: #ffffff; --border-color: #e5e5ea;
+      --text-primary: #1c1c1e; --text-secondary: #8e8e93;
+      --accent-color: #10b981; --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --accent-glow: rgba(16, 185, 129, 0.15); --gold-color: #d4af37; --gold-glow: rgba(212, 175, 55, 0.15);
+      --glass-bg: rgba(255, 255, 255, 0.9); --input-bg: #f9f9f9;
+    }
+
+    body.metal-mode {
+      --bg-color: #151515; --surface-color: linear-gradient(145deg, #262628 0%, #1c1c1e 100%);
+      --border-color: #3a3a3c; --text-primary: #e5e5ea; --text-secondary: #98989d;
+      --accent-color: #06b6d4; --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      --accent-glow: rgba(6, 182, 212, 0.25); --gold-color: #FFD700; --gold-glow: rgba(255, 215, 0, 0.15);
+      --glass-bg: rgba(28, 28, 30, 0.9); --input-bg: #111112;
+    }
+
     html { background-color: #000000; display: flex; justify-content: center; min-height: 100vh; }
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; width: 100vw; max-width: 430px; background-color: var(--bg-color); color: var(--text-primary); padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.8); overflow-x: hidden; -webkit-text-size-adjust: 100%; }
     
-    /* 🌟 專屬 Gogoro 風格白底開屏動畫 */
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      margin: 0; width: 100vw; max-width: 430px; 
+      background-color: var(--bg-color); color: var(--text-primary); 
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); 
+      min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.8); overflow-x: hidden;
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%; 
+    }
+    
+    /* 🌟 1秒開屏動畫 */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: #ffffff; z-index: 999999;
@@ -46,7 +70,8 @@
 
     .header-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 25px; }
     .header-title-box { flex: 1; min-width: 0; } 
-    #ui-owner { font-size: 20px; font-weight: 800; margin: 0; }
+    #ui-owner { font-size: 20px; font-weight: 800; margin: 0; color: var(--text-primary); }
+    
     .shield-badge { display:inline-flex; background: var(--accent-glow); border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; align-items: center; gap: 6px; }
 
     .ring { width: 220px; height: 220px; border-radius: 50%; border: 6px solid var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 50px var(--accent-glow); margin: 0 auto; position: relative; background: var(--surface-color); }
@@ -60,13 +85,19 @@
     
     .scanner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
     #frontend-reader { width: 90%; max-width: 350px; border-radius: 12px; border: 2px solid var(--accent-color); overflow: hidden; }
-    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; box-sizing: border-box; }
+
+    input, select { width: 100%; padding: 16px; margin-bottom: 16px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 14px; font-size: 15px; box-sizing: border-box; outline:none; -webkit-appearance:none;}
     
     .dynamic-msg-bar { background: var(--surface-color); color: var(--accent-color); padding: 0 16px; height: 48px; border-radius: 16px; font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; border: 1px solid var(--border-color); overflow: hidden; font-weight: 600; }
     .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; position: relative; display: flex; align-items: center; height: 100%; }
     .marquee-content { display: flex; align-items: center; min-width: 100%; animation: scrollText 14s linear infinite; } 
     @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-    .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); position: relative; overflow: hidden; }
+    
+    .vip-card { border: 1px solid var(--gold-color); background: linear-gradient(135deg, #1a1500 0%, #050400 100%); box-shadow: 0 15px 40px var(--gold-glow); position: relative; overflow: hidden; }
+    .tab-container { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { background: var(--surface-color); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; flex: 1; text-align: center; cursor: pointer; font-size: 14px; font-weight: bold; }
+    .tab-btn.active { background: var(--accent-glow); color: var(--accent-color); border-color: var(--accent-color); }
+    .log-item { border-bottom: 1px solid var(--border-color); padding: 15px 0; font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -76,13 +107,11 @@
   </div>
 
   <script>
-    // 進入頁面 1.5 秒後淡出開屏動畫
     window.addEventListener('load', () => {
         setTimeout(() => {
             const splash = document.getElementById('splash-screen');
-            splash.style.opacity = '0';
-            setTimeout(() => { splash.style.display = 'none'; }, 600); // 等待淡出動畫結束後隱藏
-        }, 1500);
+            if(splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; }, 600); }
+        }, 1000); // 1秒後淡出
     });
 
     (function captureReferral() {
@@ -111,7 +140,7 @@
           <option value="20000">年里程 10,000 ~ 20,000 公里</option>
           <option value="30000">年里程 20,000 公里以上</option>
       </select>
-      <button class="btn-main" onclick="submitRegister('customer')">完成授權並啟用座艙</button>
+      <button class="btn-main" onclick="submitRegister()">完成授權並啟用座艙</button>
     </div>
   </div>
 
@@ -158,9 +187,22 @@
     </div>
   </div>
 
+  <div id="page-book" class="page">
+    <h3>📍 預約安裝</h3>
+    <div id="garage-list" class="g-card" style="text-align:center;">載入中...</div>
+  </div>
+  
+  <div id="page-settings" class="page">
+    <h3>⚙️ 設定與紀錄</h3>
+    <div class="tab-container"><div class="tab-btn active" onclick="loadHistory('filter')">🔄 更換紀錄</div><div class="tab-btn" onclick="loadHistory('book')">📍 預約紀錄</div></div>
+    <div id="history-container" class="g-card" style="max-height: 350px; overflow-y: auto;">讀取中...</div>
+  </div>
+
   <div class="bottom-nav" id="nav-bar">
     <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span><span class="nav-text">座艙</span></div>
+    <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
     <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span><span class="nav-text">任務</span></div>
+    <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
   </div>
 
   <div class="scanner-modal" id="scanner-modal">
@@ -170,6 +212,8 @@
 
   <script>
     function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
+    window.onerror = function(msg) { console.log(msg); return false; };
+
     const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
     let currentUser = null; 
     let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
@@ -183,7 +227,7 @@
             phone: document.getElementById('c-phone').value, 
             car_brand: document.getElementById('c-brand').value, 
             license_plate: document.getElementById('c-plate').value, 
-            yearly_mileage: parseInt(document.getElementById('c-mileage').value), // 寫入年里程
+            yearly_mileage: parseInt(document.getElementById('c-mileage').value) || 10000,
             role: 'customer' 
         };
         
@@ -197,6 +241,7 @@
     }
 
     async function shareToLine() {
+        if (!currentUser) return alert("請先登入");
         const link = `https://liff.line.me/2009187567-58hBrZRj?ref=${currentUser.line_uid}`;
         if (liff.isApiAvailable('shareTargetPicker')) {
             try { await liff.shareTargetPicker([{ type: "text", text: `推薦您加入 HYPASS 智能座艙！這款濾網能主動推播空氣品質並守護您的健康。\n\n點擊下方專屬連結立即啟用：\n${link}` }]); } catch (e) {}
@@ -229,45 +274,69 @@
         alert("✅ 濾網啟用成功！"); location.reload();
     }
 
-    // 🌟 5. 終極加權演算法 (年里程 + 溫濕度)
+    // 🌟 加權演算法
     async function calculateDashboardStats() {
         if (!currentUser) return;
-        
         const { data: filter } = await supabaseClient.from('filters_uid').select('activated_at').eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated').order('activated_at', { ascending: false }).limit(1).single();
         
         if (filter && filter.activated_at) {
             const days = Math.max(0, Math.floor((new Date() - new Date(filter.activated_at)) / (1000 * 60 * 60 * 24)));
-            
-            // 基礎損耗
             let baseWear = 0.27; 
             
-            // 💡 里程加權 (推算日均駕駛時數)
-            // 10000km/年 = 正常 (1.0), 20000km/年 = 操勞 (1.5), 30000km/年 = 極重度 (2.0)
+            // 年里程加權 (10000=1.0, 20000=1.5, 30000=2.0)
             let mileageRate = currentUser.yearly_mileage ? ((currentUser.yearly_mileage / 10000) * 0.5 + 0.5) : 1.0;
-            
-            // 💡 溫濕度加權 (高溫高濕加速發霉與活性碳飽和)
+            // 溫濕度加權
             let tempRate = envData.temp > 30 ? 1.2 : (envData.temp < 15 ? 0.9 : 1.0);
             let humRate = envData.hum > 80 ? 1.2 : 1.0;
-            
-            // 💡 AQI 空汙加權
+            // AQI 加權
             let aqiRate = envData.aqi > 150 ? 1.8 : (envData.aqi > 100 ? 1.4 : 1.0);
 
-            // 綜合指數相乘
             let totalMultiplier = mileageRate * aqiRate * tempRate * humRate;
-
-            // 計算健康度
             let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
-            document.getElementById('ui-health').innerText = `${health}%`;
             
-            // 變色邏輯
+            document.getElementById('ui-health').innerText = `${health}%`;
             if(health > 30) document.getElementById('ui-health').style.color = 'var(--accent-color)';
             else if(health > 0) document.getElementById('ui-health').style.color = '#f59e0b';
             else document.getElementById('ui-health').style.color = '#ef4444';
 
-            // 總攔截量 (也套用加權)
             document.getElementById('ui-pm25').innerText = Math.round(days * 1250 * totalMultiplier).toLocaleString();
         }
     }
+
+    async function calculatePointsAndMarquee() {
+        const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
+        let total = 0; let hasRecentReward = false;
+        
+        if(data && data.length > 0) {
+            data.forEach(r => total += (r.type === 'redeem' ? -r.points : r.points));
+            const latestReward = data.find(r => r.type.includes('referral') && r.status === 'completed');
+            if (latestReward && (new Date().getTime() - new Date(latestReward.created_at).getTime()) < 86400000) { 
+                setElText('ui-dynamic-msg', `🎉 恭喜！您推薦的好友已成功加入，獲得 ${latestReward.points} 點獎勵！`); hasRecentReward = true;
+            }
+        }
+        setElText('reward-balance', `$${total}`);
+        if(!hasRecentReward) setElText('ui-dynamic-msg', `系統連線正常，目前濾網持續防護中...`);
+    }
+
+    async function loadHistory(type) {
+        document.getElementById('history-container').innerHTML = '讀取中...'; let html = '';
+        if (type === 'filter') {
+            const { data } = await supabaseClient.from('filters_uid').select('*').eq('activated_by_uid', currentUser.line_uid).order('activated_at', { ascending: false });
+            if(data) data.forEach(d => { html += `<div class="log-item"><b>📦 UID: ${d.uid}</b><br>啟用: ${new Date(d.activated_at).toLocaleString()}</div>`; });
+        } else {
+            const { data } = await supabaseClient.from('bookings').select('*, garages(name)').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
+            if(data) data.forEach(d => { html += `<div class="log-item"><b>📍 預約: ${d.garages.name}</b><br>日期: ${d.book_date} [${d.status}]</div>`; });
+        }
+        document.getElementById('history-container').innerHTML = html || '尚無紀錄';
+    }
+
+    async function loadGarages() {
+        const { data } = await supabaseClient.from('garages').select('*').eq('status', 'active');
+        let html = '';
+        if(data) data.forEach(g => { html += `<div style="padding:10px; border-bottom:1px solid #333; text-align:left;"><b>${g.name}</b><br><span style="font-size:12px; color:#888;">${g.city}${g.address}</span><button class="btn-main" style="padding:8px; margin-top:5px; font-size:14px;" onclick="bookGarage(${g.id})">預約</button></div>`; });
+        document.getElementById('garage-list').innerHTML = html;
+    }
+    async function bookGarage(gId) { let d = prompt("請輸入預約日期 (ex:2026/03/01)"); if(d) { await supabaseClient.from('bookings').insert([{user_uid:currentUser.line_uid, garage_id:gId, book_date:d}]); alert("預約成功"); } }
 
     async function init() {
         await liff.init({ liffId: "2009187567-58hBrZRj" });
@@ -277,20 +346,18 @@
         if (data) {
             currentUser = data;
             setElText('ui-owner', `${data.name} 的專屬座艙`); setElText('ui-car-info', `${data.car_brand} ${data.license_plate}`);
+            calculatePointsAndMarquee();
             
-            // 假資料 Demo (後續接 API)
+            // DEMO 環境數據 (搭配您未來的 Google 定位與 API)
             envData = { temp: 32, hum: 85, aqi: 65, pm25: 20 };
-            setElText('env-aqi', envData.aqi); setElText('env-home-aqi', '55'); 
-            
+            setElText('env-aqi', envData.aqi); setElText('env-home-aqi', '55'); setElText('ui-loc-name', '台北市'); setElText('ui-home-city', data.city);
             calculateDashboardStats();
-        } else { 
-            document.getElementById('page-home').classList.remove('active');
-            document.getElementById('page-register').classList.add('active'); 
-        }
+            
+        } else { document.getElementById('page-register').classList.add('active'); document.getElementById('page-home').classList.remove('active'); }
     }
     
     init();
-    function switchPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-'+id).classList.add('active'); }
+    function switchPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-'+id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); if(id==='book')loadGarages(); if(id==='settings')loadHistory('filter');}
     async function redeemPoints() { alert("提領申請已送出！"); }
   </script>
 </body>
