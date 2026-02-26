@@ -5,37 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>HYPASS Air+ 智能座艙</title>
   
+  <script>
+    (function captureReferral() {
+        try {
+            let urlStr = window.location.href;
+            let urlObj = new URL(urlStr);
+            let ref = urlObj.searchParams.get('ref');
+            
+            // 破解 LINE liff.state 隱藏包裹
+            if (!ref) {
+                let liffState = urlObj.searchParams.get('liff.state');
+                if (liffState) {
+                    let stateParams = new URLSearchParams(liffState.startsWith('?') ? liffState : '?' + liffState);
+                    ref = stateParams.get('ref');
+                }
+            }
+            // 暴力正則表達式掃描 (防止 URL 被奇怪編碼)
+            if (!ref) {
+                let match = urlStr.match(/[?&]ref=([^&#]+)/) || urlStr.match(/ref%3D([^&]+)/);
+                if (match && match[1]) ref = decodeURIComponent(match[1]);
+            }
+            // 確保有效才存入
+            if (ref && ref !== 'null' && ref !== 'undefined') {
+                localStorage.setItem('hypass_ref_code', ref);
+            }
+        } catch(e) {}
+    })();
+  </script>
+
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <link rel="stylesheet" href="style.css">
-  <script>
-    (function captureReferral() {
-        try {
-            let urlStr = window.location.href;
-            // 暴力掃描：無論是正常的 ?ref= 還是被 LINE 深度編碼的 ref%3D，直接強制抓出
-            let match = urlStr.match(/[?&]ref=([^&#]+)/) || urlStr.match(/ref%3D([^&]+)/);
-            if (match && match[1]) {
-                // 解碼並鎖進手機本地記憶體
-                localStorage.setItem('hypass_ref_code', decodeURIComponent(match[1]));
-            }
-        } catch(e) {}
-    })();
-  </script>
-</head> ```
-
-*(註：您 `main.js` 裡面原本舊的攔截器不用刪除沒關係，加上這段後，這段頂部代碼會優先且絕對成功地保住您的推薦碼。)*
-
----
-
-**✅ 測試方式：**
-您加上這段代碼後，可以請另一位還沒註冊過的朋友（或借用另一支手機）點擊您的分享連結測試。這次朋友只要一按下「完成授權」，您的 10 點獎勵金絕對會瞬間入帳，跑馬燈也會馬上跳出賀電！老闆請您試試看！
 </head>
 <body class="dark-mode">
 
   <div id="splash-screen">
-    <img src="https://qznvabjtxcbffjryfgqi.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_65xm6c65xm6c65xm.png" alt="HYPASS Air+">
+    <img src="./splash.jpg" alt="HYPASS Air+">
   </div>
 
   <div id="page-register" class="page">
@@ -69,7 +76,15 @@
 
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
         <option value="">* 選擇車輛品牌</option>
-        <option value="Toyota">Toyota</option><option value="Tesla">Tesla</option><option value="Honda">Honda</option><option value="Other">其他品牌</option>
+        <option value="Toyota">Toyota</option><option value="Lexus">Lexus</option><option value="Honda">Honda</option>
+        <option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option>
+        <option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option>
+        <option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Benz">Benz (M-Benz)</option>
+        <option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option>
+        <option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option>
+        <option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="MG">MG</option>
+        <option value="CMC">CMC (中華)</option><option value="Peugeot">Peugeot</option><option value="Land Rover">Land Rover</option>
+        <option value="Mini">Mini</option><option value="Other">其他品牌</option>
       </select>
       <select id="c-model"><option value="">* 選擇車型</option></select>
       
@@ -214,7 +229,15 @@
 
         <label>車輛品牌</label>
         <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
-          <option value="Toyota">Toyota</option><option value="Tesla">Tesla</option><option value="Honda">Honda</option><option value="Other">其他品牌</option>
+          <option value="Toyota">Toyota</option><option value="Lexus">Lexus</option><option value="Honda">Honda</option>
+          <option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option>
+          <option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option>
+          <option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Benz">Benz (M-Benz)</option>
+          <option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option>
+          <option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option>
+          <option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="MG">MG</option>
+          <option value="CMC">CMC (中華)</option><option value="Peugeot">Peugeot</option><option value="Land Rover">Land Rover</option>
+          <option value="Mini">Mini</option><option value="Other">其他品牌</option>
         </select>
         <label>車輛型號</label><select id="edit-model"></select>
         
@@ -255,25 +278,15 @@
       </div>
     </div>
 
-    <div class="version-tag">System Ver. V7.5 (企業級模組化版)</div>
+    <div class="version-tag">System Ver. V8.2 (全端優化版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
-    <div class="nav-item active" onclick="switchPage('home', this)">
-        <span class="nav-icon">◓</span><span class="nav-text">座艙</span>
-    </div>
-    <div class="nav-item" onclick="switchPage('shop', this)">
-        <span class="nav-icon">🛒</span><span class="nav-text">商城</span>
-    </div>
-    <div class="nav-item" onclick="switchPage('book', this)">
-        <span class="nav-icon">📍</span><span class="nav-text">預約</span>
-    </div>
-    <div class="nav-item" onclick="switchPage('rewards', this)">
-        <span class="nav-icon">🎁</span><span class="nav-text">任務</span>
-    </div>
-    <div class="nav-item" onclick="switchPage('settings', this)">
-        <span class="nav-icon">⚙️</span><span class="nav-text">設定</span>
-    </div>
+    <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span><span class="nav-text">座艙</span></div>
+    <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span><span class="nav-text">商城</span></div>
+    <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
+    <div class="nav-item" onclick="switchPage('rewards', this)"><span class="nav-icon">🎁</span><span class="nav-text">任務</span></div>
+    <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
   </div>
 
   <div class="scanner-modal" id="scanner-modal">
