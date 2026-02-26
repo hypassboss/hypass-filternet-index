@@ -3,46 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS V7.5 總部戰情室 (無損全功能版)</title>
+  <title>HYPASS V8.0 總部戰情室 (全功能 + 大數據版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
     
-    /* 側邊導覽列 */
     .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;}
     .sidebar-title { color: #00e676; padding: 25px 20px 20px 20px; font-size: 20px; font-weight: 900; margin: 0; letter-spacing: 1px;}
-    .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 15px; border-left: 4px solid transparent; transition: 0.2s;}
+    .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 14px; border-left: 4px solid transparent; transition: 0.2s;}
     .nav-btn:hover { background: #222; color: #fff; }
     .nav-btn.active { color: #00e676; border-left-color: #00e676; background: #1a1e1a; font-weight: bold; }
     
-    /* 主內容區 */
     .main-content { flex: 1; padding: 30px; overflow-y: auto; }
     .panel { display: none; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
     .panel.active { display: block; }
     h2 { margin-top: 0; color: #111; font-size: 22px; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;}
     
-    /* 表格與表單 */
-    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px;}
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px;}
     th, td { border: 1px solid #eee; padding: 12px 15px; text-align: left; vertical-align: middle;}
     th { background: #f8f9fa; color: #555; font-weight: 600; white-space: nowrap;}
     tr:hover { background: #fcfcfc; }
     input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit;}
     
-    /* 按鈕 */
     .btn { background: #00e676; color: #000; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s;}
     .btn:hover { filter: brightness(1.1); transform: scale(0.98);}
     .btn-danger { background: #ef4444; color: #fff; }
     .btn-warn { background: #f59e0b; color: #fff; }
     .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-dark { background: #111; color: #fff; }
     
-    /* 📦 出貨錄影專區 */
     .dispatch-container { background: #111; padding: 25px; border-radius: 12px; color: white; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
     .scan-input { width: 100%; padding: 16px; font-size: 20px; border-radius: 8px; background: #222; color: #00e676; text-align: center; border: 1px solid #444; margin-bottom: 15px; box-sizing: border-box; font-family: monospace; outline: none;}
     #scanner-box { width: 100%; max-width: 450px; margin: 0 auto 20px auto; overflow: hidden; border-radius: 12px; display: none; border: 2px solid #00e676;}
     #video-box { width: 100%; max-width: 450px; background: #000; border-radius: 12px; border: 2px solid #ef4444; display: none; margin: 0 auto 20px auto;}
     .recording-dot { color: #ef4444; font-weight: bold; animation: blink 1s infinite; display: none; margin-left: 10px;}
     @keyframes blink { 50% { opacity: 0; } }
+
+    .env-stats { display: flex; gap: 15px; margin-bottom: 20px; }
+    .env-card { background: #f8f9fa; border: 1px solid #eee; padding: 15px; border-radius: 8px; flex: 1; text-align: center; }
+    .env-card h3 { margin: 0 0 5px 0; font-size: 14px; color: #555; }
+    .env-card p { margin: 0; font-size: 24px; font-weight: bold; color: #00e676; }
   </style>
 </head>
 <body>
@@ -56,6 +57,7 @@
     <button class="nav-btn" onclick="switchTab('garages', this)">🏪 保修廠審核</button>
     <button class="nav-btn" onclick="switchTab('bookings', this)">📅 預約單總表</button>
     <button class="nav-btn" onclick="switchTab('bulletins', this)">📢 電子布告欄發布</button>
+    <button class="nav-btn" onclick="switchTab('env', this)">🌍 環境大數據</button>
   </div>
 
   <div class="main-content">
@@ -154,6 +156,33 @@
       </table>
     </div>
 
+    <div id="panel-env" class="panel">
+      <h2>🌍 台灣 368 鄉鎮環境大數據與演算法中樞</h2>
+      
+      <div class="env-stats">
+        <div class="env-card">
+          <h3>資料庫總筆數 (鄉鎮)</h3>
+          <p id="env-total-count">--</p>
+        </div>
+        <div class="env-card">
+          <h3>最後更新時間</h3>
+          <p id="env-last-update" style="font-size:16px;">--</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px; display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="triggerEnvUpdate()">⚡ 手動觸發雲端爬蟲 (更新 368 鄉鎮資料)</button>
+        <button class="btn btn-dark" onclick="downloadEnvCSV()">📥 下載大數據資料庫 (CSV 格式)</button>
+      </div>
+
+      <table id="env-table">
+        <thead>
+          <tr><th>縣市</th><th>鄉鎮市區</th><th>溫度 (°C)</th><th>濕度 (%)</th><th>即時 AQI</th><th>PM 2.5</th><th>7日均值 (演算法)</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
   </div>
 
   <script>
@@ -165,17 +194,17 @@
       document.getElementById('panel-' + id).classList.add('active'); 
       btn.classList.add('active');
       
-      // 根據頁籤載入對應資料
       if (id === 'crm') loadCRM(); 
       if (id === 'uid') loadUIDs();
       if (id === 'rewards') loadRewards();
       if (id === 'garages') loadGarages();
       if (id === 'bookings') loadBookings();
       if (id === 'bulletins') loadBulletins();
+      if (id === 'env') loadEnvData();
     }
 
     // ==============================================
-    // 🎥 1. 出貨錄影與掃描系統
+    // 1. 出貨錄影與掃描系統
     // ==============================================
     let html5QrcodeScanner = null;
     let mediaRecorder = null;
@@ -186,9 +215,7 @@
 
     function startScanFlow() {
         currentOrder = ""; currentUID = "";
-        document.getElementById('inp-order').value = ""; 
-        document.getElementById('inp-uid').value = "";
-        
+        document.getElementById('inp-order').value = ""; document.getElementById('inp-uid').value = "";
         document.getElementById('btn-scan').style.display = 'none';
         document.getElementById('scanner-box').style.display = 'block';
         document.getElementById('flow-status').innerText = "第一步：請將鏡頭對準 Shopline 訂單條碼";
@@ -231,11 +258,9 @@
             const videoElement = document.getElementById('video-box');
             videoElement.style.display = 'block';
             videoElement.srcObject = videoStream;
-            
             mediaRecorder = new MediaRecorder(videoStream);
             mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) recordedChunks.push(e.data); };
             mediaRecorder.start();
-            
             document.getElementById('btn-record').style.display = 'none';
             document.getElementById('btn-stop').style.display = 'inline-block';
             document.getElementById('rec-dot').style.display = 'inline';
@@ -250,16 +275,14 @@
             document.getElementById('rec-dot').style.display = 'none';
 
             mediaRecorder.stop();
-            
             mediaRecorder.onstop = async function() {
                 const blob = new Blob(recordedChunks, { type: 'video/webm' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url; 
-                a.download = `${currentOrder}_${currentUID}.webm`; // 訂單_UID命名
+                a.download = `${currentOrder}_${currentUID}.webm`; 
                 a.click();
                 recordedChunks = [];
-                
                 videoStream.getTracks().forEach(track => track.stop());
                 document.getElementById('video-box').style.display = 'none';
 
@@ -267,7 +290,6 @@
                     const { data: user } = await supabaseClient.from('users').select('line_uid').eq('phone', currentOrder).maybeSingle(); 
                     const payload = { status: 'sold', shopline_order_id: currentOrder };
                     if(user) payload.activated_by_uid = user.line_uid;
-                    
                     const { error } = await supabaseClient.from('filters_uid').update(payload).eq('uid', currentUID);
                     if (error) throw error;
                     alert("✅ 出貨成功！影片已下載。");
@@ -281,7 +303,7 @@
     }
 
     // ==============================================
-    // 👥 2. CRM 上帝模式
+    // 2. CRM 上帝模式
     // ==============================================
     async function loadCRM() {
       document.getElementById('crm-table').querySelector('tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">讀取中...</td></tr>';
@@ -313,8 +335,7 @@
     }
 
     async function godModeDelete(uid, name) {
-        const pwd = prompt(`【最高權限】永久銷毀客戶【${name}】。\n請輸入上帝密碼：`);
-        if (pwd !== "hypass888") return alert("密碼錯誤！");
+        if (prompt(`【最高權限】永久銷毀客戶【${name}】。\n請輸入上帝密碼：`) !== "hypass888") return alert("密碼錯誤！");
         if (confirm(`⚠️ 確定要摧毀 ${name} 嗎？此動作將連鎖拔除他所有紀錄！`)) {
             try {
                 await supabaseClient.from('rewards').delete().eq('user_uid', uid);
@@ -329,19 +350,17 @@
     }
 
     async function godModeEdit(uid, currentName) {
-        const pwd = prompt(`【修改模式】目標: ${currentName}。\n請輸入密碼：`);
-        if (pwd !== "hypass888") return alert("密碼錯誤！");
+        if (prompt(`【修改模式】目標: ${currentName}。\n請輸入密碼：`) !== "hypass888") return alert("密碼錯誤！");
         const newPhone = prompt(`輸入新手機號 (留空不改)：`);
         const newPlate = prompt(`輸入新車牌號 (留空不改)：`);
         let updates = {}; if (newPhone) updates.phone = newPhone; if (newPlate) updates.license_plate = newPlate;
         if (Object.keys(updates).length > 0) {
-            await supabaseClient.from('users').update(updates).eq('line_uid', uid); 
-            alert("修改成功！"); loadCRM();
+            await supabaseClient.from('users').update(updates).eq('line_uid', uid); alert("修改成功！"); loadCRM();
         }
     }
 
     // ==============================================
-    // 🏷️ 3. UID 庫存管理
+    // 3. UID 庫存管理
     // ==============================================
     async function loadUIDs() {
         const { data } = await supabaseClient.from('filters_uid').select('*, users(name)').order('uid', { ascending: false }).limit(50);
@@ -365,8 +384,7 @@
     async function generateSequentialUIDs() {
         const { data } = await supabaseClient.from('filters_uid').select('uid').order('uid', {ascending: false}).limit(1);
         let maxNum = data && data.length > 0 ? parseInt(data[0].uid.replace('HP-','')) : 0;
-        let ins = []; 
-        for(let i=1; i<=50; i++) ins.push({ uid: 'HP-' + String(maxNum + i).padStart(6, '0') });
+        let ins = []; for(let i=1; i<=50; i++) ins.push({ uid: 'HP-' + String(maxNum + i).padStart(6, '0') });
         await supabaseClient.from('filters_uid').insert(ins); alert("✅ 50 組 UID 已入庫！"); loadUIDs();
     }
 
@@ -381,7 +399,7 @@
     }
 
     // ==============================================
-    // 🎁 4. 獎勵金審核
+    // 4. 獎勵金審核
     // ==============================================
     async function loadRewards() {
         const { data } = await supabaseClient.from('rewards').select('*, users(name)').eq('type', 'redeem').eq('status', 'pending');
@@ -400,7 +418,7 @@
     }
 
     // ==============================================
-    // 🏪 5. 保修廠審核管理 (恢復)
+    // 5. 保修廠審核管理
     // ==============================================
     async function loadGarages() {
         const { data } = await supabaseClient.from('garages').select('*').order('created_at', { ascending: false });
@@ -412,7 +430,7 @@
                 <td>${g.contact_name||'-'}<br>${g.phone||'-'}</td>
                 <td>${g.status === 'active' ? '<span style="color:green;font-weight:bold;">營運中</span>' : '<span style="color:#f59e0b;">待審核</span>'}</td>
                 <td style="text-align:center;">
-                  ${g.status !== 'active' ? `<button class="btn" onclick="approveGarage(${g.id})">✅ 允許上架</button>` : ''}
+                  ${g.status !== 'active' ? `<button class="btn" onclick="approveGarage(${g.id})">✅ 上架</button>` : ''}
                   <button class="btn btn-danger" onclick="deleteGarage(${g.id})">🗑️ 刪除</button>
                 </td></tr>`;
             });
@@ -423,7 +441,7 @@
     async function deleteGarage(id) { if(confirm("確定刪除此保修廠？")) { await supabaseClient.from('garages').delete().eq('id',id); loadGarages(); } }
 
     // ==============================================
-    // 📅 6. 預約單總表 (恢復)
+    // 6. 預約單總表
     // ==============================================
     async function loadBookings() {
         const { data } = await supabaseClient.from('bookings').select('*, users(name), garages(name)').order('created_at', { ascending: false });
@@ -435,9 +453,7 @@
                 <td>${b.garages?.name||'未知廠'}</td>
                 <td>${b.book_date}</td>
                 <td>${b.status}</td>
-                <td style="text-align:center;">
-                  <button class="btn btn-danger" style="padding:4px 8px;" onclick="cancelBooking(${b.id})">作廢</button>
-                </td></tr>`;
+                <td style="text-align:center;"><button class="btn btn-danger" style="padding:4px 8px;" onclick="cancelBooking(${b.id})">作廢</button></td></tr>`;
             });
         }
         document.getElementById('booking-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="5">尚無預約紀錄</td></tr>';
@@ -445,7 +461,7 @@
     async function cancelBooking(id) { if(confirm("確定作廢此預約單？")) { await supabaseClient.from('bookings').update({status:'cancelled'}).eq('id',id); loadBookings(); } }
 
     // ==============================================
-    // 📢 7. 電子布告欄 (恢復)
+    // 7. 電子布告欄
     // ==============================================
     async function loadBulletins() {
         const { data } = await supabaseClient.from('bulletins').select('*').order('created_at', { ascending: false });
@@ -465,17 +481,83 @@
         document.getElementById('bulletin-table').querySelector('tbody').innerHTML = html || '<tr><td colspan="4">無公告</td></tr>';
     }
     async function createBulletin() {
-        const title = document.getElementById('bul-title').value;
-        const content = document.getElementById('bul-content').value;
+        const title = document.getElementById('bul-title').value; const content = document.getElementById('bul-content').value;
         if(!title || !content) return alert("請填寫完整公告！");
         await supabaseClient.from('bulletins').insert([{ title, content, is_active: true }]);
-        document.getElementById('bul-title').value = ''; document.getElementById('bul-content').value = '';
-        alert("發布成功！前台車主將會看到。"); loadBulletins();
+        document.getElementById('bul-title').value = ''; document.getElementById('bul-content').value = ''; alert("發布成功！"); loadBulletins();
     }
     async function toggleBulletin(id, status) { await supabaseClient.from('bulletins').update({is_active: status}).eq('id',id); loadBulletins(); }
     async function deleteBulletin(id) { if(confirm("確定刪除公告？")) { await supabaseClient.from('bulletins').delete().eq('id',id); loadBulletins(); } }
 
-    // 啟動加載出貨站（預設頁籤不用讀資料）
+    // ==============================================
+    // 🌟 8. 環境大數據與演算法下載區
+    // ==============================================
+    let globalEnvData = [];
+
+    async function loadEnvData() {
+        document.getElementById('env-table').querySelector('tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;">載入大數據庫中...</td></tr>';
+        const { data, error } = await supabaseClient.from('env_cache').select('*').order('city', { ascending: true }).order('district', { ascending: true });
+        
+        if (error) return alert("無法讀取環境數據：" + error.message);
+        
+        globalEnvData = data;
+        document.getElementById('env-total-count').innerText = data.length + " 筆";
+        if(data.length > 0) {
+            document.getElementById('env-last-update').innerText = new Date(data[0].updated_at).toLocaleString();
+        }
+
+        let html = '';
+        data.forEach(d => {
+            html += `<tr>
+                <td><b>${d.city}</b></td>
+                <td>${d.district}</td>
+                <td>${d.temp !== null ? d.temp : '--'}</td>
+                <td>${d.hum !== null ? d.hum : '--'}</td>
+                <td style="color:${d.aqi > 100 ? 'red' : 'green'}; font-weight:bold;">${d.aqi}</td>
+                <td>${d.pm25 !== null ? d.pm25 : '--'}</td>
+                <td style="color:#f59e0b; font-weight:bold;">${d.aqi_7d_avg !== null ? Math.round(d.aqi_7d_avg) : '--'}</td>
+            </tr>`;
+        });
+        document.getElementById('env-table').querySelector('tbody').innerHTML = html;
+    }
+
+    // 將資料庫轉出為 CSV 供老闆分析演算法使用
+    function downloadEnvCSV() {
+        if(globalEnvData.length === 0) return alert("沒有資料可供下載");
+        
+        const headers = ["縣市", "鄉鎮市區", "溫度", "濕度", "即時AQI", "PM2.5", "7日均值", "最後更新時間"];
+        let csvContent = "\uFEFF" + headers.join(",") + "\n"; // \uFEFF 解決 Excel 中文亂碼
+        
+        globalEnvData.forEach(d => {
+            const row = [
+                d.city, d.district, d.temp, d.hum, d.aqi, d.pm25, 
+                d.aqi_7d_avg ? Math.round(d.aqi_7d_avg) : '', 
+                new Date(d.updated_at).toLocaleString()
+            ];
+            csvContent += row.join(",") + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `HYPASS_台灣368環境數據_${new Date().getTime()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    async function triggerEnvUpdate() {
+        alert("已經發送指令給 Supabase Edge Function。此過程可能需要 10~20 秒抓取政府資料，請稍後重整查看。");
+        try {
+            // 呼叫您部署好的 update_env 函數
+            await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/update_env', { method: 'POST' });
+            loadEnvData();
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
   </script>
 </body>
 </html>
