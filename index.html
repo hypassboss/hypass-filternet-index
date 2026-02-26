@@ -12,7 +12,6 @@
             let urlObj = new URL(urlStr);
             let ref = urlObj.searchParams.get('ref');
             
-            // 破解 LINE liff.state 隱藏包裹
             if (!ref) {
                 let liffState = urlObj.searchParams.get('liff.state');
                 if (liffState) {
@@ -20,12 +19,10 @@
                     ref = stateParams.get('ref');
                 }
             }
-            // 暴力正則表達式掃描 (防止 URL 被奇怪編碼)
             if (!ref) {
                 let match = urlStr.match(/[?&]ref=([^&#]+)/) || urlStr.match(/ref%3D([^&]+)/);
                 if (match && match[1]) ref = decodeURIComponent(match[1]);
             }
-            // 確保有效才存入
             if (ref && ref !== 'null' && ref !== 'undefined') {
                 localStorage.setItem('hypass_ref_code', ref);
             }
@@ -42,7 +39,7 @@
 <body class="dark-mode">
 
   <div id="splash-screen">
-    <img src="./splash.jpg" alt="HYPASS Air+">
+    <img id="splash-img" src="./splash.jpg" onerror="this.onerror=null; this.src='https://i.imgur.com/vHqB5Oq.jpg';" alt="HYPASS Air+">
   </div>
 
   <div id="page-register" class="page">
