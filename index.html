@@ -33,24 +33,20 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-mode">
 
   <div id="splash-screen">
-    <div class="splash-logo">
-      <div class="splash-title">HYPASS Air+</div>
-      <div class="splash-subtitle">智能座艙 · 極致淨化</div>
-      <div class="splash-ring">
-        <div class="splash-core"></div>
-      </div>
-      <div class="splash-loading">SYSTEM BOOTING...</div>
-    </div>
+    <img id="splash-img" src="./splash.png" onerror="this.onerror=null; this.src='https://i.imgur.com/vHqB5Oq.jpg';" alt="HYPASS Air+">
   </div>
 
   <div id="page-register" class="page">
     <h2 style="text-align:center; margin-bottom:30px;">HYPASS <span style="color:var(--accent-color);">Air+</span></h2>
-    <div class="g-card"><p style="text-align:center; font-size:14px; color:var(--text-secondary); line-height: 1.5; margin:0;">為保障數位履歷與專屬保固<br>請完成首次座艙授權</p></div>
+    <div class="g-card">
+      <p style="text-align:center; font-size:14px; color:var(--text-secondary); line-height: 1.5; margin:0;">為保障數位履歷與專屬保固<br>請完成首次座艙授權</p>
+    </div>
     
     <button class="btn-main" onclick="showForm('customer')">A. 我是濾網客人 (車主)</button>
     <button class="btn-main" style="background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none; margin-top:10px;" onclick="showForm('garage')">B. 我是保修廠加盟夥伴</button>
@@ -110,70 +106,176 @@
     </div>
 
     <div class="main-visual-container" style="text-align:center;">
-      <div class="ring"><div style="font-size:46px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">--%</div><div style="font-size:11px; color:var(--text-secondary); font-weight:700; margin-top:5px;">動態壽命推估</div></div>
+      <div class="ring">
+        <div style="font-size:46px; font-weight:900; color:var(--accent-color); letter-spacing:-2px; line-height:1;" id="ui-health">--%</div>
+        <div style="font-size:11px; color:var(--text-secondary); font-weight:700; margin-top:5px;">動態壽命推估</div>
+      </div>
       <div class="pm25-badge">🛡️ 累計攔截 PM2.5: <span id="ui-pm25">0</span> µg</div>
       <div style="font-size:11px; color:var(--text-secondary); margin-top:12px; letter-spacing: 0.5px;">濾網啟用日期: <span id="ui-filter-date" style="font-weight:bold; color:var(--text-primary);">讀取中...</span></div>
     </div>
 
-    <div class="dynamic-msg-bar" id="dynamic-msg-box"><span style="margin-right: 12px; font-size: 18px;">💬</span><div class="marquee-container"><span class="marquee-content" id="ui-dynamic-msg">載入最新環境數據中...</span></div></div>
+    <div class="dynamic-msg-bar" id="dynamic-msg-box">
+      <span style="margin-right: 12px; font-size: 18px;">💬</span>
+      <div class="marquee-container">
+        <span class="marquee-content" id="ui-dynamic-msg">載入最新環境數據中...</span>
+      </div>
+    </div>
 
     <div class="grid-2">
-      <div class="env-box"><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">📍 即時所在地<br><span id="ui-loc-name" style="color:var(--text-primary); font-size:13px;">定位中...</span></div><div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div><div style="font-size:10px; font-weight:800; color:var(--text-secondary); letter-spacing:1px;">AQI</div></div>
-      <div class="env-box" style="border-color:var(--gold-color);"><div style="font-size:12px; color:var(--text-secondary); font-weight:600;">🏠 7日居住地<br><span id="ui-home-city" style="color:var(--text-primary); font-size:13px;">讀取中...</span></div><div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div><div style="font-size:10px; font-weight:800; color:var(--text-secondary); letter-spacing:1px;">AQI</div></div>
+      <div class="env-box">
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">📍 即時所在地<br><span id="ui-loc-name" style="color:var(--text-primary); font-size:13px;">定位中...</span></div>
+        <div class="env-val" id="env-aqi" style="color:var(--accent-color);">--</div>
+        <div style="font-size:10px; font-weight:800; color:var(--text-secondary); letter-spacing:1px;">AQI</div>
+      </div>
+      <div class="env-box" style="border-color:var(--gold-color);">
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:600;">🏠 7日居住地<br><span id="ui-home-city" style="color:var(--text-primary); font-size:13px;">讀取中...</span></div>
+        <div class="env-val" id="env-home-aqi" style="color:var(--gold-color);">--</div>
+        <div style="font-size:10px; font-weight:800; color:var(--text-secondary); letter-spacing:1px;">AQI</div>
+      </div>
     </div>
 
     <div class="grid-3">
-      <div class="esg-box"><div class="esg-badge">極致低風阻</div><div style="font-size:20px; margin-top:12px;">🌱</div><div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:10px; color:var(--text-secondary);">kg</span></div><div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省碳足跡</div></div>
-      <div class="esg-box"><div class="esg-badge">冷氣輕負載</div><div style="font-size:20px; margin-top:12px;">⚡️</div><div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:10px; color:var(--text-secondary);">kWh</span></div><div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省電效能</div></div>
-      <div class="esg-box"><div class="esg-badge">強效大風量</div><div style="font-size:20px; margin-top:12px;">⛽️</div><div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:10px; color:var(--text-secondary);">%</span></div><div style="font-size:10px; color:var(--text-secondary); font-weight:600;">空調節能</div></div>
+      <div class="esg-box">
+        <div class="esg-badge">極致低風阻</div><div style="font-size:20px; margin-top:12px;">🌱</div>
+        <div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-co2">0</span> <span style="font-size:10px; color:var(--text-secondary);">kg</span></div>
+        <div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省碳足跡</div>
+      </div>
+      <div class="esg-box">
+        <div class="esg-badge">冷氣輕負載</div><div style="font-size:20px; margin-top:12px;">⚡️</div>
+        <div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-kwh">0</span> <span style="font-size:10px; color:var(--text-secondary);">kWh</span></div>
+        <div style="font-size:10px; color:var(--text-secondary); font-weight:600;">省電效能</div>
+      </div>
+      <div class="esg-box">
+        <div class="esg-badge">強效大風量</div><div style="font-size:20px; margin-top:12px;">⛽️</div>
+        <div style="font-size:18px; font-weight:700; margin:4px 0;"><span id="ui-esg-ac">0</span> <span style="font-size:10px; color:var(--text-secondary);">%</span></div>
+        <div style="font-size:10px; color:var(--text-secondary); font-weight:600;">空調節能</div>
+      </div>
     </div>
 
-    <div class="tech-tag-container"><div class="tech-tag">🇹🇼 台灣製造</div><div class="tech-tag">⚡ 靜電過濾</div><div class="tech-tag">🥥 活性碳</div><div class="tech-tag">📡 空汙雷達</div><div class="tech-tag">🧠 AI 演算</div><div class="tech-tag">🌱 ESG 減碳</div></div>
+    <div class="tech-tag-container">
+      <div class="tech-tag">🇹🇼 台灣製造</div><div class="tech-tag">⚡ 靜電過濾</div><div class="tech-tag">🥥 活性碳</div>
+      <div class="tech-tag">📡 空汙雷達</div><div class="tech-tag">🧠 AI 演算</div><div class="tech-tag">🌱 ESG 減碳</div>
+    </div>
 
     <div id="bulletin-board-container"></div>
+
     <button class="btn-main" onclick="openFrontendScanner()" style="margin-top:5px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color); box-shadow:none;">📷 掃描一維條碼 (UID) 啟用濾網</button>
   </div>
 
   <div id="page-shop" class="page">
     <h3 style="color:var(--text-primary); font-size:22px;">🛒 官方商城</h3>
-    <div class="g-card" style="text-align:center; padding:40px 20px;"><p style="color:var(--text-secondary);">專屬隱藏優惠碼：</p><h2 style="color:var(--accent-color); border:2px dashed var(--accent-color); padding:15px; border-radius:12px; letter-spacing: 2px;">AIRPLUS2026</h2><button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw'">前往商城選購</button></div>
+    <div class="g-card" style="text-align:center; padding:40px 20px;">
+      <p style="color:var(--text-secondary);">專屬隱藏優惠碼：</p>
+      <h2 style="color:var(--accent-color); border:2px dashed var(--accent-color); padding:15px; border-radius:12px; letter-spacing: 2px;">AIRPLUS2026</h2>
+      <button class="btn-main" onclick="window.location.href='https://www.hypass.com.tw'">前往商城選購</button>
+    </div>
   </div>
 
   <div id="page-book" class="page">
     <h3 style="color:var(--text-primary); font-size:22px;">📍 預約安裝</h3>
-    <div class="tab-grid" style="display: flex; gap: 10px; margin-bottom: 20px;"><div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')" style="flex:1;">🤖 智能配對</div><div class="tab-btn" id="tab-btn-manual" onclick="switchBookingTab('manual')" style="flex:1;">📋 保修廠清單</div></div>
+    <div class="tab-grid" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div class="tab-btn active" id="tab-btn-smart" onclick="switchBookingTab('smart')" style="flex:1;">🤖 智能配對</div>
+        <div class="tab-btn" id="tab-btn-manual" onclick="switchBookingTab('manual')" style="flex:1;">📋 保修廠清單</div>
+    </div>
     <div id="booking-smart"><div id="smart-match-result" class="g-card" style="text-align:center;">定位配對中...</div></div>
     <div id="booking-manual" style="display:none;"><div id="garage-list">清單讀取中...</div></div>
   </div>
 
   <div id="page-rewards" class="page">
     <h3 style="color:var(--text-primary); font-size:22px;">🎁 任務與獎勵</h3>
-    <div class="g-card vip-card" style="text-align:center; padding:40px 20px;"><p style="color:var(--gold-color); font-weight:bold; letter-spacing: 1px;">VIP 專屬獎勵金</p><h1 id="reward-balance" style="font-size:64px; text-shadow:0 4px 20px rgba(255,215,0,0.5); margin:20px 0;">$0</h1><p style="font-size:13px; color:#d4d4d4; margin-bottom: 20px; line-height:1.6;">累積滿 100 點即可兌換 LINE Points</p><button class="btn-main" style="background:linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color:#000;" onclick="redeemPoints()">申請提領點數</button></div>
-    <div class="g-card" style="border-color:var(--accent-color); text-align:center; padding: 25px 20px;"><h3 style="margin-top:0;">🚀 邀請車友加入座艙</h3><p style="font-size:13px; color:var(--text-secondary); line-height: 1.6;">註冊送 <b style="color:var(--accent-color);">10</b> 點，首掃再送 <b style="color:var(--gold-color);">100</b> 點！</p><button class="btn-main" onclick="shareToLine()">🟢 點擊直接分享給 LINE 好友</button></div>
+    <div class="g-card vip-card" style="text-align:center; padding:40px 20px;">
+      <p style="color:var(--gold-color); font-weight:bold; letter-spacing: 1px;">VIP 專屬獎勵金</p>
+      <h1 id="reward-balance" style="font-size:64px; text-shadow:0 4px 20px rgba(255,215,0,0.5); margin:20px 0;">$0</h1>
+      <p style="font-size:13px; color:#d4d4d4; margin-bottom: 20px; line-height:1.6;">累積滿 100 點即可兌換 LINE Points</p>
+      <button class="btn-main" style="background:linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color:#000;" onclick="redeemPoints()">申請提領點數</button>
+    </div>
+    
+    <div class="g-card" style="border-color:var(--accent-color); text-align:center; padding: 25px 20px;">
+       <h3 style="margin-top:0;">🚀 邀請車友加入座艙</h3>
+       <p style="font-size:13px; color:var(--text-secondary); line-height: 1.6;">註冊送 <b style="color:var(--accent-color);">10</b> 點，首掃再送 <b style="color:var(--gold-color);">100</b> 點！</p>
+       <button class="btn-main" onclick="shareToLine()">🟢 點擊直接分享給 LINE 好友</button>
+    </div>
   </div>
 
   <div id="page-settings" class="page">
     <h3 style="color:var(--text-primary); font-size:22px;">⚙️ 設定與紀錄</h3>
-    <div class="tab-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr; gap:6px;"><div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')" style="padding:10px 5px; font-size:11px;">👤 資料</div><div class="tab-btn" id="tab-set-theme" onclick="switchSetTab('theme')" style="padding:10px 5px; font-size:11px;">🎨 畫面</div><div class="tab-btn" id="tab-set-b" onclick="switchSetTab('b')" style="padding:10px 5px; font-size:11px;">📜 紀錄</div><div class="tab-btn" id="tab-set-c" onclick="switchSetTab('c')" style="padding:10px 5px; font-size:11px;">📄 合約</div></div>
+    
+    <div class="tab-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr; gap:6px;">
+        <div class="tab-btn active" id="tab-set-a" onclick="switchSetTab('a')" style="padding:10px 5px; font-size:11px;">👤 資料</div>
+        <div class="tab-btn" id="tab-set-theme" onclick="switchSetTab('theme')" style="padding:10px 5px; font-size:11px;">🎨 畫面</div>
+        <div class="tab-btn" id="tab-set-b" onclick="switchSetTab('b')" style="padding:10px 5px; font-size:11px;">📜 紀錄</div>
+        <div class="tab-btn" id="tab-set-c" onclick="switchSetTab('c')" style="padding:10px 5px; font-size:11px;">📄 合約</div>
+    </div>
     
     <div id="set-content-a" style="display:block;">
       <div class="g-card">
-        <label>車主姓名</label><input type="text" id="edit-name"><label>聯絡電話</label><input type="tel" id="edit-phone"><label>電子郵件</label><input type="email" id="edit-email"><label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
-        <label>居住縣市</label><select id="edit-city" onchange="updateDistricts('edit-city', 'edit-district')"><option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option></select>
-        <label>鄉鎮市區</label><select id="edit-district"></select><label>詳細通訊地址</label><input type="text" id="edit-address">
-        <label>車輛品牌</label><select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Lexus">Lexus</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Benz">Benz (M-Benz)</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="MG">MG</option><option value="CMC">CMC (中華)</option><option value="Peugeot">Peugeot</option><option value="Land Rover">Land Rover</option><option value="Mini">Mini</option><option value="Other">其他品牌</option></select><label>車輛型號</label><select id="edit-model"></select>
-        <label>出廠年份</label><input type="number" id="edit-year"><label>車牌號碼</label><input type="text" id="edit-plate"><label>年平均行駛里程</label><select id="edit-mileage"><option value="10000">10,000 公里以下</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里以上</option></select>
+        <label>車主姓名</label><input type="text" id="edit-name">
+        <label>聯絡電話</label><input type="tel" id="edit-phone">
+        <label>電子郵件</label><input type="email" id="edit-email">
+        <label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
+        
+        <label>居住縣市</label>
+        <select id="edit-city" onchange="updateDistricts('edit-city', 'edit-district')">
+          <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option>
+          <option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option>
+          <option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
+        </select>
+        
+        <label>鄉鎮市區</label><select id="edit-district"></select>
+        <label>詳細通訊地址</label><input type="text" id="edit-address">
+
+        <label>車輛品牌</label>
+        <select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')">
+          <option value="Toyota">Toyota</option><option value="Lexus">Lexus</option><option value="Honda">Honda</option>
+          <option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option>
+          <option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option>
+          <option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Benz">Benz (M-Benz)</option>
+          <option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option>
+          <option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option>
+          <option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="MG">MG</option>
+          <option value="CMC">CMC (中華)</option><option value="Peugeot">Peugeot</option><option value="Land Rover">Land Rover</option>
+          <option value="Mini">Mini</option><option value="Other">其他品牌</option>
+        </select>
+        <label>車輛型號</label><select id="edit-model"></select>
+        
+        <label>出廠年份</label><input type="number" id="edit-year">
+        <label>車牌號碼</label><input type="text" id="edit-plate">
+        <label>年平均行駛里程</label>
+        <select id="edit-mileage"><option value="10000">10,000 公里以下</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里以上</option></select>
+        
         <button class="btn-main" onclick="updateProfile()" style="margin-top:10px;">儲存變更</button>
       </div>
     </div>
     
     <div id="set-content-theme" style="display:none;">
-      <div class="g-card" style="text-align:center; padding: 40px 20px;"><h3 style="margin-top:0; color:var(--text-primary); margin-bottom: 30px;">選擇顯示模式</h3><div style="display:flex; flex-direction: column; gap:16px;"><button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#00e676; border:1px solid #333;" onclick="setTheme('dark')">🌙 曜石黑</button><button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #ccc;" onclick="setTheme('light')">☀️ 極簡白</button><button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); color:#06b6d4; border:1px solid #3a3a3c;" onclick="setTheme('metal')">🌊 淨化藍</button></div></div>
+      <div class="g-card" style="text-align:center; padding: 40px 20px;">
+        <h3 style="margin-top:0; color:var(--text-primary); margin-bottom: 30px;">選擇顯示模式</h3>
+        <div style="display:flex; flex-direction: column; gap:16px;">
+          <button class="btn-main" id="btn-theme-dark" style="background:#000000; color:#00e676; border:1px solid #333;" onclick="setTheme('dark')">🌙 曜石黑</button>
+          <button class="btn-main" id="btn-theme-light" style="background:#ffffff; color:#10b981; border:1px solid #ccc;" onclick="setTheme('light')">☀️ 極簡白</button>
+          <button class="btn-main" id="btn-theme-metal" style="background:linear-gradient(145deg, #2c2c2e 0%, #1c1c1e 100%); color:#06b6d4; border:1px solid #3a3a3c;" onclick="setTheme('metal')">🌊 淨化藍</button>
+        </div>
+      </div>
     </div>
 
-    <div id="set-content-b" style="display:none;"><div class="g-card"><select onchange="loadHistory(this.value)" style="margin-bottom: 20px; font-weight: 700;"><option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 保修廠預約紀錄</option></select><div id="history-container" style="max-height: 350px; overflow-y: auto;">讀取中...</div></div></div>
-    <div id="set-content-c" style="display:none;"><div class="g-card"><h4 style="margin:0 0 10px 0; color:var(--accent-color); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div></div>
-    <div class="version-tag">System Ver. V8.5 (超穩定純CSS動畫版)</div>
+    <div id="set-content-b" style="display:none;">
+      <div class="g-card">
+        <select onchange="loadHistory(this.value)" style="margin-bottom: 20px; font-weight: 700;">
+            <option value="filter">🔄 濾網更換紀錄</option>
+            <option value="book">📍 保修廠預約紀錄</option>
+        </select>
+        <div id="history-container" style="max-height: 350px; overflow-y: auto;">讀取中...</div>
+      </div>
+    </div>
+
+    <div id="set-content-c" style="display:none;">
+      <div class="g-card">
+          <h4 style="margin:0 0 10px 0; color:var(--accent-color); font-size:18px;">📄 HYPASS 數位保固卡</h4>
+          <p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p>
+      </div>
+    </div>
+
+    <div class="version-tag">System Ver. V8.7 (實體圖片運鏡版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
@@ -184,7 +286,13 @@
     <div class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-text">設定</span></div>
   </div>
 
-  <div class="scanner-modal" id="scanner-modal"><div class="scanner-box"><div class="scanner-hint">請將鏡頭對準包裝上的一維條碼</div><div id="frontend-reader"></div><button class="btn-main" style="width:100%; margin-top:25px; background:#ef4444; color:#fff; box-shadow:none;" onclick="closeScanner()">✖ 取消掃描</button></div></div>
+  <div class="scanner-modal" id="scanner-modal">
+    <div class="scanner-box">
+      <div class="scanner-hint">請將鏡頭對準包裝上的一維條碼</div>
+      <div id="frontend-reader"></div>
+      <button class="btn-main" style="width:100%; margin-top:25px; background:#ef4444; color:#fff; box-shadow:none;" onclick="closeScanner()">✖ 取消掃描</button>
+    </div>
+  </div>
 
   <script src="main.js"></script>
 
