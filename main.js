@@ -30,7 +30,9 @@ const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supab
 let currentUser = null; 
 let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
-// 車款與地區資料字典 (完整保留自 V5.13)
+// 🌟 全局演算法參數 (預設值，將被雲端資料覆蓋)
+let algoParams = { baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, carLarge: 1.3, carSmall: 0.8, basePm25: 1250, kwhPerDay: 0.25, co2Factor: 0.5, paHypass: 4, paOther: 8 };
+
 const carData = { 
   "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "其他"], "Honda": ["CR-V", "HR-V", "Civic", "Fit", "其他"],
   "Nissan": ["Kicks", "Sentra", "X-Trail", "其他"], "Ford": ["Focus", "Kuga", "其他"], "Mazda": ["Mazda 3", "CX-5", "其他"],
@@ -56,14 +58,6 @@ const taiwanDistricts = {
 
 function formatTaipeiTime(dStr) { 
     try { if(!dStr) return '-'; const d=new Date(dStr); return isNaN(d.getTime())?'-':d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'); } catch(e){return '-';} 
-}
-
-function getCarSizeRate(m) { 
-    const l=['Model X','Model Y','RAV4','CR-V','X-Trail','Kuga','CX-5','Tucson','Sportage','NX','RX','GLC','X3','X5','XC60']; 
-    const s=['Yaris','Fit','Swift','Colt Plus','Venue','Kamiq','UX']; 
-    if(l.includes(m)) return 1.3; 
-    if(s.includes(m)) return 0.8; 
-    return 1.0; 
 }
 
 function setTheme(t) { 
@@ -115,7 +109,6 @@ function switchBookingTab(t) {
     document.getElementById('tab-btn-manual').className = `tab-btn ${t==='manual' ? 'active' : ''}`; 
 }
 
-// 🌟 註冊機制 (防吞噬版)
 async function submitRegister(role) {
     try {
         const p = await liff.getProfile(); 
@@ -174,20 +167,15 @@ async function updateProfile() {
   if (error) alert("更新失敗"); else { alert('✅ 您的座艙資料已成功更新！'); location.reload(); }
 }
 
-// 🌟 工業級相機掃描
 let scanner = null;
 function openFrontendScanner() { 
     document.getElementById('scanner-modal').style.display = 'flex'; 
     scanner = new Html5Qrcode("frontend-reader"); 
-    scanner.start(
-        { facingMode: "environment" }, 
-        { fps: 10, qrbox: { width: 280, height: 120 } }, 
-        (text) => { 
-            scanner.stop(); 
-            document.getElementById('scanner-modal').style.display = 'none'; 
-            processUID(text.trim()); 
-        }
-    ); 
+    scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 280, height: 120 } }, (text) => { 
+        scanner.stop(); 
+        document.getElementById('scanner-modal').style.display = 'none'; 
+        processUID(text.trim()); 
+    }); 
 }
 function closeScanner() { if(scanner) scanner.stop(); document.getElementById('scanner-modal').style.display = 'none'; }
 
@@ -201,7 +189,7 @@ async function processUID(uid) {
     
     if (currentUser.referrer_uid) {
         const { count } = await supabaseClient.from('filters_uid').select('*', { count: 'exact', head: true }).eq('activated_by_uid', currentUser.line_uid);
-        if (count === 1) { // 首次掃描送 100 點
+        if (count === 1) { 
             await supabaseClient.from('rewards').insert([{ user_uid: currentUser.referrer_uid, type: 'referral_scan', points: 100, status: 'completed', details: `首掃獎勵` }]);
         }
     }
@@ -249,7 +237,6 @@ async function loadHistory(type) {
   container.innerHTML = html || '<div class="log-item">尚無相關紀錄</div>';
 }
 
-// 🌟 載入電子布告欄 (V5.13)
 async function loadBulletins() {
   const { data, error } = await supabaseClient.from('bulletins').select('*').eq('is_active', true).order('created_at', { ascending: false });
   let html = '';
@@ -266,7 +253,7 @@ async function loadBulletins() {
   document.getElementById('bulletin-board-container').innerHTML = html;
 }
 
-// 🌟 終極加權演算法
+// 🌟 終極加權演算法 (雲端參數版)
 async function calculateDashboardStats() {
   const badgeText = document.getElementById('ui-shield-text');
   const pulseDot = document.getElementById('ui-pulse-dot');
@@ -283,19 +270,25 @@ async function calculateDashboardStats() {
     const utc2 = Date.UTC(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
     const days = Math.max(0, Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24)));
     
-    const params = JSON.parse(localStorage.getItem('hypass_algo_params') || '{}');
-    
-    // 加權指數計算
+    // 💡 加權指數計算 (採用後台雲端參數)
     let aqi = envData.aqi || 50; 
-    let aRate = aqi > 150 ? 1.8 : (aqi > 100 ? 1.4 : 1.0);
-    let cRate = getCarSizeRate(currentUser.car_model);
+    let aRate = aqi > 150 ? algoParams.aqiRed : (aqi > 100 ? algoParams.aqiOrange : 1.0);
+    
+    let cRate = 1.0;
+    const l=['Model X','Model Y','RAV4','CR-V','X-Trail','Kuga','CX-5','Tucson','Sportage','NX','RX','GLC','X3','X5','XC60']; 
+    const s=['Yaris','Fit','Swift','Colt Plus','Venue','Kamiq','UX']; 
+    if(l.includes(currentUser.car_model)) cRate = algoParams.carLarge; 
+    if(s.includes(currentUser.car_model)) cRate = algoParams.carSmall;
+    
+    // 💡 年里程使用習慣 (換算每天開車時數)
     let mileageRate = currentUser.yearly_mileage ? ((currentUser.yearly_mileage / 10000) * 0.5 + 0.5) : 1.0;
-    let tempRate = envData.temp > 30 ? 1.2 : (envData.temp < 15 ? 0.9 : 1.0);
-    let humRate = envData.hum > 80 ? 1.2 : 1.0;
+    
+    // 💡 溫濕度加權
+    let tempRate = envData.temp > 30 ? algoParams.tempHigh : (envData.temp < 15 ? algoParams.tempLow : 1.0);
+    let humRate = envData.hum > 80 ? algoParams.humHigh : 1.0;
 
     let totalMultiplier = mileageRate * aRate * cRate * tempRate * humRate;
-    let baseWear = parseFloat(params.baseWear || 0.27);
-    let health = Math.max(0, Math.round(100 - (days * baseWear * totalMultiplier)));
+    let health = Math.max(0, Math.round(100 - (days * algoParams.baseWear * totalMultiplier)));
     
     if(healthEl) healthEl.innerText = `${health}%`;
     
@@ -323,23 +316,16 @@ async function calculateDashboardStats() {
         pulseDot.style.background = '#ef4444';
     }
     
-    let basePm25 = parseFloat(params.basePm25 || 1250);
-    let kwhPerDay = parseFloat(params.kwhPerDay || 0.25);
-    let co2Factor = parseFloat(params.co2Factor || 0.5);
-    let paHypass = parseFloat(params.paHypass || 4);
-    let paOther = parseFloat(params.paOther || 8);
-    
-    setElText('ui-pm25', Math.round(days * basePm25 * totalMultiplier).toLocaleString());
-    setElText('ui-esg-kwh', (days * kwhPerDay * mileageRate).toFixed(1));
-    setElText('ui-esg-co2', (days * kwhPerDay * mileageRate * co2Factor).toFixed(1));
-    setElText('ui-esg-ac', Math.round(((paOther - paHypass) / paOther) * 30)); 
+    setElText('ui-pm25', Math.round(days * algoParams.basePm25 * totalMultiplier).toLocaleString());
+    setElText('ui-esg-kwh', (days * algoParams.kwhPerDay * mileageRate).toFixed(1));
+    setElText('ui-esg-co2', (days * algoParams.kwhPerDay * mileageRate * algoParams.co2Factor).toFixed(1));
+    setElText('ui-esg-ac', Math.round(((algoParams.paOther - algoParams.paHypass) / algoParams.paOther) * 30)); 
     
   } else {
     setElText('ui-filter-date', '尚未啟用');
     if(healthEl) healthEl.innerText = '--%';
     if(badgeText) badgeText.innerText = '系統待命'; 
     if(pulseDot) pulseDot.style.animation = 'none';
-    
     let badge = document.getElementById('ui-shield-badge');
     if(badge) {
         badge.style.borderColor = '#555';
@@ -405,7 +391,6 @@ async function calculatePointsAndMarquee() {
     
     if(data && data.length > 0) {
         data.forEach(r => total += (r.type === 'redeem' ? -r.points : r.points));
-        
         const latestReward = data.find(r => r.type.includes('referral') && r.status === 'completed');
         if (latestReward && (new Date().getTime() - new Date(latestReward.created_at).getTime()) < 86400000) { 
             localStorage.setItem('hypass_temp_msg', `🎉 恭喜！您推薦的好友已成功加入，獲得 ${latestReward.points} 點獎勵！`);
@@ -420,35 +405,31 @@ async function init() {
   await liff.init({ liffId: "2009187567-58hBrZRj" }); 
   if (!liff.isLoggedIn()) { liff.login(); return; }
   
+  // 🌟 從資料庫讀取最新演算法參數
+  const { data: st } = await supabaseClient.from('system_settings').select('value').eq('key', 'algo_params').maybeSingle();
+  if (st && st.value) { algoParams = { ...algoParams, ...st.value }; }
+
   const p = await liff.getProfile(); 
   const { data } = await supabaseClient.from('users').select('*').eq('line_uid', p.userId).maybeSingle();
   
   if (data) {
     currentUser = data; 
-    
     setElText('ui-owner', `${data.name} 的專屬座艙`); 
     let carString = (data.car_brand || '') + ' ' + (data.car_model || '');
     setElText('ui-car-info', carString.trim() ? carString : '--');
     document.getElementById('nav-bar').style.display = 'flex';
     
-    setElVal('edit-name', data.name); 
-    setElVal('edit-phone', data.phone); 
-    setElVal('edit-email', data.email); 
+    setElVal('edit-name', data.name); setElVal('edit-phone', data.phone); setElVal('edit-email', data.email); 
     if(data.gender) setElVal('edit-gender', data.gender);
-    
     if(data.city) { 
-      setElVal('edit-city', data.city); 
-      updateDistricts('edit-city', 'edit-district');
+      setElVal('edit-city', data.city); updateDistricts('edit-city', 'edit-district');
       if(data.district) setElVal('edit-district', data.district);
     }
     setElVal('edit-address', data.address);
-
     if(data.car_brand) { 
-      setElVal('edit-brand', data.car_brand); 
-      updateCarModels('edit-brand', 'edit-model'); 
+      setElVal('edit-brand', data.car_brand); updateCarModels('edit-brand', 'edit-model'); 
       if(data.car_model) setElVal('edit-model', data.car_model); 
     }
-    
     if(data.car_year) setElVal('edit-year', data.car_year);
     setElVal('edit-plate', data.license_plate); 
     if(data.yearly_mileage) setElVal('edit-mileage', data.yearly_mileage);
@@ -459,12 +440,9 @@ async function init() {
     switchPage('home', document.querySelector('.nav-item'));
     
     await calculatePointsAndMarquee();
-    
     getSnapshotGPS(); 
     loadBulletins(); 
-  } else { 
-      document.getElementById('page-register').classList.add('active'); 
-  }
+  } else { document.getElementById('page-register').classList.add('active'); }
 }
 
 init();
