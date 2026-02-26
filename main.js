@@ -1,24 +1,16 @@
 (function captureReferral() {
     try {
-        let rawUrl = window.location.href;
-        let ref = null;
+        let rawUrl = window.location.href; let ref = null;
         let match = rawUrl.match(/[?&]ref=([^&#]+)/) || rawUrl.match(/ref%3D([^&#]+)/);
         if (match && match[1]) ref = decodeURIComponent(match[1]);
-        if (ref && ref !== 'null' && ref !== 'undefined') {
-            localStorage.setItem('hypass_ref_code', ref);
-        }
+        if (ref && ref !== 'null' && ref !== 'undefined') localStorage.setItem('hypass_ref_code', ref);
     } catch(e) {}
 })();
 
-// 🌟 開屏動畫邏輯 (顯示 1.5 秒後淡出)
+// 🌟 純 CSS 動畫運鏡 (停留 1.5 秒後淡出)
 window.addEventListener('load', () => {
     const splash = document.getElementById('splash-screen');
-    setTimeout(() => {
-        if(splash) { 
-            splash.style.opacity = '0'; 
-            setTimeout(() => { splash.style.display = 'none'; }, 600); 
-        }
-    }, 1500); 
+    setTimeout(() => { if(splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; }, 600); } }, 1500); 
 });
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -27,12 +19,13 @@ window.onerror = function(msg) { console.error("Error: ", msg); return false; };
 
 const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
-let currentUser = null; 
-let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+let currentUser = null; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
+// 🌟 14 項演算法參數 (新增年里程加權係數)
 let algoParams = { 
     baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, 
-    carLarge: 1.3, carSmall: 0.8, basePm25: 1250, kwhPerDay: 0.25, co2Factor: 0.5, paHypass: 4, paOther: 8 
+    carLarge: 1.3, carSmall: 0.8, basePm25: 1500, kwhPerDay: 0.25, co2Factor: 0.495, paHypass: 4, paOther: 8,
+    mileageWeight: 0.5 // 新增：年里程每萬公里加權比率
 };
 
 const carData = { 
@@ -56,20 +49,15 @@ const carData = {
   "Subaru": ["Forester", "XV", "Crosstrek", "Outback", "WRX", "其他"], 
   "Suzuki": ["Swift", "Jimny", "Vitara", "Ignis", "其他"], 
   "Luxgen": ["URX", "n7", "U6", "其他"],
-  "MG": ["HS", "ZS", "MG4", "其他"],
-  "CMC": ["Zinger", "Veryca (菱利)", "其他"],
-  "Peugeot": ["2008", "3008", "5008", "208", "其他"],
-  "Land Rover": ["Defender", "Range Rover Evoque", "Discovery", "其他"],
-  "Mini": ["Countryman", "Cooper", "Clubman", "其他"],
-  "Other": ["其他品牌"] 
+  "MG": ["HS", "ZS", "MG4", "其他"], "CMC": ["Zinger", "Veryca (菱利)", "其他"],
+  "Peugeot": ["2008", "3008", "5008", "208", "其他"], "Land Rover": ["Defender", "Range Rover Evoque", "Discovery", "其他"],
+  "Mini": ["Countryman", "Cooper", "Clubman", "其他"], "Other": ["其他品牌"] 
 };
 
 const taiwanDistricts = {
-  "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
-  "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
+  "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"], "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
   "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"],
-  "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"],
-  "新竹市": ["東區", "北區", "香山區"],
+  "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"], "新竹市": ["東區", "北區", "香山區"],
   "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
   "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
   "台南市": ["新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區", "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區", "七股區", "將軍區", "北門區", "新化區", "善化區", "新市區", "安定區", "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區", "關廟區", "龍崎區", "永康區", "東區", "南區", "北區", "安南區", "安平區", "中西區"],
@@ -87,50 +75,24 @@ setTheme(localStorage.getItem('hypass_theme') || 'dark');
 
 function updateCarModels(bId, mId) { const b = document.getElementById(bId).value; const m = document.getElementById(mId); m.innerHTML = '<option value="">* 選擇車型</option>'; if(carData[b]) carData[b].forEach(i => m.innerHTML+=`<option value="${i}">${i}</option>`); }
 function updateDistricts(cityId, distId) { const c = document.getElementById(cityId).value; const d = document.getElementById(distId); d.innerHTML = '<option value="">* 鄉鎮市區</option>'; if(taiwanDistricts[c]) taiwanDistricts[c].forEach(i => d.innerHTML+=`<option value="${i}">${i}</option>`); }
-
 function showForm(r) { document.getElementById('form-customer').style.display = r==='customer' ? 'block' : 'none'; }
+function switchPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('page-'+id).classList.add('active'); if(el) el.classList.add('active'); if(id==='book') loadGarages(); if(id==='settings') loadHistory('filter');}
+function switchSetTab(t) { ['a','theme','b','c'].forEach(tab=>{ const content = document.getElementById(`set-content-${tab}`); const btn = document.getElementById(`tab-set-${tab}`); if(content) content.style.display = t===tab ? 'block' : 'none'; if(btn) btn.className = `tab-btn ${t===tab ? 'active' : ''}`; }); }
+function switchBookingTab(t) { document.getElementById('booking-smart').style.display = t==='smart' ? 'block' : 'none'; document.getElementById('booking-manual').style.display = t==='manual' ? 'block' : 'none'; document.getElementById('tab-btn-smart').className = `tab-btn ${t==='smart' ? 'active' : ''}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t==='manual' ? 'active' : ''}`; }
 
-function switchPage(id, el) { 
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
-    document.getElementById('page-'+id).classList.add('active'); if(el) el.classList.add('active'); 
-    if(id==='book') loadGarages(); if(id==='settings') loadHistory('filter');
-}
-
-function switchSetTab(t) { 
-    ['a','theme','b','c'].forEach(tab=>{ 
-        const content = document.getElementById(`set-content-${tab}`); const btn = document.getElementById(`tab-set-${tab}`);
-        if(content) content.style.display = t===tab ? 'block' : 'none'; if(btn) btn.className = `tab-btn ${t===tab ? 'active' : ''}`;
-    }); 
-}
-
-function switchBookingTab(t) { 
-    document.getElementById('booking-smart').style.display = t==='smart' ? 'block' : 'none'; document.getElementById('booking-manual').style.display = t==='manual' ? 'block' : 'none'; 
-    document.getElementById('tab-btn-smart').className = `tab-btn ${t==='smart' ? 'active' : ''}`; document.getElementById('tab-btn-manual').className = `tab-btn ${t==='manual' ? 'active' : ''}`; 
-}
-
-// 🌟 恢復獎勵金發放 (推薦註冊 10 點)
 async function submitRegister(role) {
     try {
-        const p = await liff.getProfile(); 
-        let refId = localStorage.getItem('hypass_ref_code') || null; 
-        
-        if (!refId && liff.getContext() && liff.getContext().endpointUrl) {
-            let match = liff.getContext().endpointUrl.match(/ref=([^&#]+)/) || liff.getContext().endpointUrl.match(/ref%3D([^&#]+)/);
-            if (match) refId = decodeURIComponent(match[1]);
-        }
+        const p = await liff.getProfile(); let refId = localStorage.getItem('hypass_ref_code') || null; 
+        if (!refId && liff.getContext() && liff.getContext().endpointUrl) { let match = liff.getContext().endpointUrl.match(/ref=([^&#]+)/) || liff.getContext().endpointUrl.match(/ref%3D([^&#]+)/); if (match) refId = decodeURIComponent(match[1]); }
         
         const n = document.getElementById('c-name').value; const ph = document.getElementById('c-phone').value; const e = document.getElementById('c-email').value; const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; const dist = document.getElementById('c-district').value; const addr = document.getElementById('c-address').value; const b = document.getElementById('c-brand').value; const m = document.getElementById('c-model').value; const y = document.getElementById('c-year').value; const pl = document.getElementById('c-plate').value; const mil = document.getElementById('c-mileage').value;
-        
         if (!n || !ph || !b || !pl) return alert("請完整填寫必填欄位！");
         
         const payload = { line_uid: p.userId, referrer_uid: refId, role: role, name: n, phone: ph, email: e, gender: g, city: c, district: dist, address: addr, car_brand: b, car_model: m, car_year: parseInt(y) || null, license_plate: pl, yearly_mileage: parseInt(mil) || 10000 };
         
         const { error } = await supabaseClient.from('users').upsert(payload);
         if (!error) {
-            // ✅ 恢復：發放註冊 10 點推薦金
-            if (refId && refId !== p.userId) {
-                await supabaseClient.from('rewards').insert([{ user_uid: refId, type: 'referral_register', points: 10, status: 'completed', details: `推薦註冊: ${n}` }]);
-            }
+            if (refId && refId !== p.userId) await supabaseClient.from('rewards').insert([{ user_uid: refId, type: 'referral_register', points: 10, status: 'completed', details: `推薦註冊: ${n}` }]);
             localStorage.removeItem('hypass_ref_code'); location.reload();
         } else { alert("註冊失敗: " + error.message); }
     } catch(e) { console.error(e); }
@@ -143,14 +105,9 @@ async function updateProfile() {
 }
 
 let scanner = null;
-function openFrontendScanner() { 
-    document.getElementById('scanner-modal').style.display = 'flex'; 
-    scanner = new Html5Qrcode("frontend-reader"); 
-    scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 280, height: 120 } }, (text) => { scanner.stop(); document.getElementById('scanner-modal').style.display = 'none'; processUID(text.trim()); }); 
-}
+function openFrontendScanner() { document.getElementById('scanner-modal').style.display = 'flex'; scanner = new Html5Qrcode("frontend-reader"); scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 280, height: 120 } }, (text) => { scanner.stop(); document.getElementById('scanner-modal').style.display = 'none'; processUID(text.trim()); }); }
 function closeScanner() { if(scanner) scanner.stop(); document.getElementById('scanner-modal').style.display = 'none'; }
 
-// 🌟 恢復獎勵金發放 (首掃綁定 100 點)
 async function processUID(uid) {
     if (!uid.match(/^HP-\d+$/)) return alert("格式錯誤，請掃描 HP- 條碼");
     const { data } = await supabaseClient.from('filters_uid').select('*').eq('uid', uid).maybeSingle();
@@ -159,12 +116,10 @@ async function processUID(uid) {
     await supabaseClient.from('filters_uid').update({ status: 'replaced', deactivated_at: new Date() }).eq('activated_by_uid', currentUser.line_uid).eq('status', 'activated');
     await supabaseClient.from('filters_uid').update({ status: 'activated', activated_by_uid: currentUser.line_uid, activated_at: new Date() }).eq('uid', uid);
     
-    // ✅ 恢復：發放首掃 100 點獎勵
     if (currentUser.referrer_uid) {
         const { count } = await supabaseClient.from('filters_uid').select('*', { count: 'exact', head: true }).eq('activated_by_uid', currentUser.line_uid);
-        if (count === 1) { await supabaseClient.from('rewards').insert([{ user_uid: currentUser.referrer_uid, type: 'referral_scan', points: 100, status: 'completed', details: `首掃獎勵` }]); }
+        if (count === 1) await supabaseClient.from('rewards').insert([{ user_uid: currentUser.referrer_uid, type: 'referral_scan', points: 100, status: 'completed', details: `首掃獎勵` }]);
     }
-    
     alert("✅ 濾網綁定啟用成功！"); location.reload();
 }
 
@@ -204,6 +159,7 @@ async function loadBulletins() {
   document.getElementById('bulletin-board-container').innerHTML = html;
 }
 
+// 🌟 終極加權演算法
 async function calculateDashboardStats() {
   const badgeText = document.getElementById('ui-shield-text');
   const pulseDot = document.getElementById('ui-pulse-dot');
@@ -228,7 +184,9 @@ async function calculateDashboardStats() {
     if(l.includes(currentUser.car_model)) cRate = algoParams.carLarge; 
     if(s.includes(currentUser.car_model)) cRate = algoParams.carSmall;
     
-    let mileageRate = currentUser.yearly_mileage ? ((currentUser.yearly_mileage / 10000) * 0.5 + 0.5) : 1.0;
+    // 💡 導入後台自訂的里程權重算法
+    let mileageRate = currentUser.yearly_mileage ? (1 + ((currentUser.yearly_mileage / 10000) - 1) * algoParams.mileageWeight) : 1.0;
+    
     let tempRate = envData.temp > 30 ? algoParams.tempHigh : (envData.temp < 15 ? algoParams.tempLow : 1.0);
     let humRate = envData.hum > 80 ? algoParams.humHigh : 1.0;
 
@@ -267,18 +225,10 @@ async function fetchEnv(city, district) {
   
   if(data) {
     envData = data; setElText('env-aqi', data.aqi); setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
-    const msgBox = document.getElementById('dynamic-msg-box'); 
+    const msgBox = document.getElementById('dynamic-msg-box'); const rewardMsg = localStorage.getItem('hypass_temp_msg');
     
-    // 🌟 恢復：檢查是否有尚未顯示的獎勵金通知跑馬燈
-    const rewardMsg = localStorage.getItem('hypass_temp_msg');
-    if (rewardMsg) { 
-        setElText('ui-dynamic-msg', rewardMsg); 
-        if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; 
-    } else { 
-        setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI: ${data.aqi}，持續防護中...`); 
-        if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; 
-    }
-    
+    if (rewardMsg) { setElText('ui-dynamic-msg', rewardMsg); if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; } 
+    else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI: ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
     calculateDashboardStats();
   }
 }
@@ -298,7 +248,6 @@ function getSnapshotGPS() {
   }
 }
 
-// 🌟 恢復獎勵金計算與跑馬燈觸發
 async function calculatePointsAndMarquee() {
     const { data } = await supabaseClient.from('rewards').select('*').eq('user_uid', currentUser.line_uid).order('created_at', { ascending: false });
     let total = 0; let hasRecentReward = false;
@@ -342,9 +291,7 @@ async function init() {
         document.getElementById('page-register').classList.remove('active');
         switchPage('home', document.querySelector('.nav-item'));
         
-        // 🌟 恢復：登入時呼叫獎勵金計算
-        await calculatePointsAndMarquee(); 
-        getSnapshotGPS(); loadBulletins(); 
+        await calculatePointsAndMarquee(); getSnapshotGPS(); loadBulletins(); 
       } else { 
         document.getElementById('page-home').classList.remove('active');
         document.getElementById('page-register').classList.add('active'); 
