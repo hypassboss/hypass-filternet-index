@@ -8,21 +8,15 @@
   <script>
     (function captureReferral() {
         try {
-            let urlStr = window.location.href;
-            let urlObj = new URL(urlStr);
-            let ref = urlObj.searchParams.get('ref');
+            let rawUrl = window.location.href;
+            let ref = null;
             
-            if (!ref) {
-                let liffState = urlObj.searchParams.get('liff.state');
-                if (liffState) {
-                    let stateParams = new URLSearchParams(liffState.startsWith('?') ? liffState : '?' + liffState);
-                    ref = stateParams.get('ref');
-                }
+            // 暴力掃描網址內任何長相的 ref 參數 (包含被 LINE 深度編碼的 %3D)
+            let match = rawUrl.match(/[?&]ref=([^&#]+)/) || rawUrl.match(/ref%3D([^&#]+)/);
+            if (match && match[1]) {
+                ref = decodeURIComponent(match[1]);
             }
-            if (!ref) {
-                let match = urlStr.match(/[?&]ref=([^&#]+)/) || urlStr.match(/ref%3D([^&]+)/);
-                if (match && match[1]) ref = decodeURIComponent(match[1]);
-            }
+            
             if (ref && ref !== 'null' && ref !== 'undefined') {
                 localStorage.setItem('hypass_ref_code', ref);
             }
