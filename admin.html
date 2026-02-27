@@ -3,49 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS V9.4 總部戰情室 (雙引擎不敗版)</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>HYPASS V9.5 總部戰情室 (終極輪替版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f8; margin: 0; display: flex; height: 100vh; }
-    
     .sidebar { width: 220px; background: #0a0a0c; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;}
     .sidebar-title { color: #00e676; padding: 25px 20px 20px 20px; font-size: 20px; font-weight: 900; margin: 0; letter-spacing: 1px;}
     .nav-btn { display: block; width: 100%; padding: 15px 20px; text-align: left; background: none; border: none; color: #aaa; cursor: pointer; font-size: 14px; border-left: 4px solid transparent; transition: 0.2s;}
     .nav-btn:hover { background: #222; color: #fff; }
     .nav-btn.active { color: #00e676; border-left-color: #00e676; background: #1a1e1a; font-weight: bold; }
-    
     .main-content { flex: 1; padding: 30px; overflow-y: auto; }
     .panel { display: none; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
     .panel.active { display: block; }
     h2 { margin-top: 0; color: #111; font-size: 22px; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;}
-    
     .table-container { width: 100%; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; min-width: 600px;}
     th, td { border: 1px solid #eee; padding: 12px 15px; text-align: left; vertical-align: middle;}
     th { background: #f8f9fa; color: #555; font-weight: 600; white-space: nowrap;}
     tr:hover { background: #fcfcfc; }
     input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit;}
-    
     .btn { background: #00e676; color: #000; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s;}
     .btn:hover { filter: brightness(1.1); transform: scale(0.98);}
     .btn-danger { background: #ef4444; color: #fff; }
     .btn-warn { background: #f59e0b; color: #fff; }
     .btn-primary { background: #3b82f6; color: #fff; }
     .btn-dark { background: #111; color: #fff; }
-    
     .dispatch-container { background: #111; padding: 25px; border-radius: 12px; color: white; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
     .scan-input { width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; background: #222; color: #00e676; text-align: center; border: 1px solid #444; box-sizing: border-box; font-family: monospace; outline: none;}
     #scanner-box { width: 100%; max-width: 450px; margin: 0 auto 20px auto; overflow: hidden; border-radius: 12px; display: none; border: 2px solid #00e676;}
     #video-box { width: 100%; max-width: 450px; background: #000; border-radius: 12px; border: 2px solid #ef4444; display: none; margin: 0 auto 20px auto;}
     .recording-dot { color: #ef4444; font-weight: bold; animation: blink 1s infinite; display: none; margin-left: 10px;}
     @keyframes blink { 50% { opacity: 0; } }
-
     .env-stats { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;}
     .env-card { background: #f8f9fa; border: 1px solid #eee; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px; text-align: center; }
     .env-card h3 { margin: 0 0 5px 0; font-size: 14px; color: #555; }
     .env-card p { margin: 0; font-size: 24px; font-weight: bold; color: #00e676; }
-
     @media (max-width: 768px) {
         body { flex-direction: column; height: auto; }
         .sidebar { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; height: auto; padding-bottom: 10px; border-bottom: 2px solid #333;}
@@ -80,10 +74,12 @@
         <div id="scanner-box"></div>
         <video id="video-box" autoplay muted playsinline></video>
         <h3 id="flow-status" style="text-align:center; color:#00e676; margin-bottom:20px; font-size:18px;">請點擊下方按鈕啟動作業</h3>
+        
         <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
             <div style="flex:1; min-width:200px;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📝 Shopline 訂單號碼</label><input type="text" id="inp-order" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
             <div style="flex:1; min-width:200px;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📦 濾網 UID</label><input type="text" id="inp-uid" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
         </div>
+
         <div style="text-align:center; margin-top: 10px;">
             <button id="btn-scan" class="btn btn-primary" style="font-size:16px; padding: 14px 24px;" onclick="startScanFlow()">1. 啟動鏡頭掃描條碼</button>
             <button id="btn-record" class="btn btn-warn" style="font-size:16px; padding: 14px 24px; display:none;" onclick="startRecording()">🎥 2. 開始包裝錄影 <span class="recording-dot" id="rec-dot">⏺ REC</span></button>
@@ -176,7 +172,7 @@
       </div>
 
       <div style="margin-bottom: 20px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="triggerDirectEnvUpdate()">⚡ 啟動不敗雙引擎更新 (強制即時抓取最新資料)</button>
+        <button class="btn btn-primary" onclick="triggerDirectEnvUpdate()">⚡ 啟動雲端 AI 輪替爬蟲 (強制即時抓取最新資料)</button>
         <button class="btn btn-dark" onclick="downloadEnvCSV()">📥 匯出【環境部 x 氣象署】雙數據庫整合包 (CSV)</button>
       </div>
 
@@ -493,65 +489,27 @@
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `環境部與氣象署_雙數據庫整合包_${new Date().getTime()}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
-    // 🌟 終極雙引擎：優先呼叫雲端函數 (自帶金鑰)，若失敗直接啟動網頁代理端抓取！保證不當機！
+    // 🌟 終極帶鑰匙防呆呼叫，直接強制觸發剛寫好的雲端多核爬蟲
     async function triggerDirectEnvUpdate() { 
-        alert("⚡ 啟動不敗雙引擎！系統正在嘗試多重通道抓取資料，請稍候約 10~20 秒..."); 
-        
-        // --- 引擎 A: 使用 Supabase 官方 SDK 呼叫雲端大腦 (自帶鑰匙，解決圖三錯誤) ---
+        alert("⚡ 啟動雲端 AI 輪替爬蟲！系統正在透過金鑰池與多重代理抓取資料，請稍候..."); 
         try {
-            console.log("正在啟動雲端引擎...");
-            const { data, error } = await supabaseClient.functions.invoke('update_env', { method: 'POST' });
+            const res = await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/update_env', { 
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    // 🌟 帶入您專屬的通關密語 (Authorization)，解決圖三錯誤！
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
+                }
+            });
+            const data = await res.json();
             
-            if (!error && data && data.success) {
-                alert(`✅ 雲端引擎更新成功！\n${data.message}`);
-                loadEnvData();
-                return; // 雲端成功就結束，不用跑引擎 B
-            }
-            console.log("雲端引擎受阻，無縫切換前端代理...", error);
-        } catch(e) {
-            console.log("雲端呼叫異常，無縫切換前端代理...", e);
-        }
-
-        // --- 引擎 B: 前端備用破牆代理 (防呆解決圖二錯誤) ---
-        try {
-            console.log("正在啟動前端破牆代理...");
-            const MOENV_API_KEY = "e8dd42e6-9b8b-43f8-991e-b3dee723a52d";
-            const targetUrl = `https://data.moenv.gov.tw/api/v2/aqx_p_432?api_key=${MOENV_API_KEY}`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            if (!res.ok) throw new Error(data.error || "未知錯誤");
             
-            let res = await fetch(proxyUrl);
-            let json = await res.json();
-            
-            // 智能防呆：掃描是否被政府限流
-            if (!json.contents || !json.contents.startsWith("{") || json.contents.includes("因受限於資源分配")) {
-                throw new Error("政府伺服器全面大塞車 (IP 限流保護中)，請等待 10 分鐘後再試。");
-            }
-            
-            let aqiData = JSON.parse(json.contents);
-            let count = 0;
-            
-            for (const record of aqiData.records) {
-                const city = record.county;
-                const district = record.sitename;
-                const newAqi = parseInt(record.aqi);
-                const newPm25 = parseFloat(record['pm2.5']);
-                
-                if (isNaN(newAqi)) continue;
-
-                const { data: old } = await supabaseClient.from('env_cache').select('aqi_7d_avg').eq('city', city).eq('district', district).maybeSingle();
-                let avgAqi = newAqi;
-                if(old && old.aqi_7d_avg) { avgAqi = (old.aqi_7d_avg * 83 + newAqi) / 84; }
-
-                await supabaseClient.from('env_cache').upsert({
-                    city: city, district: district, aqi: newAqi, pm25: isNaN(newPm25) ? 0 : newPm25, aqi_7d_avg: avgAqi, updated_at: new Date()
-                }, { onConflict: 'city, district' });
-                count++;
-            }
-            alert(`✅ 前端備用引擎破牆成功！共寫入 ${count} 筆最新大數據。`);
+            alert(`✅ ${data.message}`);
             loadEnvData();
-            
         } catch(e) {
-            alert("❌ 雙引擎皆被政府伺服器阻擋：" + e.message);
+            alert("❌ 雲端更新失敗：" + e.message);
+            console.error(e);
         }
     }
   </script>
