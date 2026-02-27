@@ -25,7 +25,6 @@ window.onerror = function(msg) { console.error("Error: ", msg); return false; };
 const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
 let currentUser = null; 
-// 拆分兩個環境變數
 let homeEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 let gpsEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
@@ -176,16 +175,28 @@ async function fetchHomeEnv() {
         homeEnvData = data;
         setElText('ui-home-city', `${data.city}${data.district}`);
         setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
-        // 車主壽命計算依據其 7 日居住地環境 (最符合日常)
         calculateDashboardStats();
     }
 }
 
-// 🌟 獨立抓取即時 GPS 所在地數據
-function getSnapshotGPS() {
-  // 先把註冊地的資料抓出來填好
-  fetchHomeEnv();
+// 🌟 極速墊檔：直接把 7日居住地 先當作即時定位顯示，達到 0 秒等待！
+function fallbackToHomeGPS() {
+    if(currentUser && homeEnvData) {
+        setElText('ui-loc-name', `${currentUser.city}${currentUser.district}`);
+        setElText('env-aqi', homeEnvData.aqi || 50);
+        gpsEnvData = homeEnvData;
+        calculateDashboardStats();
+    }
+}
 
+// 🌟 極速雙軌制 GPS 讀取
+function getSnapshotGPS() {
+  // 1. 瞬間啟動：立刻去抓居住地，並直接拿來墊檔即時 AQI！
+  fetchHomeEnv().then(() => {
+      fallbackToHomeGPS();
+  });
+
+  // 2. 背景悄悄啟動 GPS (限時縮短至 3 秒)，如果成功抓到真正定位才覆蓋過去
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((pos) => {
       fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
@@ -202,18 +213,9 @@ function getSnapshotGPS() {
                   else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI (US EPA): ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
               }
           }
-        }).catch(e => { console.log("翻譯伺服器忙碌"); fallbackToHomeGPS(); });
-    }, () => { fallbackToHomeGPS(); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }); 
-  } else {
-    fallbackToHomeGPS();
+        }).catch(e => { console.log("翻譯伺服器忙碌"); });
+    }, () => { console.log("GPS未授權或超時"); }, { enableHighAccuracy: false, timeout: 3000, maximumAge: 60000 }); 
   }
-}
-
-function fallbackToHomeGPS() {
-    if(currentUser) {
-        setElText('ui-loc-name', `${currentUser.city}${currentUser.district} (定位未授權)`);
-        setElText('env-aqi', homeEnvData.aqi || 50);
-    }
 }
 
 async function calculateDashboardStats() {
