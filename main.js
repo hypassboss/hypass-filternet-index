@@ -27,12 +27,46 @@ const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supab
 let currentUser = null; 
 let homeEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 let gpsEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
-let marqueeRules = []; // 🌟 接收後台的動態跑馬燈規則
+let marqueeRules = []; 
 
 let algoParams = { 
     baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, 
     carLarge: 1.3, carSmall: 0.8, basePm25: 1500, kwhPerDay: 0.25, co2Factor: 0.495, paHypass: 4, paOther: 8, mileageWeight: 0.5 
 };
+
+// 🌟 30 組內建原廠大腦 (保命防呆機制)
+const DEFAULT_MARQUEE_RULES = [
+    { id: 1, type: 'health_low', val: 5, text: '🚨 嚴重警告！濾網壽命僅剩 {health}%，已完全失去防護能力，請立即回廠更換以保護呼吸道！', active: true },
+    { id: 2, type: 'aqi_high', val: 200, text: '☠️ 紫爆警報！戶外 AQI 達 {aqi}，極度危險！座艙已強制啟動最高級別內循環防護！', active: true },
+    { id: 3, type: 'pm25_high', val: 100, text: '☠️ 毒霾來襲！戶外 PM2.5 飆升至 {pm25}µg，請勿開窗，系統正以最大功率深度淨化！', active: true },
+    { id: 4, type: 'health_low', val: 10, text: '⚠️ 注意！濾網防護力嚴重衰退，剩餘壽命 {health}%，請盡速預約保修廠進行更換。', active: true },
+    { id: 5, type: 'aqi_high', val: 150, text: '🚨 紅害警告！當地 AQI 達 {aqi}，空氣極度不良，HYPASS 靜電層正在全速攔截有害微粒。', active: true },
+    { id: 6, type: 'pm25_high', val: 54, text: '🚨 高濃度懸浮微粒 ({pm25}µg) 警戒！醫療級防護網已啟動，車內空氣持續淨化中。', active: true },
+    { id: 7, type: 'health_low', val: 20, text: '⚠️ 提醒您，HYPASS 濾網壽命剩餘 {health}%，過濾效能即將下降，建議您提早安排更換。', active: true },
+    { id: 8, type: 'aqi_high', val: 100, text: '😷 橘害提醒：戶外 AQI {aqi}，對敏感族群不健康，請安心留在車內大口深呼吸。', active: true },
+    { id: 9, type: 'pm25_high', val: 35, text: '⚠️ 戶外 PM2.5 達 {pm25}µg，座艙專屬活性碳與高電荷靜電層正在高速過濾中。', active: true },
+    { id: 10, type: 'health_low', val: 30, text: '提醒：濾網健康度已降至 {health}%，為維持最佳車內空氣品質，請留意後續保養期程。', active: true },
+    { id: 11, type: 'temp_high', val: 35, text: '🔥 戶外極端高溫 ({temp}°C)！HYPASS 極致低風阻設計，正協助您的冷氣快速降溫並省電！', active: true },
+    { id: 12, type: 'temp_low', val: 10, text: '❄️ 戶外嚴寒 ({temp}°C)，車窗緊閉易悶熱。系統持續為您過濾封閉空氣，請注意保暖。', active: true },
+    { id: 13, type: 'health_low', val: 50, text: '濾網壽命已過半 (剩餘 {health}%)，HYPASS AI 雲端大腦持續為您精準監控耗損狀態。', active: true },
+    { id: 14, type: 'aqi_high', val: 60, text: '☁️ 目前所在地 AQI 為 {aqi}，空氣品質普通，座艙智能防護網穩定運行中。', active: true },
+    { id: 15, type: 'pm25_high', val: 15, text: '📡 偵測到戶外微量粉塵 (PM2.5: {pm25}µg)，目前車內空氣已穩定維持在醫療級無塵狀態。', active: true },
+    { id: 16, type: 'temp_high', val: 30, text: '☀️ 氣溫達 {temp}°C，座艙空調輕負載運轉中，HYPASS 持續為您提供強效大風量。', active: true },
+    { id: 17, type: 'temp_low', val: 15, text: '🌬️ 氣溫微涼 ({temp}°C)，HYPASS 椰殼活性碳持續吸附車內異味，保持空氣清新。', active: true },
+    { id: 18, type: 'health_low', val: 80, text: '✅ 新濾網磨合完畢！目前健康度 {health}%，正處於靜電吸附力最強的黃金防護期。', active: true },
+    { id: 19, type: 'default', val: 0, text: '🛡️ HYPASS AI 智能座艙連線正常，系統正透過 US EPA 標準演算法即時守護您的健康。', active: true },
+    { id: 20, type: 'default', val: 0, text: '🌱 感謝使用 HYPASS 節能濾網！目前健康度 {health}%，我們正在一起為地球減少碳足跡。', active: true },
+    { id: 21, type: 'default', val: 0, text: '⚡ 獨家極致低風阻技術，讓您的冷氣負載更輕，無形中為您省下更多電能與油耗。', active: true },
+    { id: 22, type: 'default', val: 0, text: '🇹🇼 堅持台灣製造！HYPASS 結合高碘值椰殼活性碳與高電荷靜電，雙效合一。', active: true },
+    { id: 23, type: 'default', val: 0, text: '🥥 座艙已自動啟動 Ecoshell 椰殼活性碳除臭機制，車內廢氣與異味正在快速消除中。', active: true },
+    { id: 24, type: 'default', val: 0, text: '👨‍👩‍👧‍👦 HYPASS 為全家人把關呼吸道健康，讓過敏兒也能在車內安心、大口地深呼吸！', active: true },
+    { id: 25, type: 'default', val: 0, text: '📡 全台 368 鄉鎮環境大數據即時連線中... 目前室外 AQI {aqi}，防護網無懈可擊。', active: true },
+    { id: 26, type: 'default', val: 0, text: '🏆 業界唯一！雙數據庫即時運算加上動態壽命追蹤，給您超越百萬進口車的座艙體驗。', active: true },
+    { id: 27, type: 'default', val: 0, text: '🌬️ HYPASS 強效大風量設計，能在最短時間內完成車內空氣循環，淨化無死角。', active: true },
+    { id: 28, type: 'default', val: 0, text: '💳 專屬商城隱藏優惠碼【AIRPLUS2026】，現在前往選購備用濾網享尊榮折扣！', active: true },
+    { id: 29, type: 'default', val: 0, text: '🎁 邀請車友加入智能座艙，註冊即可獲得 10 點獎勵金，首掃綁定再送 100 點！', active: true },
+    { id: 30, type: 'default', val: 0, text: '✨ 您的每一口純淨呼吸，都是 HYPASS 的最高使命。今日祝您行車平安、順心。', active: true }
+];
 
 const carData = { 
   "Audi": ["A3", "A4", "Q3", "Q5", "Q7", "e-tron", "其他"], "Benz": ["A-Class", "C-Class", "E-Class", "GLC", "GLE", "S-Class", "其他"], "BMW": ["1-Series", "3-Series", "5-Series", "X1", "X3", "X5", "其他"], "CMC": ["Veryca (菱利)", "Zinger", "其他"], "Ford": ["Focus", "Kuga", "Mustang", "Ranger", "其他"], "Honda": ["CR-V", "Civic", "Fit", "HR-V", "Odyssey", "其他"], "Hyundai": ["Custin", "Ioniq 5", "Santa Fe", "Tucson", "Venue", "其他"], "Kia": ["Carnival", "EV6", "Picanto", "Sorento", "Sportage", "其他"], "Land Rover": ["Defender", "Discovery", "Range Rover Evoque", "其他"], "Lexus": ["ES", "IS", "LM", "NX", "RX", "UX", "其他"], "Luxgen": ["n7", "U6", "URX", "其他"], "Mazda": ["CX-30", "CX-5", "CX-60", "Mazda 3", "Mazda 6", "其他"], "MG": ["HS", "MG4", "ZS", "其他"], "Mini": ["Clubman", "Cooper", "Countryman", "其他"], "Mitsubishi": ["Colt Plus", "Delica", "Eclipse Cross", "Outlander", "其他"], "Nissan": ["Juke", "Kicks", "Sentra", "Tiida", "X-Trail", "其他"], "Peugeot": ["208", "2008", "3008", "5008", "其他"], "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "其他"], "Skoda": ["Fabia", "Kamiq", "Kodiaq", "Octavia", "Superb", "其他"], "Subaru": ["Crosstrek", "Forester", "Outback", "WRX", "XV", "其他"], "Suzuki": ["Ignis", "Jimny", "Swift", "Vitara", "其他"], "Tesla": ["Model 3", "Model S", "Model X", "Model Y"], "Toyota": ["Altis", "Camry", "Corolla Cross", "RAV4", "Sienta", "Town Ace", "Vios", "Yaris", "其他"], "Volkswagen": ["Caddy", "Golf", "Polo", "T-Roc", "Tiguan", "其他"], "Volvo": ["V60", "XC40", "XC60", "XC90", "其他"], "Other": ["其他品牌"]
@@ -137,54 +171,62 @@ async function loadBulletins() {
   document.getElementById('bulletin-board-container').innerHTML = html;
 }
 
-// 🌟 AI 跑馬燈動態播報引擎
+// 🌟 智慧動態跑馬燈引擎 (支援隨機預設輪播)
 function renderDynamicMarquee(health) {
     const msgBox = document.getElementById('dynamic-msg-box');
     const msgEl = document.getElementById('ui-dynamic-msg');
     const rewardMsg = localStorage.getItem('hypass_temp_msg');
     
-    // 如果有剛賺到的點數獎勵，強制最高優先級蓋台
+    // 最高蓋台優先權：剛賺到的點數
     if (rewardMsg) {
         if(msgEl) msgEl.innerText = rewardMsg;
         if(msgBox) msgBox.style.borderColor = 'var(--gold-color)';
         return;
     }
 
-    let finalMsg = `系統連線正常，目前室外 AQI (US EPA): ${gpsEnvData.aqi || 50}，持續防護中...`;
-    let borderColor = 'var(--border-color)';
-    let msgColor = 'var(--accent-color)';
+    let aqi = gpsEnvData.aqi || 50;
+    let pm25 = gpsEnvData.pm25 || 15;
+    let temp = gpsEnvData.temp || 25;
 
-    // 從後台設定的規則，由上到下掃描，符合條件立刻觸發
+    let matchedRule = null;
+    let defaultRules = [];
+
+    // 掃描所有條件
     for (let r of marqueeRules) {
         if (!r.active) continue;
-        let match = false;
         let v = parseFloat(r.val) || 0;
         
-        let aqi = gpsEnvData.aqi || 50;
-        let pm25 = gpsEnvData.pm25 || 15;
-        let temp = gpsEnvData.temp || 25;
-
-        if (r.type === 'health_low' && health <= v) match = true;
-        else if (r.type === 'aqi_high' && aqi >= v) match = true;
-        else if (r.type === 'pm25_high' && pm25 >= v) match = true;
-        else if (r.type === 'temp_high' && temp >= v) match = true;
-        else if (r.type === 'default') match = true;
-
-        if (match) {
-            // 智慧替換變數
-            finalMsg = r.text.replace(/{aqi}/g, aqi).replace(/{health}/g, health).replace(/{pm25}/g, pm25).replace(/{temp}/g, temp);
-            
-            // 危險警告直接亮紅框
-            if (r.type === 'health_low' || r.type === 'aqi_high' || r.type === 'pm25_high') {
-                borderColor = '#ef4444';
-                msgColor = '#ef4444';
-            }
-            break; // 抓到第一條 (最高優先權) 就停止
-        }
+        if (r.type === 'health_low' && health <= v) { matchedRule = r; break; }
+        else if (r.type === 'aqi_high' && aqi >= v) { matchedRule = r; break; }
+        else if (r.type === 'pm25_high' && pm25 >= v) { matchedRule = r; break; }
+        else if (r.type === 'temp_high' && temp >= v) { matchedRule = r; break; }
+        else if (r.type === 'temp_low' && temp <= v) { matchedRule = r; break; }
+        else if (r.type === 'default') { defaultRules.push(r); } // 蒐集所有預設
     }
 
-    if(msgEl) { msgEl.innerText = finalMsg; msgEl.style.color = msgColor; }
-    if(msgBox) msgBox.style.borderColor = borderColor;
+    // 如果外面空氣很好、濾網也很健康 (沒觸發任何警告)，就從常駐預設中「隨機抽一條」
+    if (!matchedRule && defaultRules.length > 0) {
+        let randomIndex = Math.floor(Math.random() * defaultRules.length);
+        matchedRule = defaultRules[randomIndex];
+    }
+
+    // 渲染最終文字
+    if (matchedRule) {
+        let finalMsg = matchedRule.text.replace(/{aqi}/g, aqi).replace(/{health}/g, health).replace(/{pm25}/g, pm25).replace(/{temp}/g, temp);
+        let borderColor = 'var(--border-color)';
+        let msgColor = 'var(--accent-color)';
+
+        if (matchedRule.type === 'health_low' || matchedRule.type === 'aqi_high' || matchedRule.type === 'pm25_high') {
+            borderColor = '#ef4444';
+            msgColor = '#ef4444';
+        } else if (matchedRule.type === 'temp_high' || matchedRule.type === 'temp_low') {
+            borderColor = '#f59e0b';
+            msgColor = '#f59e0b';
+        }
+
+        if(msgEl) { msgEl.innerText = finalMsg; msgEl.style.color = msgColor; }
+        if(msgBox) msgBox.style.borderColor = borderColor;
+    }
 }
 
 async function fetchHomeEnv() {
@@ -221,7 +263,6 @@ function getSnapshotGPS() {
               if(data) {
                   gpsEnvData = data;
                   setElText('env-aqi', data.aqi);
-                  // GPS抓到新資料後，重新計算一次跑馬燈
                   calculateDashboardStats();
               }
           }
@@ -278,7 +319,6 @@ async function calculateDashboardStats() {
     setElText('ui-esg-co2', (days * algoParams.kwhPerDay * mileageRate * algoParams.co2Factor).toFixed(1));
     setElText('ui-esg-ac', Math.round(((algoParams.paOther - algoParams.paHypass) / algoParams.paOther) * 30)); 
     
-    // 🌟 壽命算完後，呼叫跑馬燈引擎進行播報！
     renderDynamicMarquee(health);
 
   } else {
@@ -312,10 +352,13 @@ async function init() {
       const { data: st } = await supabaseClient.from('system_settings').select('value').eq('key', 'algo_params').maybeSingle();
       if (st && st.value) { algoParams = { ...algoParams, ...st.value }; }
 
-      // 🌟 一進來就先把跑馬燈規則抓下來
+      // 🌟 一進來就抓取雲端的跑馬燈規則，如果沒有，自動注入 30 組預設大腦
       const { data: mq } = await supabaseClient.from('system_settings').select('value').eq('key', 'marquee_rules').maybeSingle();
-      if (mq && mq.value) { marqueeRules = mq.value; }
-      else { marqueeRules = [{ type: 'default', val: 0, text: '系統連線正常，持續為您提供醫療級防護...', active: true }]; }
+      if (mq && mq.value && mq.value.length > 0) { 
+          marqueeRules = mq.value; 
+      } else { 
+          marqueeRules = DEFAULT_MARQUEE_RULES; 
+      }
 
       const p = await liff.getProfile(); 
       const { data } = await supabaseClient.from('users').select('*').eq('line_uid', p.userId).maybeSingle();
