@@ -24,14 +24,16 @@ window.onerror = function(msg) { console.error("Error: ", msg); return false; };
 
 const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k');
 
-let currentUser = null; let envData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+let currentUser = null; 
+// 拆分兩個環境變數
+let homeEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+let gpsEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 
 let algoParams = { 
     baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, 
     carLarge: 1.3, carSmall: 0.8, basePm25: 1500, kwhPerDay: 0.25, co2Factor: 0.495, paHypass: 4, paOther: 8, mileageWeight: 0.5 
 };
 
-// 🌟 車單已英文字母 A-Z 嚴格排序
 const carData = { 
   "Audi": ["A3", "A4", "Q3", "Q5", "Q7", "e-tron", "其他"],
   "Benz": ["A-Class", "C-Class", "E-Class", "GLC", "GLE", "S-Class", "其他"],
@@ -166,6 +168,54 @@ async function loadBulletins() {
   document.getElementById('bulletin-board-container').innerHTML = html;
 }
 
+// 🌟 獨立抓取 7 日居住地數據
+async function fetchHomeEnv() {
+    if(!currentUser || !currentUser.city) return;
+    const { data } = await supabaseClient.from('env_cache').select('*').eq('city', currentUser.city).eq('district', currentUser.district).maybeSingle();
+    if(data) {
+        homeEnvData = data;
+        setElText('ui-home-city', `${data.city}${data.district}`);
+        setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
+        // 車主壽命計算依據其 7 日居住地環境 (最符合日常)
+        calculateDashboardStats();
+    }
+}
+
+// 🌟 獨立抓取即時 GPS 所在地數據
+function getSnapshotGPS() {
+  // 先把註冊地的資料抓出來填好
+  fetchHomeEnv();
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
+        .then(r => r.json()).then(async d => {
+          let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
+          if(city) { 
+              setElText('ui-loc-name', city + district); 
+              const { data } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
+              if(data) {
+                  gpsEnvData = data;
+                  setElText('env-aqi', data.aqi);
+                  const msgBox = document.getElementById('dynamic-msg-box'); const rewardMsg = localStorage.getItem('hypass_temp_msg');
+                  if (rewardMsg) { setElText('ui-dynamic-msg', rewardMsg); if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; } 
+                  else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI (US EPA): ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
+              }
+          }
+        }).catch(e => { console.log("翻譯伺服器忙碌"); fallbackToHomeGPS(); });
+    }, () => { fallbackToHomeGPS(); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }); 
+  } else {
+    fallbackToHomeGPS();
+  }
+}
+
+function fallbackToHomeGPS() {
+    if(currentUser) {
+        setElText('ui-loc-name', `${currentUser.city}${currentUser.district} (定位未授權)`);
+        setElText('env-aqi', homeEnvData.aqi || 50);
+    }
+}
+
 async function calculateDashboardStats() {
   const badgeText = document.getElementById('ui-shield-text');
   const pulseDot = document.getElementById('ui-pulse-dot');
@@ -177,11 +227,10 @@ async function calculateDashboardStats() {
     setElText('ui-filter-date', formatTaipeiTime(filter.activated_at));
     
     const today = new Date(); const actDate = new Date(filter.activated_at);
-    const utc1 = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-    const utc2 = Date.UTC(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
-    const days = Math.max(0, Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24)));
+    const days = Math.max(0, Math.floor((today - actDate) / (1000 * 60 * 60 * 24)));
     
-    let aqi = envData.aqi || 50; 
+    // 依據居住地(Home)環境算健康度最客觀
+    let aqi = homeEnvData.aqi || 50; 
     let aRate = aqi > 150 ? algoParams.aqiRed : (aqi > 100 ? algoParams.aqiOrange : 1.0);
     
     let cRate = 1.0;
@@ -191,8 +240,8 @@ async function calculateDashboardStats() {
     if(s.includes(currentUser.car_model)) cRate = algoParams.carSmall;
     
     let mileageRate = currentUser.yearly_mileage ? (1 + ((currentUser.yearly_mileage / 10000) - 1) * algoParams.mileageWeight) : 1.0;
-    let tempRate = envData.temp > 30 ? algoParams.tempHigh : (envData.temp < 15 ? algoParams.tempLow : 1.0);
-    let humRate = envData.hum > 80 ? algoParams.humHigh : 1.0;
+    let tempRate = homeEnvData.temp > 30 ? algoParams.tempHigh : (homeEnvData.temp < 15 ? algoParams.tempLow : 1.0);
+    let humRate = homeEnvData.hum > 80 ? algoParams.humHigh : 1.0;
 
     let totalMultiplier = mileageRate * aRate * cRate * tempRate * humRate;
     let health = Math.max(0, Math.round(100 - (days * algoParams.baseWear * totalMultiplier)));
@@ -220,34 +269,6 @@ async function calculateDashboardStats() {
     setElText('ui-filter-date', '尚未啟用'); if(healthEl) healthEl.innerText = '--%'; if(badgeText) badgeText.innerText = '系統待命'; if(pulseDot) pulseDot.style.animation = 'none';
     let badge = document.getElementById('ui-shield-badge'); if(badge) { badge.style.borderColor = '#555'; badge.style.color = '#888'; badge.style.background = 'rgba(255,255,255,0.05)'; }
     if(pulseDot) pulseDot.style.background = '#555';
-  }
-}
-
-async function fetchEnv(city, district) {
-  let { data } = await supabaseClient.from('env_cache').select('*').eq('city', city).eq('district', district).maybeSingle();
-  if(!data) { const { data: fb } = await supabaseClient.from('env_cache').select('*').limit(1).maybeSingle(); data = fb; }
-  
-  if(data) {
-    envData = data; setElText('env-aqi', data.aqi); setElText('env-home-aqi', Math.round(data.aqi_7d_avg||data.aqi));
-    const msgBox = document.getElementById('dynamic-msg-box'); const rewardMsg = localStorage.getItem('hypass_temp_msg');
-    if (rewardMsg) { setElText('ui-dynamic-msg', rewardMsg); if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; } 
-    else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI: ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
-    calculateDashboardStats();
-  }
-}
-
-function getSnapshotGPS() {
-  let lastCity = localStorage.getItem('hp_last_city') || (currentUser ? currentUser.city : '台北市'); let lastDist = localStorage.getItem('hp_last_dist') || (currentUser ? currentUser.district : '');
-  setElText('ui-loc-name', lastCity + lastDist); fetchEnv(lastCity, lastDist); 
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
-        .then(r => r.json()).then(d => {
-          let city = d.address.city || d.address.county || ''; let district = d.address.suburb || d.address.town || '';
-          if(city) { setElText('ui-loc-name', city + district); localStorage.setItem('hp_last_city', city); localStorage.setItem('hp_last_dist', district); fetchEnv(city, district); }
-        }).catch(e => console.log("翻譯伺服器忙碌"));
-    }, () => { console.log("未授權定位"); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 0 }); 
   }
 }
 
@@ -288,7 +309,7 @@ async function init() {
         if(data.car_brand) { setElVal('edit-brand', data.car_brand); updateCarModels('edit-brand', 'edit-model'); if(data.car_model) setElVal('edit-model', data.car_model); }
         if(data.car_year) setElVal('edit-year', data.car_year); setElVal('edit-plate', data.license_plate); if(data.yearly_mileage) setElVal('edit-mileage', data.yearly_mileage);
         
-        setElText('contract-plate', data.license_plate); setElText('ui-home-city', data.city || '台北市');
+        setElText('contract-plate', data.license_plate); 
         
         document.getElementById('page-register').classList.remove('active');
         switchPage('home', document.querySelector('.nav-item'));
