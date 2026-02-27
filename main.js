@@ -7,29 +7,16 @@
     } catch(e) {}
 })();
 
-// 🌟 絕對防卡死的開屏退場邏輯
 function startApp() {
     const splash = document.getElementById('splash-screen');
-    // JavaScript 只負責把已經演完 CSS 動畫的白底畫面關閉
     if(splash) { 
-        splash.style.opacity = '0'; // 白底退場 (0.2秒)
+        splash.style.opacity = '0'; 
         setTimeout(() => { splash.style.display = 'none'; }, 200); 
     } 
 }
 
-// 脫離 LINEonload 依賴，直接設定定時器退場。
-// 定時必須與 CSS 動畫物理總時長連動：2s(淡入)+2s(停留)+0.3s(淡出)=4.3s
-window.addEventListener('load', () => {
-    // 雖然依賴 load 不穩，但我們有下面的核彈保險
-    setTimeout(startApp, 4300); 
-});
-
-// 🚨 終極強制撕除保險：3.5 秒一到，不管網路多慢，強制撕掉白畫面，保證不當機！
-setTimeout(() => { 
-    const splash = document.getElementById('splash-screen');
-    // 如果白畫面還在，強制撕掉它
-    if(splash && splash.style.display !== 'none') { startApp(); }
-}, 3500);
+window.addEventListener('load', () => { setTimeout(startApp, 4300); });
+setTimeout(() => { const splash = document.getElementById('splash-screen'); if(splash && splash.style.display !== 'none') { startApp(); } }, 3500);
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 function setElVal(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
@@ -44,30 +31,34 @@ let algoParams = {
     carLarge: 1.3, carSmall: 0.8, basePm25: 1500, kwhPerDay: 0.25, co2Factor: 0.495, paHypass: 4, paOther: 8, mileageWeight: 0.5 
 };
 
+// 🌟 車單已英文字母 A-Z 嚴格排序
 const carData = { 
-  "Toyota": ["RAV4", "Corolla Cross", "Altis", "Camry", "Yaris", "Vios", "Sienta", "Town Ace", "其他"], 
-  "Lexus": ["NX", "RX", "UX", "ES", "IS", "LM", "其他"], 
-  "Honda": ["CR-V", "HR-V", "Civic", "Fit", "Odyssey", "其他"],
-  "Nissan": ["Kicks", "Sentra", "X-Trail", "Tiida", "Juke", "其他"], 
-  "Ford": ["Focus", "Kuga", "Ranger", "Mustang", "其他"], 
-  "Mazda": ["Mazda 3", "CX-5", "CX-30", "CX-60", "Mazda 6", "其他"],
-  "Mitsubishi": ["Outlander", "Eclipse Cross", "Colt Plus", "Delica", "其他"], 
-  "Hyundai": ["Tucson", "Custin", "Venue", "Santa Fe", "Ioniq 5", "其他"],
-  "Kia": ["Sportage", "Sorento", "EV6", "Picanto", "Carnival", "其他"], 
-  "Volkswagen": ["Golf", "Tiguan", "Polo", "T-Roc", "Caddy", "其他"], 
-  "Skoda": ["Kodiaq", "Kamiq", "Octavia", "Superb", "Fabia", "其他"],
-  "Benz": ["C-Class", "E-Class", "GLC", "GLE", "A-Class", "S-Class", "其他"],
-  "BMW": ["3-Series", "5-Series", "X3", "X5", "X1", "1-Series", "其他"], 
   "Audi": ["A3", "A4", "Q3", "Q5", "Q7", "e-tron", "其他"],
-  "Volvo": ["XC60", "XC40", "XC90", "V60", "其他"], 
-  "Porsche": ["Macan", "Cayenne", "911", "Taycan", "Panamera", "其他"], 
-  "Tesla": ["Model Y", "Model 3", "Model X", "Model S"],
-  "Subaru": ["Forester", "XV", "Crosstrek", "Outback", "WRX", "其他"], 
-  "Suzuki": ["Swift", "Jimny", "Vitara", "Ignis", "其他"], 
-  "Luxgen": ["URX", "n7", "U6", "其他"],
-  "MG": ["HS", "ZS", "MG4", "其他"], "CMC": ["Zinger", "Veryca (菱利)", "其他"],
-  "Peugeot": ["2008", "3008", "5008", "208", "其他"], "Land Rover": ["Defender", "Range Rover Evoque", "Discovery", "其他"],
-  "Mini": ["Countryman", "Cooper", "Clubman", "其他"], "Other": ["其他品牌"] 
+  "Benz": ["A-Class", "C-Class", "E-Class", "GLC", "GLE", "S-Class", "其他"],
+  "BMW": ["1-Series", "3-Series", "5-Series", "X1", "X3", "X5", "其他"],
+  "CMC": ["Veryca (菱利)", "Zinger", "其他"],
+  "Ford": ["Focus", "Kuga", "Mustang", "Ranger", "其他"],
+  "Honda": ["CR-V", "Civic", "Fit", "HR-V", "Odyssey", "其他"],
+  "Hyundai": ["Custin", "Ioniq 5", "Santa Fe", "Tucson", "Venue", "其他"],
+  "Kia": ["Carnival", "EV6", "Picanto", "Sorento", "Sportage", "其他"],
+  "Land Rover": ["Defender", "Discovery", "Range Rover Evoque", "其他"],
+  "Lexus": ["ES", "IS", "LM", "NX", "RX", "UX", "其他"],
+  "Luxgen": ["n7", "U6", "URX", "其他"],
+  "Mazda": ["CX-30", "CX-5", "CX-60", "Mazda 3", "Mazda 6", "其他"],
+  "MG": ["HS", "MG4", "ZS", "其他"],
+  "Mini": ["Clubman", "Cooper", "Countryman", "其他"],
+  "Mitsubishi": ["Colt Plus", "Delica", "Eclipse Cross", "Outlander", "其他"],
+  "Nissan": ["Juke", "Kicks", "Sentra", "Tiida", "X-Trail", "其他"],
+  "Peugeot": ["208", "2008", "3008", "5008", "其他"],
+  "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "其他"],
+  "Skoda": ["Fabia", "Kamiq", "Kodiaq", "Octavia", "Superb", "其他"],
+  "Subaru": ["Crosstrek", "Forester", "Outback", "WRX", "XV", "其他"],
+  "Suzuki": ["Ignis", "Jimny", "Swift", "Vitara", "其他"],
+  "Tesla": ["Model 3", "Model S", "Model X", "Model Y"],
+  "Toyota": ["Altis", "Camry", "Corolla Cross", "RAV4", "Sienta", "Town Ace", "Vios", "Yaris", "其他"],
+  "Volkswagen": ["Caddy", "Golf", "Polo", "T-Roc", "Tiguan", "其他"],
+  "Volvo": ["V60", "XC40", "XC60", "XC90", "其他"],
+  "Other": ["其他品牌"]
 };
 
 const taiwanDistricts = {
@@ -102,7 +93,7 @@ async function submitRegister(role) {
         if (!refId && liff.getContext() && liff.getContext().endpointUrl) { let match = liff.getContext().endpointUrl.match(/ref=([^&#]+)/) || liff.getContext().endpointUrl.match(/ref%3D([^&#]+)/); if (match) refId = decodeURIComponent(match[1]); }
         
         const n = document.getElementById('c-name').value; const ph = document.getElementById('c-phone').value; const e = document.getElementById('c-email').value; const g = document.getElementById('c-gender').value; const c = document.getElementById('c-city').value; const dist = document.getElementById('c-district').value; const addr = document.getElementById('c-address').value; const b = document.getElementById('c-brand').value; const m = document.getElementById('c-model').value; const y = document.getElementById('c-year').value; const pl = document.getElementById('c-plate').value; const mil = document.getElementById('c-mileage').value;
-        if (!n || !ph || !b || !pl) return alert("請完整填寫必填欄位！");
+        if (!n || !ph || !b || !pl || !y) return alert("請完整填寫必填欄位！");
         
         const payload = { line_uid: p.userId, referrer_uid: refId, role: role, name: n, phone: ph, email: e, gender: g, city: c, district: dist, address: addr, car_brand: b, car_model: m, car_year: parseInt(y) || null, license_plate: pl, yearly_mileage: parseInt(mil) || 10000 };
         
