@@ -11,7 +11,6 @@
             let urlStr = window.location.href;
             let urlObj = new URL(urlStr);
             let ref = urlObj.searchParams.get('ref');
-            
             if (!ref) {
                 let liffState = urlObj.searchParams.get('liff.state');
                 if (liffState) {
@@ -70,21 +69,45 @@
 
       <select id="c-brand" onchange="updateCarModels('c-brand', 'c-model')">
         <option value="">* 選擇車輛品牌</option>
-        <option value="Toyota">Toyota</option><option value="Lexus">Lexus</option><option value="Honda">Honda</option>
-        <option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option>
-        <option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option>
-        <option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Benz">Benz (M-Benz)</option>
-        <option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option>
-        <option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option>
-        <option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="MG">MG</option>
-        <option value="CMC">CMC (中華)</option><option value="Peugeot">Peugeot</option><option value="Land Rover">Land Rover</option>
-        <option value="Mini">Mini</option><option value="Other">其他品牌</option>
+        <option value="Audi">Audi</option><option value="Benz">Benz (M-Benz)</option><option value="BMW">BMW</option>
+        <option value="CMC">CMC (中華)</option><option value="Ford">Ford</option><option value="Honda">Honda</option>
+        <option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Land Rover">Land Rover</option>
+        <option value="Lexus">Lexus</option><option value="Luxgen">Luxgen</option><option value="Mazda">Mazda</option>
+        <option value="MG">MG</option><option value="Mini">Mini</option><option value="Mitsubishi">Mitsubishi</option>
+        <option value="Nissan">Nissan</option><option value="Peugeot">Peugeot</option><option value="Porsche">Porsche</option>
+        <option value="Skoda">Skoda</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option>
+        <option value="Tesla">Tesla</option><option value="Toyota">Toyota</option><option value="Volkswagen">Volkswagen</option>
+        <option value="Volvo">Volvo</option><option value="Other">其他品牌</option>
       </select>
       <select id="c-model"><option value="">* 選擇車型</option></select>
       
-      <input type="number" id="c-year" placeholder="* 出廠年份 (例：2023)">
+      <select id="c-year">
+        <option value="">* 出廠年份</option>
+        <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+        <option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option>
+        <option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option>
+        <option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option>
+        <option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option>
+        <option value="2011">2011</option><option value="2010">2010</option><option value="2009">2009</option>
+        <option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option>
+        <option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option>
+        <option value="2002">2002</option><option value="2001">2001</option><option value="2000">2000</option>
+        <option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option>
+        <option value="1996">1996</option><option value="1995">1995</option><option value="1994">1994</option>
+        <option value="1993">1993</option><option value="1992">1992</option><option value="1991">1991</option>
+        <option value="1990">1990</option>
+      </select>
+
       <input type="text" id="c-plate" placeholder="* 車牌號碼">
-      <select id="c-mileage"><option value="">* 年平均里程</option><option value="10000">10,000 公里以下</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里以上</option></select>
+      
+      <select id="c-mileage">
+        <option value="">* 年平均行駛里程</option>
+        <option value="10000">10,000 公里</option>
+        <option value="20000">20,000 公里</option>
+        <option value="30000">30,000 公里</option>
+        <option value="40000">40,000 公里</option>
+        <option value="50000">50,000 公里以上</option>
+      </select>
       
       <button class="btn-main" onclick="submitRegister('customer')">完成授權並啟用座艙</button>
     </div>
@@ -154,8 +177,35 @@
         <label>車主姓名</label><input type="text" id="edit-name"><label>聯絡電話</label><input type="tel" id="edit-phone"><label>電子郵件</label><input type="email" id="edit-email"><label>性別</label><select id="edit-gender"><option value="M">男</option><option value="F">女</option></select>
         <label>居住縣市</label><select id="edit-city" onchange="updateDistricts('edit-city', 'edit-district')"><option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option></select>
         <label>鄉鎮市區</label><select id="edit-district"></select><label>詳細通訊地址</label><input type="text" id="edit-address">
-        <label>車輛品牌</label><select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Toyota">Toyota</option><option value="Lexus">Lexus</option><option value="Honda">Honda</option><option value="Nissan">Nissan</option><option value="Ford">Ford</option><option value="Mazda">Mazda</option><option value="Mitsubishi">Mitsubishi</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Volkswagen">Volkswagen</option><option value="Skoda">Skoda</option><option value="Benz">Benz (M-Benz)</option><option value="BMW">BMW</option><option value="Audi">Audi</option><option value="Volvo">Volvo</option><option value="Porsche">Porsche</option><option value="Tesla">Tesla</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Luxgen">Luxgen</option><option value="MG">MG</option><option value="CMC">CMC (中華)</option><option value="Peugeot">Peugeot</option><option value="Land Rover">Land Rover</option><option value="Mini">Mini</option><option value="Other">其他品牌</option></select><label>車輛型號</label><select id="edit-model"></select>
-        <label>出廠年份</label><input type="number" id="edit-year"><label>車牌號碼</label><input type="text" id="edit-plate"><label>年平均行駛里程</label><select id="edit-mileage"><option value="10000">10,000 公里以下</option><option value="20000">20,000 公里</option><option value="30000">30,000 公里以上</option></select>
+        <label>車輛品牌</label><select id="edit-brand" onchange="updateCarModels('edit-brand', 'edit-model')"><option value="Audi">Audi</option><option value="Benz">Benz (M-Benz)</option><option value="BMW">BMW</option><option value="CMC">CMC (中華)</option><option value="Ford">Ford</option><option value="Honda">Honda</option><option value="Hyundai">Hyundai</option><option value="Kia">Kia</option><option value="Land Rover">Land Rover</option><option value="Lexus">Lexus</option><option value="Luxgen">Luxgen</option><option value="Mazda">Mazda</option><option value="MG">MG</option><option value="Mini">Mini</option><option value="Mitsubishi">Mitsubishi</option><option value="Nissan">Nissan</option><option value="Peugeot">Peugeot</option><option value="Porsche">Porsche</option><option value="Skoda">Skoda</option><option value="Subaru">Subaru</option><option value="Suzuki">Suzuki</option><option value="Tesla">Tesla</option><option value="Toyota">Toyota</option><option value="Volkswagen">Volkswagen</option><option value="Volvo">Volvo</option><option value="Other">其他品牌</option></select><label>車輛型號</label><select id="edit-model"></select>
+        
+        <label>出廠年份</label>
+        <select id="edit-year">
+            <option value="">* 出廠年份</option>
+            <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+            <option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option>
+            <option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option>
+            <option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option>
+            <option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option>
+            <option value="2011">2011</option><option value="2010">2010</option><option value="2009">2009</option>
+            <option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option>
+            <option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option>
+            <option value="2002">2002</option><option value="2001">2001</option><option value="2000">2000</option>
+            <option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option>
+            <option value="1996">1996</option><option value="1995">1995</option><option value="1994">1994</option>
+            <option value="1993">1993</option><option value="1992">1992</option><option value="1991">1991</option>
+            <option value="1990">1990</option>
+        </select>
+        
+        <label>車牌號碼</label><input type="text" id="edit-plate">
+        <label>年平均行駛里程</label>
+        <select id="edit-mileage">
+          <option value="10000">10,000 公里</option>
+          <option value="20000">20,000 公里</option>
+          <option value="30000">30,000 公里</option>
+          <option value="40000">40,000 公里</option>
+          <option value="50000">50,000 公里以上</option>
+        </select>
         <button class="btn-main" onclick="updateProfile()" style="margin-top:10px;">儲存變更</button>
       </div>
     </div>
@@ -166,10 +216,11 @@
 
     <div id="set-content-b" style="display:none;"><div class="g-card"><select onchange="loadHistory(this.value)" style="margin-bottom: 20px; font-weight: 700;"><option value="filter">🔄 濾網更換紀錄</option><option value="book">📍 保修廠預約紀錄</option></select><div id="history-container" style="max-height: 350px; overflow-y: auto;">讀取中...</div></div></div>
     <div id="set-content-c" style="display:none;"><div class="g-card"><h4 style="margin:0 0 10px 0; color:var(--accent-color); font-size:18px;">📄 HYPASS 數位保固卡</h4><p style="font-size:14px; color:var(--text-secondary); margin:8px 0;">認證車牌：<span id="contract-plate" style="color:var(--gold-color); font-weight:bold; font-size:18px;"></span></p></div></div>
-    <div class="version-tag">System Ver. V8.9 (終極防卡死版)</div>
   </div>
 
   <div class="bottom-nav" id="nav-bar" style="display:none;">
+    <div class="version-tag">System Ver. V9.0</div>
+    
     <div class="nav-item active" onclick="switchPage('home', this)"><span class="nav-icon">◓</span><span class="nav-text">座艙</span></div>
     <div class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🛒</span><span class="nav-text">商城</span></div>
     <div class="nav-item" onclick="switchPage('book', this)"><span class="nav-icon">📍</span><span class="nav-text">預約</span></div>
