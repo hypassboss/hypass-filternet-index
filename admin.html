@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>HYPASS V9.9 總部戰情室 (30組AI跑馬燈內建版)</title>
+  <title>HYPASS V10.0 總部戰情室 (十全十美可編輯版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -81,7 +81,7 @@
             <div style="flex:1; min-width:200px;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📦 濾網 UID</label><input type="text" id="inp-uid" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
         </div>
         <div style="text-align:center; margin-top: 10px;">
-            <button id="btn-scan" class="btn btn-primary" style="font-size:16px; padding: 14px 24px;" onclick="startScanFlow()">1. 啟動鏡頭掃描條碼</button>
+            <button id="btn-scan" class="btn btn-primary" style="font-size:16px; padding: 14px 24px;" onclick="startScanFlow()">1. 啟 পরীক্ষ動鏡頭掃描條碼</button>
             <button id="btn-record" class="btn btn-warn" style="font-size:16px; padding: 14px 24px; display:none;" onclick="startRecording()">🎥 2. 開始包裝錄影 <span class="recording-dot" id="rec-dot">⏺ REC</span></button>
             <button id="btn-stop" class="btn btn-danger" style="font-size:16px; padding: 14px 24px; display:none;" onclick="stopAndSave()">🛑 3. 結束錄影並下載存檔</button>
         </div>
@@ -108,10 +108,10 @@
             <button class="btn btn-primary" style="margin-top:5px;" onclick="addMarqueeRule()">➕ 加入規則列表</button>
         </div>
         
-        <p style="font-size:13px; color:#ef4444; font-weight:bold;">※ 排序越上面的規則，擁有越高的觸發優先權！當皆未觸發時，系統將自動從「常駐輪播」中隨機抽播。</p>
+        <p style="font-size:13px; color:#ef4444; font-weight:bold;">※ 排序越上面的規則優先權越高。您可直接在下方「文字框」內修改內容，修改後記得點擊最下方儲存按鈕！</p>
         <div class="table-container">
             <table id="marquee-table">
-                <thead><tr><th>優先權</th><th>觸發條件</th><th>顯示文字</th><th>狀態</th><th style="text-align:center;">操作</th></tr></thead>
+                <thead><tr><th style="width:60px;">優先權</th><th style="width:120px;">觸發條件</th><th>顯示文字 (可直接點擊編輯)</th><th style="width:80px;">狀態</th><th style="width:100px; text-align:center;">操作</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -144,7 +144,6 @@
         <div class="env-card" style="border-color:#3b82f6; background:#eff6ff;"><h3>⚡️ 總冷氣省電效能</h3><p id="esg-total-kwh" style="color:#2563eb; font-size:36px;">計算中...</p><span style="font-size:12px; color:#666;">單位: 度 (kWh)</span></div>
         <div class="env-card" style="border-color:#f59e0b; background:#fffbeb;"><h3>🌱 總減少碳排量</h3><p id="esg-total-co2" style="color:#d97706; font-size:36px;">計算中...</p><span style="font-size:12px; color:#666;">單位: 公斤 (kg)</span></div>
       </div>
-      <p style="text-align:center; color:#888; font-size:13px; margin-top:20px;">* 數據由 AI 演算法即時抓取全台有效綁定之濾網，並交叉運算車款、年里程與環境部所在地數據得出。</p>
     </div>
 
     <div id="panel-rewards" class="panel"><h2>🎁 LINE Points 兌換審核</h2><div class="table-container"><table id="reward-table"><thead><tr><th>申請車主</th><th>申請扣除點數</th><th>申請時間</th><th style="text-align:center;">審核操作</th></tr></thead><tbody></tbody></table></div></div>
@@ -164,7 +163,7 @@
       <h2>🌍 台灣 368 鄉鎮環境大數據與 AI 演算法中控台</h2>
       <div class="emergency-box">
           <h3 style="margin-top:0; color:#ef4444;">🚨 突發災難/火災緊急雷達 (微區精準定位)</h3>
-          <p style="font-size:13px; color:#555; margin-bottom:15px;">當某地發生重大事故時，請在此手動選擇受災鄉鎮。系統將啟動國際衛星定位，強迫單點覆蓋最新極端數據，無視兩小時排程！</p>
+          <p style="font-size:13px; color:#555; margin-bottom:15px;">當某地發生重大事故時，手動選擇受災鄉鎮。系統將啟動國際衛星定位，強迫單點覆蓋最新極端數據！</p>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <select id="em-city" onchange="updateEmDistricts()" style="flex:1; min-width:150px; background:#fff;"><option value="">選擇受災縣市</option></select>
               <select id="em-district" style="flex:1; min-width:150px; background:#fff;"><option value="">選擇受災鄉鎮</option></select>
@@ -219,7 +218,6 @@
     let isGodModeUnlocked = false; 
     let marqueeRules = []; 
 
-    // 🌟 原廠 30 組 AI 跑馬燈大腦庫
     const DEFAULT_MARQUEE_RULES = [
       { id: 1, type: 'health_low', val: 5, text: '🚨 嚴重警告！濾網壽命僅剩 {health}%，已完全失去防護能力，請立即回廠更換以保護呼吸道！', active: true },
       { id: 2, type: 'aqi_high', val: 200, text: '☠️ 紫爆警報！戶外 AQI 達 {aqi}，極度危險！座艙已強制啟動最高級別內循環防護！', active: true },
@@ -254,33 +252,12 @@
     ];
 
     const OWM_API_KEY = "bea2c21fc2a2f8e03c63d44e3e75e13e";
-    const taiwanDistricts = {
-      "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"], "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
-      "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"],
-      "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"], "新竹市": ["東區", "北區", "香山區"],
-      "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
-      "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
-      "台南市": ["新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區", "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區", "七股區", "將軍區", "北門區", "新化區", "善化區", "新市區", "安定區", "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區", "關廟區", "龍崎區", "永康區", "東區", "南區", "北區", "安南區", "安平區", "中西區"],
-      "高雄市": ["鹽埕區", "鼓山區", "左營區", "楠梓區", "三民區", "新興區", "前金區", "苓雅區", "前鎮區", "旗津區", "小港區", "鳳山區", "林園區", "大寮區", "大樹區", "大社區", "仁武區", "鳥松區", "岡山區", "橋頭區", "燕巢區", "田寮區", "阿蓮區", "路竹區", "湖內區", "茄萣區", "永安區", "彌陀區", "梓官區", "旗山區", "美濃區", "六龜區", "甲仙區", "杉林區", "內門區", "茂林區", "桃源區", "那瑪夏區"],
-      "宜蘭縣": ["宜蘭市", "羅東鎮", "蘇澳鎮", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "冬山鄉", "五結鄉", "三星鄉", "大同鄉", "南澳鄉"],
-      "花蓮縣": ["花蓮市", "鳳林鎮", "玉里鎮", "新城鄉", "吉安鄉", "壽豐鄉", "光復鄉", "豐濱鄉", "瑞穗鄉", "富里鄉", "秀林鄉", "萬榮鄉", "卓溪鄉"],
-      "台東縣": ["台東市", "成功鎮", "關山鎮", "卑南鄉", "鹿野鄉", "池上鄉", "東河鄉", "長濱鄉", "太麻里鄉", "大武鄉", "綠島鄉", "海端鄉", "延平鄉", "金峰鄉", "達仁鄉", "蘭嶼鄉"],
-      "澎湖縣": ["馬公市", "湖西鄉", "白沙鄉", "西嶼鄉", "望安鄉", "七美鄉"], "金門縣": ["金城鎮", "金湖鎮", "金沙鎮", "金寧鄉", "烈嶼鄉", "烏坵鄉"], "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"],
-      "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"],
-      "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"],
-      "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"],
-      "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"],
-      "嘉義市": ["東區", "西區"],
-      "嘉義縣": ["太保市", "朴子市", "布袋鎮", "大林鎮", "民雄鄉", "溪口鄉", "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉", "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"],
-      "屏東縣": ["屏東市", "潮州鎮", "東港鎮", "恆春鎮", "萬丹鄉", "長治鄉", "麟洛鄉", "九如鄉", "里港鄉", "鹽埔鄉", "高樹鄉", "萬巒鄉", "內埔鄉", "竹田鄉", "新埤鄉", "枋寮鄉", "新園鄉", "崁頂鄉", "林邊鄉", "南州鄉", "佳冬鄉", "琉球鄉", "車城鄉", "滿州鄉", "枋山鄉", "三地門鄉", "霧臺鄉", "瑪家鄉", "泰武鄉", "來義鄉", "春日鄉", "獅子鄉", "牡丹鄉"]
-    };
+    const taiwanDistricts = { "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"], "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"], "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"], "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"], "新竹市": ["東區", "北區", "香山區"], "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"], "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"], "台南市": ["新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區", "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區", "七股區", "將軍區", "北門區", "新化區", "善化區", "新市區", "安定區", "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區", "關廟區", "龍崎區", "永康區", "東區", "南區", "北區", "安南區", "安平區", "中西區"], "高雄市": ["鹽埕區", "鼓山區", "左營區", "楠梓區", "三民區", "新興區", "前金區", "苓雅區", "前鎮區", "旗津區", "小港區", "鳳山區", "林園區", "大寮區", "大樹區", "大社區", "仁武區", "鳥松區", "岡山區", "橋頭區", "燕巢區", "田寮區", "阿蓮區", "路竹區", "湖內區", "茄萣區", "永安區", "彌陀區", "梓官區", "旗山區", "美濃區", "六龜區", "甲仙區", "杉林區", "內門區", "茂林區", "桃源區", "那瑪夏區"], "宜蘭縣": ["宜蘭市", "羅東鎮", "蘇澳鎮", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "冬山鄉", "五結鄉", "三星鄉", "大同鄉", "南澳鄉"], "花蓮縣": ["花蓮市", "鳳林鎮", "玉里鎮", "新城鄉", "吉安鄉", "壽豐鄉", "光復鄉", "豐濱鄉", "瑞穗鄉", "富里鄉", "秀林鄉", "萬榮鄉", "卓溪鄉"], "台東縣": ["台東市", "成功鎮", "關山鎮", "卑南鄉", "鹿野鄉", "池上鄉", "東河鄉", "長濱鄉", "太麻里鄉", "大武鄉", "綠島鄉", "海端鄉", "延平鄉", "金峰鄉", "達仁鄉", "蘭嶼鄉"], "澎湖縣": ["馬公市", "湖西鄉", "白沙鄉", "西嶼鄉", "望安鄉", "七美鄉"], "金門縣": ["金城鎮", "金湖鎮", "金沙鎮", "金寧鄉", "烈嶼鄉", "烏坵鄉"], "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"], "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"], "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"], "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"], "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"], "嘉義市": ["東區", "西區"], "嘉義縣": ["太保市", "朴子市", "布袋鎮", "大林鎮", "民雄鄉", "溪口鄉", "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉", "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"], "屏東縣": ["屏東市", "潮州鎮", "東港鎮", "恆春鎮", "萬丹鄉", "長治鄉", "麟洛鄉", "九如鄉", "里港鄉", "鹽埔鄉", "高樹鄉", "萬巒鄉", "內埔鄉", "竹田鄉", "新埤鄉", "枋寮鄉", "新園鄉", "崁頂鄉", "林邊鄉", "南州鄉", "佳冬鄉", "琉球鄉", "車城鄉", "滿州鄉", "枋山鄉", "三地門鄉", "霧臺鄉", "瑪家鄉", "泰武鄉", "來義鄉", "春日鄉", "獅子鄉", "牡丹鄉"] };
 
     const emCitySel = document.getElementById('em-city');
     for (const city in taiwanDistricts) { emCitySel.innerHTML += `<option value="${city}">${city}</option>`; }
     function updateEmDistricts() {
-        const city = document.getElementById('em-city').value;
-        const distSel = document.getElementById('em-district');
-        distSel.innerHTML = '<option value="">選擇受災鄉鎮</option>';
+        const city = document.getElementById('em-city').value; const distSel = document.getElementById('em-district'); distSel.innerHTML = '<option value="">選擇受災鄉鎮</option>';
         if(taiwanDistricts[city]) { taiwanDistricts[city].forEach(d => distSel.innerHTML += `<option value="${d}">${d}</option>`); }
     }
 
@@ -294,8 +271,7 @@
     }
 
     async function triggerEmergencyRadar() {
-        const city = document.getElementById('em-city').value;
-        const dist = document.getElementById('em-district').value;
+        const city = document.getElementById('em-city').value; const dist = document.getElementById('em-district').value;
         if (!city || !dist) return alert("請先選擇受災縣市與鄉鎮！");
         if(!confirm(`⚠️ 警告：您即將強制更新【${city}${dist}】的空氣數據。\n此操作將立刻影響該區車主 App！確定執行？`)) return;
 
@@ -315,12 +291,8 @@
             const { data: oldCache } = await supabaseClient.from('env_cache').select('aqi_7d_avg').eq('city', city).eq('district', dist).maybeSingle();
             let avgAqi = aqi; if (oldCache?.aqi_7d_avg) { avgAqi = (oldCache.aqi_7d_avg * 83 + aqi) / 84; }
 
-            await supabaseClient.from('env_cache').upsert({ 
-                city: city, district: dist, aqi: aqi, pm25: pm25, temp: temp, hum: hum, aqi_7d_avg: avgAqi, updated_at: new Date() 
-            }, { onConflict: 'city, district' });
-
-            alert(`🚨 緊急雷達鎖定成功！\n\n【${city}${dist}】\n現場溫度: ${temp}°C\n即時 PM2.5: ${pm25} µg\n轉換 AQI: ${aqi}`);
-            loadEnvData();
+            await supabaseClient.from('env_cache').upsert({ city: city, district: dist, aqi: aqi, pm25: pm25, temp: temp, hum: hum, aqi_7d_avg: avgAqi, updated_at: new Date() }, { onConflict: 'city, district' });
+            alert(`🚨 緊急雷達鎖定成功！\n\n【${city}${dist}】\n現場溫度: ${temp}°C\n即時 PM2.5: ${pm25} µg\n轉換 AQI: ${aqi}`); loadEnvData();
         } catch(e) { alert("❌ 錯誤: " + e.message); }
     }
 
@@ -333,20 +305,14 @@
       if (id === 'marquee') loadMarquee();
     }
 
-    // 🌟 跑馬燈核心管理邏輯
     async function loadMarquee() {
         document.getElementById('marquee-table').querySelector('tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;">讀取中...</td></tr>';
         const { data } = await supabaseClient.from('system_settings').select('value').eq('key', 'marquee_rules').maybeSingle();
-        // 如果雲端有就用雲端的，如果沒有或被刪光，就自動注入 30 組原廠預設
-        if (data && data.value && data.value.length > 0) {
-            marqueeRules = data.value;
-        } else {
-            marqueeRules = JSON.parse(JSON.stringify(DEFAULT_MARQUEE_RULES));
-            saveMarqueeToDB(true); // 靜默儲存
-        }
+        if (data && data.value && data.value.length > 0) { marqueeRules = data.value; } else { marqueeRules = JSON.parse(JSON.stringify(DEFAULT_MARQUEE_RULES)); saveMarqueeToDB(true); }
         renderMarqueeTable();
     }
 
+    // 🌟 在表格內直接加上 textarea 讓老闆隨改隨存
     function renderMarqueeTable() {
         let html = '';
         marqueeRules.forEach((rule, index) => {
@@ -361,13 +327,15 @@
             html += `<tr>
                 <td style="text-align:center; font-weight:bold; color:#00e676;">#${index + 1}</td>
                 <td>${typeStr}</td>
-                <td style="color:#555;">${rule.text}</td>
+                <td>
+                    <textarea onchange="updateMarqueeText(${index}, this.value)" rows="2" style="width:100%; padding:8px; border-radius:6px; font-size:12px; background:#f9f9f9; border:1px solid #ccc; resize:vertical; font-family:inherit;">${rule.text}</textarea>
+                </td>
                 <td style="text-align:center;">
                     <button class="btn ${rule.active ? 'btn-primary' : 'btn-dark'}" style="padding:4px 8px; font-size:11px;" onclick="toggleMarquee(${index})">${rule.active ? '顯示中' : '已關閉'}</button>
                 </td>
                 <td style="text-align:center;">
-                    <button class="btn btn-warn" style="padding:4px 8px; font-size:11px;" onclick="moveMarquee(${index}, -1)" ${index===0?'disabled':''}>⬆️</button>
-                    <button class="btn btn-warn" style="padding:4px 8px; font-size:11px;" onclick="moveMarquee(${index}, 1)" ${index===marqueeRules.length-1?'disabled':''}>⬇️</button>
+                    <button class="btn btn-warn" style="padding:4px 8px; font-size:11px; margin-bottom:4px;" onclick="moveMarquee(${index}, -1)" ${index===0?'disabled':''}>⬆️</button>
+                    <button class="btn btn-warn" style="padding:4px 8px; font-size:11px; margin-bottom:4px;" onclick="moveMarquee(${index}, 1)" ${index===marqueeRules.length-1?'disabled':''}>⬇️</button>
                     <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteMarquee(${index})">🗑️</button>
                 </td>
             </tr>`;
@@ -377,38 +345,28 @@
 
     function addMarqueeRule() {
         if(marqueeRules.length >= 50) return alert("最多只能設定 50 組規則！");
-        const type = document.getElementById('mq-type').value;
-        const val = parseFloat(document.getElementById('mq-val').value) || 0;
-        const text = document.getElementById('mq-text').value;
-        if(!text) return alert("請輸入跑馬燈顯示文字！");
-        if(type !== 'default' && document.getElementById('mq-val').value === '') return alert("請輸入觸發數值！");
-        
+        const type = document.getElementById('mq-type').value; const val = parseFloat(document.getElementById('mq-val').value) || 0; const text = document.getElementById('mq-text').value;
+        if(!text) return alert("請輸入跑馬燈顯示文字！"); if(type !== 'default' && document.getElementById('mq-val').value === '') return alert("請輸入觸發數值！");
         marqueeRules.unshift({ id: Date.now(), type, val, text, active: true }); 
-        document.getElementById('mq-val').value = ''; document.getElementById('mq-text').value = '';
-        renderMarqueeTable();
+        document.getElementById('mq-val').value = ''; document.getElementById('mq-text').value = ''; renderMarqueeTable();
     }
 
     function toggleMarquee(index) { marqueeRules[index].active = !marqueeRules[index].active; renderMarqueeTable(); }
     function deleteMarquee(index) { if(confirm("確定刪除此規則？")) { marqueeRules.splice(index, 1); renderMarqueeTable(); } }
-    function moveMarquee(index, dir) {
-        if(index + dir < 0 || index + dir >= marqueeRules.length) return;
-        let temp = marqueeRules[index]; marqueeRules[index] = marqueeRules[index + dir]; marqueeRules[index + dir] = temp;
-        renderMarqueeTable();
-    }
+    function moveMarquee(index, dir) { if(index + dir < 0 || index + dir >= marqueeRules.length) return; let temp = marqueeRules[index]; marqueeRules[index] = marqueeRules[index + dir]; marqueeRules[index + dir] = temp; renderMarqueeTable(); }
+    
+    // 🌟 修改文字內容的方法
+    function updateMarqueeText(index, newText) { marqueeRules[index].text = newText; }
 
     function resetMarqueeRules() {
         if(confirm("⚠️ 警告：這將會清除您手動建立的規則，並覆蓋回原廠的 30 組 AI 跑馬燈庫，確定執行嗎？")) {
-            marqueeRules = JSON.parse(JSON.stringify(DEFAULT_MARQUEE_RULES));
-            renderMarqueeTable();
-            alert("✅ 已載入原廠設定，請記得點擊「儲存至雲端」才會生效喔！");
+            marqueeRules = JSON.parse(JSON.stringify(DEFAULT_MARQUEE_RULES)); renderMarqueeTable(); alert("✅ 已載入原廠設定，請記得點擊「儲存至雲端」才會生效喔！");
         }
     }
 
     async function saveMarqueeToDB(silent = false) {
         const { error } = await supabaseClient.from('system_settings').upsert({ key: 'marquee_rules', value: marqueeRules });
-        if(!silent) {
-            if(error) alert("儲存失敗: " + error.message); else alert("✅ 跑馬燈規則已儲存並發布至全台 App！");
-        }
+        if(!silent) { if(error) alert("儲存失敗: " + error.message); else alert("✅ 跑馬燈規則已儲存並發布至全台 App！"); }
     }
 
     let html5QrcodeScanner = null; let mediaRecorder = null; let recordedChunks = []; let currentOrder = ""; let currentUID = ""; let videoStream = null;
@@ -509,8 +467,7 @@
                     const today = new Date(); const actDate = new Date(d.activated_at); const days = Math.max(0, Math.floor((today - actDate) / (1000 * 60 * 60 * 24)));
                     let myEnv = envDataList.find(e => e.city === d.users.city && e.district === d.users.district) || { aqi: 50, temp: 25, hum: 60 };
                     let aqi = myEnv.aqi || 50; let aRate = aqi > 150 ? (p.aqiRed||1.8) : (aqi > 100 ? (p.aqiOrange||1.4) : 1.0); let cRate = 1.0;
-                    const l=['Model X','Model Y','RAV4','CR-V','X-Trail','Kuga','CX-5','Tucson','Sportage','NX','RX','GLC','X3','X5','XC60','Defender','Cayenne','Macan'];
-                    const s=['Yaris','Fit','Swift','Colt Plus','Venue','Kamiq','UX','Picanto','Ignis'];
+                    const l=['Model X','Model Y','RAV4','CR-V','X-Trail','Kuga','CX-5','Tucson','Sportage','NX','RX','GLC','X3','X5','XC60','Defender','Cayenne','Macan']; const s=['Yaris','Fit','Swift','Colt Plus','Venue','Kamiq','UX','Picanto','Ignis'];
                     if(l.includes(d.users.car_model)) cRate = p.carLarge || 1.3; if(s.includes(d.users.car_model)) cRate = p.carSmall || 0.8;
                     let mileageRate = d.users.yearly_mileage ? (1 + ((d.users.yearly_mileage / 10000) - 1) * (p.mileageWeight||0.5)) : 1.0;
                     let tempRate = myEnv.temp > 30 ? (p.tempHigh||1.2) : (myEnv.temp < 15 ? (p.tempLow||0.9) : 1.0); let humRate = myEnv.hum > 80 ? (p.humHigh||1.2) : 1.0;
@@ -571,7 +528,6 @@
         document.getElementById('esg-total-pm25').innerText = totalPm25.toLocaleString(); document.getElementById('esg-total-kwh').innerText = totalKwh.toFixed(1).toLocaleString(); document.getElementById('esg-total-co2').innerText = totalCo2.toFixed(1).toLocaleString();
     }
 
-    // (Rewards, Garages, Bookings, Bulletins, Env Data logic follows...)
     async function loadRewards() {
         const { data } = await supabaseClient.from('rewards').select('*, users(name)').eq('type', 'redeem').eq('status', 'pending'); let html = ''; 
         if(data) { data.forEach(r => { html += `<tr><td><b>${r.users?.name}</b></td><td style="color:#ef4444; font-weight:bold;">-${r.points} 點</td><td>${new Date(r.created_at).toLocaleString()}</td><td style="text-align:center;"><button class="btn" onclick="approveReward(${r.id})">✅ 核發</button></td></tr>`; }); }
@@ -645,6 +601,22 @@
         let csvContent = "\uFEFF" + headers.join(",") + "\n"; 
         globalEnvData.forEach(d => { const row = [d.city, d.district, d.temp, d.hum, d.aqi, d.pm25, d.aqi_7d_avg ? Math.round(d.aqi_7d_avg) : '', new Date(d.updated_at).toLocaleString()]; csvContent += row.join(",") + "\n"; });
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `環境部與氣象署_雙數據庫整合包_${new Date().getTime()}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    async function triggerGlobalEnvUpdate() { 
+        alert("⚡ 啟動雲端 OWM 全台雷達！系統正在透過國際伺服器抓取資料，請稍候約 10 秒..."); 
+        try {
+            const res = await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/update_env', { 
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnZhYmp0eGNiZmZqcnlmZ3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1Nzc2NzUsImV4cCI6MjA4NzE1MzY3NX0.chreegQgxCJI4cZcvwsED8Cvh7XJ-E0P7G_wzpVMe6k'
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "未知錯誤");
+            alert(`✅ ${data.message}`); loadEnvData();
+        } catch(e) { alert("❌ 雲端更新失敗：" + e.message); console.error(e); }
     }
   </script>
 </body>
