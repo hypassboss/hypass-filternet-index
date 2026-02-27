@@ -28,13 +28,14 @@ let currentUser = null;
 let homeEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 let gpsEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 let marqueeRules = []; 
+let marqueeInterval = null; // 🌟 輪播計時器
 
 let algoParams = { 
     baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, 
     carLarge: 1.3, carSmall: 0.8, basePm25: 1500, kwhPerDay: 0.25, co2Factor: 0.495, paHypass: 4, paOther: 8, mileageWeight: 0.5 
 };
 
-// 🌟 30 組內建原廠大腦 (保命防呆機制)
+// 🌟 原廠 30 組 AI 跑馬燈大腦庫
 const DEFAULT_MARQUEE_RULES = [
     { id: 1, type: 'health_low', val: 5, text: '🚨 嚴重警告！濾網壽命僅剩 {health}%，已完全失去防護能力，請立即回廠更換以保護呼吸道！', active: true },
     { id: 2, type: 'aqi_high', val: 200, text: '☠️ 紫爆警報！戶外 AQI 達 {aqi}，極度危險！座艙已強制啟動最高級別內循環防護！', active: true },
@@ -171,15 +172,20 @@ async function loadBulletins() {
   document.getElementById('bulletin-board-container').innerHTML = html;
 }
 
-// 🌟 智慧動態跑馬燈引擎 (支援隨機預設輪播)
+// 🌟 動態 14秒 無縫輪播引擎 (AI 跑馬燈)
 function renderDynamicMarquee(health) {
+    if (marqueeInterval) { clearInterval(marqueeInterval); marqueeInterval = null; }
+
     const msgBox = document.getElementById('dynamic-msg-box');
     const msgEl = document.getElementById('ui-dynamic-msg');
     const rewardMsg = localStorage.getItem('hypass_temp_msg');
     
-    // 最高蓋台優先權：剛賺到的點數
     if (rewardMsg) {
-        if(msgEl) msgEl.innerText = rewardMsg;
+        if(msgEl) {
+            msgEl.style.animation = 'none';
+            msgEl.innerText = rewardMsg;
+            msgEl.style.color = 'var(--accent-color)';
+        }
         if(msgBox) msgBox.style.borderColor = 'var(--gold-color)';
         return;
     }
@@ -188,44 +194,66 @@ function renderDynamicMarquee(health) {
     let pm25 = gpsEnvData.pm25 || 15;
     let temp = gpsEnvData.temp || 25;
 
-    let matchedRule = null;
+    let matchedRules = [];
     let defaultRules = [];
 
-    // 掃描所有條件
+    // 掃描並過濾所有符合條件的規則
     for (let r of marqueeRules) {
         if (!r.active) continue;
         let v = parseFloat(r.val) || 0;
         
-        if (r.type === 'health_low' && health <= v) { matchedRule = r; break; }
-        else if (r.type === 'aqi_high' && aqi >= v) { matchedRule = r; break; }
-        else if (r.type === 'pm25_high' && pm25 >= v) { matchedRule = r; break; }
-        else if (r.type === 'temp_high' && temp >= v) { matchedRule = r; break; }
-        else if (r.type === 'temp_low' && temp <= v) { matchedRule = r; break; }
-        else if (r.type === 'default') { defaultRules.push(r); } // 蒐集所有預設
+        if (r.type === 'health_low' && health <= v) { matchedRules.push(r); }
+        else if (r.type === 'aqi_high' && aqi >= v) { matchedRules.push(r); }
+        else if (r.type === 'pm25_high' && pm25 >= v) { matchedRules.push(r); }
+        else if (r.type === 'temp_high' && temp >= v) { matchedRules.push(r); }
+        else if (r.type === 'temp_low' && temp <= v) { matchedRules.push(r); }
+        else if (r.type === 'default') { defaultRules.push(r); }
     }
 
-    // 如果外面空氣很好、濾網也很健康 (沒觸發任何警告)，就從常駐預設中「隨機抽一條」
-    if (!matchedRule && defaultRules.length > 0) {
-        let randomIndex = Math.floor(Math.random() * defaultRules.length);
-        matchedRule = defaultRules[randomIndex];
+    // 如果有危險警報，就輪播危險警報；如果很安全，就隨機洗牌預設常駐訊息
+    let displayRules = matchedRules.length > 0 ? matchedRules : defaultRules.sort(() => 0.5 - Math.random());
+    
+    // 如果連預設都沒開，給個最低保障
+    if (displayRules.length === 0) {
+        displayRules = [{ type: 'default', text: `系統連線正常，目前室外 AQI (US EPA): ${aqi}，持續防護中...` }];
     }
 
-    // 渲染最終文字
-    if (matchedRule) {
-        let finalMsg = matchedRule.text.replace(/{aqi}/g, aqi).replace(/{health}/g, health).replace(/{pm25}/g, pm25).replace(/{temp}/g, temp);
+    let currentIdx = 0;
+
+    function updateMarquee() {
+        if (!msgEl) return;
+        let r = displayRules[currentIdx % displayRules.length];
+        
+        let finalMsg = r.text.replace(/{aqi}/g, aqi).replace(/{health}/g, health).replace(/{pm25}/g, pm25).replace(/{temp}/g, temp);
         let borderColor = 'var(--border-color)';
         let msgColor = 'var(--accent-color)';
 
-        if (matchedRule.type === 'health_low' || matchedRule.type === 'aqi_high' || matchedRule.type === 'pm25_high') {
+        if (['health_low', 'aqi_high', 'pm25_high'].includes(r.type)) {
             borderColor = '#ef4444';
             msgColor = '#ef4444';
-        } else if (matchedRule.type === 'temp_high' || matchedRule.type === 'temp_low') {
+        } else if (['temp_high', 'temp_low'].includes(r.type)) {
             borderColor = '#f59e0b';
             msgColor = '#f59e0b';
         }
 
-        if(msgEl) { msgEl.innerText = finalMsg; msgEl.style.color = msgColor; }
-        if(msgBox) msgBox.style.borderColor = borderColor;
+        msgEl.innerText = finalMsg;
+        msgEl.style.color = msgColor;
+        if (msgBox) msgBox.style.borderColor = borderColor;
+
+        // 每次切換文字時，重置 CSS 動畫，讓它重新從右邊滑出來
+        msgEl.style.animation = 'none';
+        void msgEl.offsetWidth; // 強制瀏覽器重繪
+        msgEl.style.animation = 'scrollText 14s linear infinite';
+        
+        currentIdx++;
+    }
+
+    // 立即顯示第一筆
+    updateMarquee();
+    
+    // 如果有多筆符合，每 14 秒 (剛好是一次動畫跑完的時間) 無縫切換下一句
+    if (displayRules.length > 1) {
+        marqueeInterval = setInterval(updateMarquee, 14000);
     }
 }
 
@@ -352,7 +380,7 @@ async function init() {
       const { data: st } = await supabaseClient.from('system_settings').select('value').eq('key', 'algo_params').maybeSingle();
       if (st && st.value) { algoParams = { ...algoParams, ...st.value }; }
 
-      // 🌟 一進來就抓取雲端的跑馬燈規則，如果沒有，自動注入 30 組預設大腦
+      // 🌟 一進來就抓取雲端的跑馬燈規則，如果沒有就用原廠 30 組
       const { data: mq } = await supabaseClient.from('system_settings').select('value').eq('key', 'marquee_rules').maybeSingle();
       if (mq && mq.value && mq.value.length > 0) { 
           marqueeRules = mq.value; 
