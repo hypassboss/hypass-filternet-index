@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS V9.3 總部戰情室 (三核防擁塞版)</title>
+  <title>HYPASS V9.4 總部戰情室 (雙引擎不敗版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -80,12 +80,10 @@
         <div id="scanner-box"></div>
         <video id="video-box" autoplay muted playsinline></video>
         <h3 id="flow-status" style="text-align:center; color:#00e676; margin-bottom:20px; font-size:18px;">請點擊下方按鈕啟動作業</h3>
-        
         <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
             <div style="flex:1; min-width:200px;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📝 Shopline 訂單號碼</label><input type="text" id="inp-order" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
             <div style="flex:1; min-width:200px;"><label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">📦 濾網 UID</label><input type="text" id="inp-uid" class="scan-input" style="font-size:20px; padding:16px;" readonly placeholder="等待掃描..."></div>
         </div>
-
         <div style="text-align:center; margin-top: 10px;">
             <button id="btn-scan" class="btn btn-primary" style="font-size:16px; padding: 14px 24px;" onclick="startScanFlow()">1. 啟動鏡頭掃描條碼</button>
             <button id="btn-record" class="btn btn-warn" style="font-size:16px; padding: 14px 24px; display:none;" onclick="startRecording()">🎥 2. 開始包裝錄影 <span class="recording-dot" id="rec-dot">⏺ REC</span></button>
@@ -97,10 +95,7 @@
     <div id="panel-crm" class="panel">
       <h2>👥 濾網客人 CRM (上帝模式：強制連鎖拔除)</h2>
       <div class="table-container">
-        <table id="crm-table">
-          <thead><tr><th>客戶資訊</th><th>車輛配置</th><th>系統數據</th><th style="text-align:center;">上帝操作 (需密碼)</th></tr></thead>
-          <tbody></tbody>
-        </table>
+        <table id="crm-table"><thead><tr><th>客戶資訊</th><th>車輛配置</th><th>系統數據</th><th style="text-align:center;">上帝操作 (需密碼)</th></tr></thead><tbody></tbody></table>
       </div>
     </div>
 
@@ -111,10 +106,7 @@
       </div>
       <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="generateSequentialUIDs()">⚙️ 一鍵產生 50 組新 UID (工廠入庫)</button>
       <div class="table-container">
-        <table id="uid-table">
-          <thead><tr><th>UID 條碼</th><th>綁定車款</th><th>安裝所在地</th><th style="text-align:center;">動態壽命(同步App)</th><th style="text-align:center;">權限操作區</th></tr></thead>
-          <tbody></tbody>
-        </table>
+        <table id="uid-table"><thead><tr><th>UID 條碼</th><th>綁定車款</th><th>安裝所在地</th><th style="text-align:center;">動態壽命(同步App)</th><th style="text-align:center;">權限操作區</th></tr></thead><tbody></tbody></table>
       </div>
     </div>
 
@@ -130,32 +122,17 @@
 
     <div id="panel-rewards" class="panel">
       <h2>🎁 LINE Points 兌換審核</h2>
-      <div class="table-container">
-        <table id="reward-table">
-          <thead><tr><th>申請車主</th><th>申請扣除點數</th><th>申請時間</th><th style="text-align:center;">審核操作</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <div class="table-container"><table id="reward-table"><thead><tr><th>申請車主</th><th>申請扣除點數</th><th>申請時間</th><th style="text-align:center;">審核操作</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div id="panel-garages" class="panel">
       <h2>🏪 保修廠加盟審核管理</h2>
-      <div class="table-container">
-        <table id="garage-table">
-          <thead><tr><th>保修廠資訊</th><th>聯絡人</th><th>目前狀態</th><th style="text-align:center;">審核操作</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <div class="table-container"><table id="garage-table"><thead><tr><th>保修廠資訊</th><th>聯絡人</th><th>目前狀態</th><th style="text-align:center;">審核操作</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div id="panel-bookings" class="panel">
       <h2>📅 全台預約單總表</h2>
-      <div class="table-container">
-        <table id="booking-table">
-          <thead><tr><th>預約車主</th><th>指定保修廠</th><th>預約日期</th><th>訂單狀態</th><th style="text-align:center;">操作</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <div class="table-container"><table id="booking-table"><thead><tr><th>預約車主</th><th>指定保修廠</th><th>預約日期</th><th>訂單狀態</th><th style="text-align:center;">操作</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div id="panel-bulletins" class="panel">
@@ -166,12 +143,7 @@
           <textarea id="bul-content" rows="3" placeholder="公告內容..."></textarea>
           <button class="btn btn-primary" style="margin-top:10px;" onclick="createBulletin()">發布至前台</button>
       </div>
-      <div class="table-container">
-        <table id="bulletin-table">
-          <thead><tr><th>公告標題</th><th>發布時間</th><th>狀態</th><th style="text-align:center;">操作</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <div class="table-container"><table id="bulletin-table"><thead><tr><th>公告標題</th><th>發布時間</th><th>狀態</th><th style="text-align:center;">操作</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div id="panel-env" class="panel">
@@ -191,7 +163,7 @@
            <div><label style="font-size:11px;color:#00e676;">每日 PM2.5 (µg)</label><input type="number" id="algo-basePm25" step="10" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#00e676;">日均省電 (kWh)</label><input type="number" id="algo-kwhPerDay" step="0.01" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#00e676;">減碳轉換係數</label><input type="number" id="algo-co2Factor" step="0.001" class="scan-input" style="padding:8px; font-size:14px;"></div>
-           <div><label style="font-size:11px;color:#00e676;">HYPASS 風阻(Pa)</label><input type="number" id="algo-paHypass" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#00e676;">HYPASS 風阻 (Pa)</label><input type="number" id="algo-paHypass" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#00e676;">他牌風阻 (Pa)</label><input type="number" id="algo-paOther" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#fff;">爬蟲頻率 (小時)</label><input type="number" id="algo-updateFreqHours" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
         </div>
@@ -204,7 +176,7 @@
       </div>
 
       <div style="margin-bottom: 20px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="triggerDirectEnvUpdate()">⚡ 啟動雲端 AI 三核心爬蟲 (強制即時更新)</button>
+        <button class="btn btn-primary" onclick="triggerDirectEnvUpdate()">⚡ 啟動不敗雙引擎更新 (強制即時抓取最新資料)</button>
         <button class="btn btn-dark" onclick="downloadEnvCSV()">📥 匯出【環境部 x 氣象署】雙數據庫整合包 (CSV)</button>
       </div>
 
@@ -521,23 +493,65 @@
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `環境部與氣象署_雙數據庫整合包_${new Date().getTime()}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
-    // 🌟 終極安全解法：呼叫雲端升級版 Edge Function，徹底避開前端的 CORS 與 IP 限流
+    // 🌟 終極雙引擎：優先呼叫雲端函數 (自帶金鑰)，若失敗直接啟動網頁代理端抓取！保證不當機！
     async function triggerDirectEnvUpdate() { 
-        alert("⚡ 啟動雲端 AI 三核心爬蟲！系統正在透過多重代理抓取資料，請稍候約 10~15 秒..."); 
+        alert("⚡ 啟動不敗雙引擎！系統正在嘗試多重通道抓取資料，請稍候約 10~20 秒..."); 
+        
+        // --- 引擎 A: 使用 Supabase 官方 SDK 呼叫雲端大腦 (自帶鑰匙，解決圖三錯誤) ---
         try {
-            const res = await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/update_env', { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
+            console.log("正在啟動雲端引擎...");
+            const { data, error } = await supabaseClient.functions.invoke('update_env', { method: 'POST' });
             
-            if (!res.ok) throw new Error(data.error || "未知錯誤");
-            
-            alert(`✅ ${data.message}`);
-            loadEnvData();
+            if (!error && data && data.success) {
+                alert(`✅ 雲端引擎更新成功！\n${data.message}`);
+                loadEnvData();
+                return; // 雲端成功就結束，不用跑引擎 B
+            }
+            console.log("雲端引擎受阻，無縫切換前端代理...", error);
         } catch(e) {
-            alert("❌ 雲端更新失敗：" + e.message);
-            console.error(e);
+            console.log("雲端呼叫異常，無縫切換前端代理...", e);
+        }
+
+        // --- 引擎 B: 前端備用破牆代理 (防呆解決圖二錯誤) ---
+        try {
+            console.log("正在啟動前端破牆代理...");
+            const MOENV_API_KEY = "e8dd42e6-9b8b-43f8-991e-b3dee723a52d";
+            const targetUrl = `https://data.moenv.gov.tw/api/v2/aqx_p_432?api_key=${MOENV_API_KEY}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            
+            let res = await fetch(proxyUrl);
+            let json = await res.json();
+            
+            // 智能防呆：掃描是否被政府限流
+            if (!json.contents || !json.contents.startsWith("{") || json.contents.includes("因受限於資源分配")) {
+                throw new Error("政府伺服器全面大塞車 (IP 限流保護中)，請等待 10 分鐘後再試。");
+            }
+            
+            let aqiData = JSON.parse(json.contents);
+            let count = 0;
+            
+            for (const record of aqiData.records) {
+                const city = record.county;
+                const district = record.sitename;
+                const newAqi = parseInt(record.aqi);
+                const newPm25 = parseFloat(record['pm2.5']);
+                
+                if (isNaN(newAqi)) continue;
+
+                const { data: old } = await supabaseClient.from('env_cache').select('aqi_7d_avg').eq('city', city).eq('district', district).maybeSingle();
+                let avgAqi = newAqi;
+                if(old && old.aqi_7d_avg) { avgAqi = (old.aqi_7d_avg * 83 + newAqi) / 84; }
+
+                await supabaseClient.from('env_cache').upsert({
+                    city: city, district: district, aqi: newAqi, pm25: isNaN(newPm25) ? 0 : newPm25, aqi_7d_avg: avgAqi, updated_at: new Date()
+                }, { onConflict: 'city, district' });
+                count++;
+            }
+            alert(`✅ 前端備用引擎破牆成功！共寫入 ${count} 筆最新大數據。`);
+            loadEnvData();
+            
+        } catch(e) {
+            alert("❌ 雙引擎皆被政府伺服器阻擋：" + e.message);
         }
     }
   </script>
