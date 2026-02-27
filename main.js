@@ -7,24 +7,28 @@
     } catch(e) {}
 })();
 
-// 🌟 絕對防卡死的開屏退場邏輯 (只負責關閉，不干涉圖片顯示)
+// 🌟 絕對防卡死的開屏退場邏輯
+function startApp() {
+    const splash = document.getElementById('splash-screen');
+    // JavaScript 只負責把已經演完 CSS 動畫的白底畫面關閉
+    if(splash) { 
+        splash.style.opacity = '0'; // 白底退場 (0.2秒)
+        setTimeout(() => { splash.style.display = 'none'; }, 200); 
+    } 
+}
+
+// 脫離 LINEonload 依賴，直接設定定時器退場。
+// 定時必須與 CSS 動畫物理總時長連動：2s(淡入)+2s(停留)+0.3s(淡出)=4.3s
 window.addEventListener('load', () => {
-    setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        if(splash) {
-            splash.style.opacity = '0'; // 白底淡出 (0.4秒)
-            setTimeout(() => { splash.style.display = 'none'; }, 400); // 徹底關閉圖層
-        }
-    }, 2000); // 給 CSS 動畫 2 秒的完美表演時間
+    // 雖然依賴 load 不穩，但我們有下面的核彈保險
+    setTimeout(startApp, 4300); 
 });
 
-// 🚨 終極保命符：如果網路極差導致 load 沒觸發，3.5 秒一到強制撕掉白畫面，絕對不當機！
-setTimeout(() => {
+// 🚨 終極強制撕除保險：3.5 秒一到，不管網路多慢，強制撕掉白畫面，保證不當機！
+setTimeout(() => { 
     const splash = document.getElementById('splash-screen');
-    if(splash && splash.style.display !== 'none') {
-        splash.style.opacity = '0';
-        setTimeout(() => { splash.style.display = 'none'; }, 400);
-    }
+    // 如果白畫面還在，強制撕掉它
+    if(splash && splash.style.display !== 'none') { startApp(); }
 }, 3500);
 
 function setElText(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
