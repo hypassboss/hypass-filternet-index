@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HYPASS V9.2 總部戰情室 (防擁塞極速版)</title>
+  <title>HYPASS V9.3 總部戰情室 (三核防擁塞版)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
@@ -187,11 +187,11 @@
            <div><label style="font-size:11px;color:#3b82f6;">高濕 (>80%) 倍數</label><input type="number" id="algo-humHigh" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#aaa;">大型車輛 倍數</label><input type="number" id="algo-carLarge" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#aaa;">小型車輛 倍數</label><input type="number" id="algo-carSmall" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
-           <div><label style="font-size:11px;color:#f59e0b;">年里程加權 (每萬km)</label><input type="number" id="algo-mileageWeight" step="0.1" class="scan-input" style="padding:8px; font-size:14px;" title="預設 0.5。代表 2萬公里就是 1 + (2-1)*0.5 = 1.5倍"></div>
+           <div><label style="font-size:11px;color:#f59e0b;">年里程加權(每萬km)</label><input type="number" id="algo-mileageWeight" step="0.1" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#00e676;">每日 PM2.5 (µg)</label><input type="number" id="algo-basePm25" step="10" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#00e676;">日均省電 (kWh)</label><input type="number" id="algo-kwhPerDay" step="0.01" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#00e676;">減碳轉換係數</label><input type="number" id="algo-co2Factor" step="0.001" class="scan-input" style="padding:8px; font-size:14px;"></div>
-           <div><label style="font-size:11px;color:#00e676;">HYPASS 風阻 (Pa)</label><input type="number" id="algo-paHypass" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
+           <div><label style="font-size:11px;color:#00e676;">HYPASS 風阻(Pa)</label><input type="number" id="algo-paHypass" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#00e676;">他牌風阻 (Pa)</label><input type="number" id="algo-paOther" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
            <div><label style="font-size:11px;color:#fff;">爬蟲頻率 (小時)</label><input type="number" id="algo-updateFreqHours" step="1" class="scan-input" style="padding:8px; font-size:14px;"></div>
         </div>
@@ -204,7 +204,7 @@
       </div>
 
       <div style="margin-bottom: 20px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="triggerDirectEnvUpdate()">⚡ 啟動防擁塞前端爬蟲 (強制即時更新全台數據)</button>
+        <button class="btn btn-primary" onclick="triggerDirectEnvUpdate()">⚡ 啟動雲端 AI 三核心爬蟲 (強制即時更新)</button>
         <button class="btn btn-dark" onclick="downloadEnvCSV()">📥 匯出【環境部 x 氣象署】雙數據庫整合包 (CSV)</button>
       </div>
 
@@ -521,66 +521,22 @@
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `環境部與氣象署_雙數據庫整合包_${new Date().getTime()}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
-    // 🌟 智能破牆防擁塞引擎：多重通道備援與文字防呆解析
+    // 🌟 終極安全解法：呼叫雲端升級版 Edge Function，徹底避開前端的 CORS 與 IP 限流
     async function triggerDirectEnvUpdate() { 
-        alert("⚡ 啟動前端破牆直連引擎！將自動切換多重代理通道，請稍候 10~20 秒..."); 
+        alert("⚡ 啟動雲端 AI 三核心爬蟲！系統正在透過多重代理抓取資料，請稍候約 10~15 秒..."); 
         try {
-            const MOENV_API_KEY = "e8dd42e6-9b8b-43f8-991e-b3dee723a52d";
-            const targetUrl = `https://data.moenv.gov.tw/api/v2/aqx_p_432?api_key=${MOENV_API_KEY}`;
+            const res = await fetch('https://qznvabjtxcbffjryfgqi.supabase.co/functions/v1/update_env', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
             
-            let data = null;
+            if (!res.ok) throw new Error(data.error || "未知錯誤");
             
-            // 建立多重通道艦隊 (直連 -> 代理1 -> 代理2)
-            const channels = [
-                targetUrl,
-                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
-            ];
-
-            for (let url of channels) {
-                try {
-                    let res = await fetch(url);
-                    let text = await res.text();
-                    
-                    // 防呆：政府伺服器限流時會傳回「因受限於資源分配...」字串，而不是 JSON
-                    if (text.includes("因受限於資源分配") || text.includes("拒絕存取") || text.includes("Error")) {
-                        console.log(`通道受阻 (${url})，自動切換下一條...`);
-                        continue; 
-                    }
-                    
-                    data = JSON.parse(text);
-                    if (data && data.records) break; // 成功拿到正確格式就跳出迴圈
-                } catch(err) {
-                    console.log(`通道失效 (${url})`);
-                }
-            }
-            
-            if (!data || !data.records) {
-                throw new Error("政府環境部資料庫目前擁塞限流中 (IP資源限制)，請等待 10 分鐘後再試。");
-            }
-            
-            let count = 0;
-            for (const record of data.records) {
-                const city = record.county;
-                const district = record.sitename;
-                const newAqi = parseInt(record.aqi);
-                const newPm25 = parseFloat(record['pm2.5']);
-                
-                if (isNaN(newAqi)) continue;
-
-                const { data: old } = await supabaseClient.from('env_cache').select('aqi_7d_avg').eq('city', city).eq('district', district).maybeSingle();
-                let avgAqi = newAqi;
-                if(old && old.aqi_7d_avg) { avgAqi = (old.aqi_7d_avg * 83 + newAqi) / 84; }
-
-                await supabaseClient.from('env_cache').upsert({
-                    city: city, district: district, aqi: newAqi, pm25: isNaN(newPm25) ? 0 : newPm25, aqi_7d_avg: avgAqi, updated_at: new Date()
-                }, { onConflict: 'city, district' });
-                count++;
-            }
-            alert(`✅ 破牆更新成功！共寫入 ${count} 筆最新環境大數據。`);
+            alert(`✅ ${data.message}`);
             loadEnvData();
         } catch(e) {
-            alert("❌ 更新失敗：" + e.message);
+            alert("❌ 雲端更新失敗：" + e.message);
             console.error(e);
         }
     }
