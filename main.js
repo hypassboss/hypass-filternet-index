@@ -27,6 +27,7 @@ const supabaseClient = supabase.createClient('https://qznvabjtxcbffjryfgqi.supab
 let currentUser = null; 
 let homeEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
 let gpsEnvData = { temp: 25, hum: 60, aqi: 50, pm25: 15 };
+let marqueeRules = []; // 🌟 接收後台的動態跑馬燈規則
 
 let algoParams = { 
     baseWear: 0.27, aqiOrange: 1.4, aqiRed: 1.8, tempHigh: 1.2, tempLow: 0.9, humHigh: 1.2, 
@@ -34,42 +35,11 @@ let algoParams = {
 };
 
 const carData = { 
-  "Audi": ["A3", "A4", "Q3", "Q5", "Q7", "e-tron", "其他"],
-  "Benz": ["A-Class", "C-Class", "E-Class", "GLC", "GLE", "S-Class", "其他"],
-  "BMW": ["1-Series", "3-Series", "5-Series", "X1", "X3", "X5", "其他"],
-  "CMC": ["Veryca (菱利)", "Zinger", "其他"],
-  "Ford": ["Focus", "Kuga", "Mustang", "Ranger", "其他"],
-  "Honda": ["CR-V", "Civic", "Fit", "HR-V", "Odyssey", "其他"],
-  "Hyundai": ["Custin", "Ioniq 5", "Santa Fe", "Tucson", "Venue", "其他"],
-  "Kia": ["Carnival", "EV6", "Picanto", "Sorento", "Sportage", "其他"],
-  "Land Rover": ["Defender", "Discovery", "Range Rover Evoque", "其他"],
-  "Lexus": ["ES", "IS", "LM", "NX", "RX", "UX", "其他"],
-  "Luxgen": ["n7", "U6", "URX", "其他"],
-  "Mazda": ["CX-30", "CX-5", "CX-60", "Mazda 3", "Mazda 6", "其他"],
-  "MG": ["HS", "MG4", "ZS", "其他"],
-  "Mini": ["Clubman", "Cooper", "Countryman", "其他"],
-  "Mitsubishi": ["Colt Plus", "Delica", "Eclipse Cross", "Outlander", "其他"],
-  "Nissan": ["Juke", "Kicks", "Sentra", "Tiida", "X-Trail", "其他"],
-  "Peugeot": ["208", "2008", "3008", "5008", "其他"],
-  "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "其他"],
-  "Skoda": ["Fabia", "Kamiq", "Kodiaq", "Octavia", "Superb", "其他"],
-  "Subaru": ["Crosstrek", "Forester", "Outback", "WRX", "XV", "其他"],
-  "Suzuki": ["Ignis", "Jimny", "Swift", "Vitara", "其他"],
-  "Tesla": ["Model 3", "Model S", "Model X", "Model Y"],
-  "Toyota": ["Altis", "Camry", "Corolla Cross", "RAV4", "Sienta", "Town Ace", "Vios", "Yaris", "其他"],
-  "Volkswagen": ["Caddy", "Golf", "Polo", "T-Roc", "Tiguan", "其他"],
-  "Volvo": ["V60", "XC40", "XC60", "XC90", "其他"],
-  "Other": ["其他品牌"]
+  "Audi": ["A3", "A4", "Q3", "Q5", "Q7", "e-tron", "其他"], "Benz": ["A-Class", "C-Class", "E-Class", "GLC", "GLE", "S-Class", "其他"], "BMW": ["1-Series", "3-Series", "5-Series", "X1", "X3", "X5", "其他"], "CMC": ["Veryca (菱利)", "Zinger", "其他"], "Ford": ["Focus", "Kuga", "Mustang", "Ranger", "其他"], "Honda": ["CR-V", "Civic", "Fit", "HR-V", "Odyssey", "其他"], "Hyundai": ["Custin", "Ioniq 5", "Santa Fe", "Tucson", "Venue", "其他"], "Kia": ["Carnival", "EV6", "Picanto", "Sorento", "Sportage", "其他"], "Land Rover": ["Defender", "Discovery", "Range Rover Evoque", "其他"], "Lexus": ["ES", "IS", "LM", "NX", "RX", "UX", "其他"], "Luxgen": ["n7", "U6", "URX", "其他"], "Mazda": ["CX-30", "CX-5", "CX-60", "Mazda 3", "Mazda 6", "其他"], "MG": ["HS", "MG4", "ZS", "其他"], "Mini": ["Clubman", "Cooper", "Countryman", "其他"], "Mitsubishi": ["Colt Plus", "Delica", "Eclipse Cross", "Outlander", "其他"], "Nissan": ["Juke", "Kicks", "Sentra", "Tiida", "X-Trail", "其他"], "Peugeot": ["208", "2008", "3008", "5008", "其他"], "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "其他"], "Skoda": ["Fabia", "Kamiq", "Kodiaq", "Octavia", "Superb", "其他"], "Subaru": ["Crosstrek", "Forester", "Outback", "WRX", "XV", "其他"], "Suzuki": ["Ignis", "Jimny", "Swift", "Vitara", "其他"], "Tesla": ["Model 3", "Model S", "Model X", "Model Y"], "Toyota": ["Altis", "Camry", "Corolla Cross", "RAV4", "Sienta", "Town Ace", "Vios", "Yaris", "其他"], "Volkswagen": ["Caddy", "Golf", "Polo", "T-Roc", "Tiguan", "其他"], "Volvo": ["V60", "XC40", "XC60", "XC90", "其他"], "Other": ["其他品牌"]
 };
 
 const taiwanDistricts = {
-  "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"], "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
-  "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"],
-  "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"], "新竹市": ["東區", "北區", "香山區"],
-  "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
-  "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
-  "台南市": ["新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區", "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區", "七股區", "將軍區", "北門區", "新化區", "善化區", "新市區", "安定區", "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區", "關廟區", "龍崎區", "永康區", "東區", "南區", "北區", "安南區", "安平區", "中西區"],
-  "高雄市": ["鹽埕區", "鼓山區", "左營區", "楠梓區", "三民區", "新興區", "前金區", "苓雅區", "前鎮區", "旗津區", "小港區", "鳳山區", "林園區", "大寮區", "大樹區", "大社區", "仁武區", "鳥松區", "岡山區", "橋頭區", "燕巢區", "田寮區", "阿蓮區", "路竹區", "湖內區", "茄萣區", "永安區", "彌陀區", "梓官區", "旗山區", "美濃區", "六龜區", "甲仙區", "杉林區", "內門區", "茂林區", "桃源區", "那瑪夏區"]
+  "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"], "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"], "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"], "桃園市": ["桃園區", "中壢區", "大溪區", "楊梅區", "蘆竹區", "大園區", "龜山區", "八德區", "龍潭區", "平鎮區", "新屋區", "觀音區", "復興區"], "新竹市": ["東區", "北區", "香山區"], "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"], "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "后里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"], "台南市": ["新營區", "鹽水區", "白河區", "柳營區", "後壁區", "東山區", "麻豆區", "下營區", "六甲區", "官田區", "大內區", "佳里區", "學甲區", "西港區", "七股區", "將軍區", "北門區", "新化區", "善化區", "新市區", "安定區", "山上區", "玉井區", "楠西區", "南化區", "左鎮區", "仁德區", "歸仁區", "關廟區", "龍崎區", "永康區", "東區", "南區", "北區", "安南區", "安平區", "中西區"], "高雄市": ["鹽埕區", "鼓山區", "左營區", "楠梓區", "三民區", "新興區", "前金區", "苓雅區", "前鎮區", "旗津區", "小港區", "鳳山區", "林園區", "大寮區", "大樹區", "大社區", "仁武區", "鳥松區", "岡山區", "橋頭區", "燕巢區", "田寮區", "阿蓮區", "路竹區", "湖內區", "茄萣區", "永安區", "彌陀區", "梓官區", "旗山區", "美濃區", "六龜區", "甲仙區", "杉林區", "內門區", "茂林區", "桃源區", "那瑪夏區"], "宜蘭縣": ["宜蘭市", "羅東鎮", "蘇澳鎮", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "冬山鄉", "五結鄉", "三星鄉", "大同鄉", "南澳鄉"], "花蓮縣": ["花蓮市", "鳳林鎮", "玉里鎮", "新城鄉", "吉安鄉", "壽豐鄉", "光復鄉", "豐濱鄉", "瑞穗鄉", "富里鄉", "秀林鄉", "萬榮鄉", "卓溪鄉"], "台東縣": ["台東市", "成功鎮", "關山鎮", "卑南鄉", "鹿野鄉", "池上鄉", "東河鄉", "長濱鄉", "太麻里鄉", "大武鄉", "綠島鄉", "海端鄉", "延平鄉", "金峰鄉", "達仁鄉", "蘭嶼鄉"], "澎湖縣": ["馬公市", "湖西鄉", "白沙鄉", "西嶼鄉", "望安鄉", "七美鄉"], "金門縣": ["金城鎮", "金湖鎮", "金沙鎮", "金寧鄉", "烈嶼鄉", "烏坵鄉"], "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"], "苗栗縣": ["苗栗市", "苑裡鎮", "通霄鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"], "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"], "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉"], "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"], "嘉義市": ["東區", "西區"], "嘉義縣": ["太保市", "朴子市", "布袋鎮", "大林鎮", "民雄鄉", "溪口鄉", "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉", "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"], "屏東縣": ["屏東市", "潮州鎮", "東港鎮", "恆春鎮", "萬丹鄉", "長治鄉", "麟洛鄉", "九如鄉", "里港鄉", "鹽埔鄉", "高樹鄉", "萬巒鄉", "內埔鄉", "竹田鄉", "新埤鄉", "枋寮鄉", "新園鄉", "崁頂鄉", "林邊鄉", "南州鄉", "佳冬鄉", "琉球鄉", "車城鄉", "滿州鄉", "枋山鄉", "三地門鄉", "霧臺鄉", "瑪家鄉", "泰武鄉", "來義鄉", "春日鄉", "獅子鄉", "牡丹鄉"]
 };
 
 function formatTaipeiTime(dStr) { try { if(!dStr) return '-'; const d=new Date(dStr); return isNaN(d.getTime())?'-':d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'); } catch(e){return '-';} }
@@ -167,7 +137,56 @@ async function loadBulletins() {
   document.getElementById('bulletin-board-container').innerHTML = html;
 }
 
-// 🌟 獨立抓取 7 日居住地數據
+// 🌟 AI 跑馬燈動態播報引擎
+function renderDynamicMarquee(health) {
+    const msgBox = document.getElementById('dynamic-msg-box');
+    const msgEl = document.getElementById('ui-dynamic-msg');
+    const rewardMsg = localStorage.getItem('hypass_temp_msg');
+    
+    // 如果有剛賺到的點數獎勵，強制最高優先級蓋台
+    if (rewardMsg) {
+        if(msgEl) msgEl.innerText = rewardMsg;
+        if(msgBox) msgBox.style.borderColor = 'var(--gold-color)';
+        return;
+    }
+
+    let finalMsg = `系統連線正常，目前室外 AQI (US EPA): ${gpsEnvData.aqi || 50}，持續防護中...`;
+    let borderColor = 'var(--border-color)';
+    let msgColor = 'var(--accent-color)';
+
+    // 從後台設定的規則，由上到下掃描，符合條件立刻觸發
+    for (let r of marqueeRules) {
+        if (!r.active) continue;
+        let match = false;
+        let v = parseFloat(r.val) || 0;
+        
+        let aqi = gpsEnvData.aqi || 50;
+        let pm25 = gpsEnvData.pm25 || 15;
+        let temp = gpsEnvData.temp || 25;
+
+        if (r.type === 'health_low' && health <= v) match = true;
+        else if (r.type === 'aqi_high' && aqi >= v) match = true;
+        else if (r.type === 'pm25_high' && pm25 >= v) match = true;
+        else if (r.type === 'temp_high' && temp >= v) match = true;
+        else if (r.type === 'default') match = true;
+
+        if (match) {
+            // 智慧替換變數
+            finalMsg = r.text.replace(/{aqi}/g, aqi).replace(/{health}/g, health).replace(/{pm25}/g, pm25).replace(/{temp}/g, temp);
+            
+            // 危險警告直接亮紅框
+            if (r.type === 'health_low' || r.type === 'aqi_high' || r.type === 'pm25_high') {
+                borderColor = '#ef4444';
+                msgColor = '#ef4444';
+            }
+            break; // 抓到第一條 (最高優先權) 就停止
+        }
+    }
+
+    if(msgEl) { msgEl.innerText = finalMsg; msgEl.style.color = msgColor; }
+    if(msgBox) msgBox.style.borderColor = borderColor;
+}
+
 async function fetchHomeEnv() {
     if(!currentUser || !currentUser.city) return;
     const { data } = await supabaseClient.from('env_cache').select('*').eq('city', currentUser.city).eq('district', currentUser.district).maybeSingle();
@@ -179,7 +198,6 @@ async function fetchHomeEnv() {
     }
 }
 
-// 🌟 極速墊檔：直接把 7日居住地 先當作即時定位顯示，達到 0 秒等待！
 function fallbackToHomeGPS() {
     if(currentUser && homeEnvData) {
         setElText('ui-loc-name', `${currentUser.city}${currentUser.district}`);
@@ -189,14 +207,9 @@ function fallbackToHomeGPS() {
     }
 }
 
-// 🌟 極速雙軌制 GPS 讀取
 function getSnapshotGPS() {
-  // 1. 瞬間啟動：立刻去抓居住地，並直接拿來墊檔即時 AQI！
-  fetchHomeEnv().then(() => {
-      fallbackToHomeGPS();
-  });
+  fetchHomeEnv().then(() => { fallbackToHomeGPS(); });
 
-  // 2. 背景悄悄啟動 GPS (限時縮短至 3 秒)，如果成功抓到真正定位才覆蓋過去
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((pos) => {
       fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=zh-TW`)
@@ -208,9 +221,8 @@ function getSnapshotGPS() {
               if(data) {
                   gpsEnvData = data;
                   setElText('env-aqi', data.aqi);
-                  const msgBox = document.getElementById('dynamic-msg-box'); const rewardMsg = localStorage.getItem('hypass_temp_msg');
-                  if (rewardMsg) { setElText('ui-dynamic-msg', rewardMsg); if(msgBox) msgBox.style.borderColor = 'var(--gold-color)'; } 
-                  else { setElText('ui-dynamic-msg', `系統連線正常，目前室外 AQI (US EPA): ${data.aqi}，持續防護中...`); if(msgBox) msgBox.style.borderColor = 'var(--border-color)'; }
+                  // GPS抓到新資料後，重新計算一次跑馬燈
+                  calculateDashboardStats();
               }
           }
         }).catch(e => { console.log("翻譯伺服器忙碌"); });
@@ -231,7 +243,6 @@ async function calculateDashboardStats() {
     const today = new Date(); const actDate = new Date(filter.activated_at);
     const days = Math.max(0, Math.floor((today - actDate) / (1000 * 60 * 60 * 24)));
     
-    // 依據居住地(Home)環境算健康度最客觀
     let aqi = homeEnvData.aqi || 50; 
     let aRate = aqi > 150 ? algoParams.aqiRed : (aqi > 100 ? algoParams.aqiOrange : 1.0);
     
@@ -267,10 +278,14 @@ async function calculateDashboardStats() {
     setElText('ui-esg-co2', (days * algoParams.kwhPerDay * mileageRate * algoParams.co2Factor).toFixed(1));
     setElText('ui-esg-ac', Math.round(((algoParams.paOther - algoParams.paHypass) / algoParams.paOther) * 30)); 
     
+    // 🌟 壽命算完後，呼叫跑馬燈引擎進行播報！
+    renderDynamicMarquee(health);
+
   } else {
     setElText('ui-filter-date', '尚未啟用'); if(healthEl) healthEl.innerText = '--%'; if(badgeText) badgeText.innerText = '系統待命'; if(pulseDot) pulseDot.style.animation = 'none';
     let badge = document.getElementById('ui-shield-badge'); if(badge) { badge.style.borderColor = '#555'; badge.style.color = '#888'; badge.style.background = 'rgba(255,255,255,0.05)'; }
     if(pulseDot) pulseDot.style.background = '#555';
+    renderDynamicMarquee(100);
   }
 }
 
@@ -296,6 +311,11 @@ async function init() {
       
       const { data: st } = await supabaseClient.from('system_settings').select('value').eq('key', 'algo_params').maybeSingle();
       if (st && st.value) { algoParams = { ...algoParams, ...st.value }; }
+
+      // 🌟 一進來就先把跑馬燈規則抓下來
+      const { data: mq } = await supabaseClient.from('system_settings').select('value').eq('key', 'marquee_rules').maybeSingle();
+      if (mq && mq.value) { marqueeRules = mq.value; }
+      else { marqueeRules = [{ type: 'default', val: 0, text: '系統連線正常，持續為您提供醫療級防護...', active: true }]; }
 
       const p = await liff.getProfile(); 
       const { data } = await supabaseClient.from('users').select('*').eq('line_uid', p.userId).maybeSingle();
